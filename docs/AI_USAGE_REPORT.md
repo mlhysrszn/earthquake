@@ -77,7 +77,21 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Gradle reported 1m 25s for the build/unit/lint batch and 11s for device tests.
   These are command durations; total work time was not measured.
 - Human role: approved the prior F03 correction with "go" (commit c46ce1b) and
-  authorized continuing. F06 remains uncommitted pending its own approval.
+  authorized continuing. F06 was separately approved and committed as `2b9789e`.
 - No delegated subagents were used. Exact model/token totals remain unavailable.
 - Compatibility limits and existing local environment warnings are recorded in
   Work Log; passing local checks does not establish every toolchain combination.
+
+
+## L01: Initial domain contract
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: implemented the Earthquake domain model and invariants, initial list
+  repository/refresh contracts, focused JVM tests, and corresponding documentation.
+- Verification: 9 JVM tests passed; debug APK assembly and lint passed. The first
+  Gradle invocation timed out during distribution download; the retry passed.
+- Human role: authorized the F06 commit and continuation into L01, then approved
+  the L01 commit.
+- Total elapsed development time was not measured; the successful Gradle run
+  reported 1m 27s, which is build execution time only.

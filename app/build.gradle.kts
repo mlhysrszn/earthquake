@@ -39,6 +39,7 @@ android {
 
 dependencies {
     implementation(libs.hilt.android)
+    implementation(libs.kotlinx.coroutines.core)
     ksp(libs.hilt.compiler)
     androidTestImplementation(libs.hilt.android.testing)
     kspAndroidTest(libs.hilt.compiler)

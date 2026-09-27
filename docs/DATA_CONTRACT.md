@@ -1,7 +1,8 @@
 # USGS Data Contract
 
-Status: implementation plan. The API integration and domain contracts have not
-been implemented. See the [roadmap](ROADMAP.md) for delivery order and the
+Status: the initial domain model and list repository contract are implemented.
+The USGS API integration and concrete repository implementation remain pending.
+See the [roadmap](ROADMAP.md) for delivery order and the
 [architecture](ARCHITECTURE.md) for package responsibilities inside app.
 
 ## 1. Source and scope
@@ -37,6 +38,14 @@ solely because it is negative. Coordinate order is longitude, latitude, depth.
 Preserve source text in its original language. The planned UI labels remain
 Turkish; English documentation does not change the app's language.
 
+The app-local `Earthquake` domain model uses nullable values for magnitude,
+magnitude type, place, update time, coordinates, depth, and source URL. Identity
+must not be blank; occurrence time is required. A present magnitude or depth must
+be finite, and coordinates must be absent together or form a finite longitude/
+latitude pair within their geographic ranges. Negative finite magnitudes remain
+valid. Mapping is responsible for rejecting invalid source records before they
+reach the list.
+
 The summary event already contains the fields needed by the planned detail
 screen. Avoid one detail request per list item. For an event missing locally,
 use the catalog query `query?format=geojson&eventid=...` when needed. Handle its
@@ -61,6 +70,13 @@ Hilt bindings select implementations without adding Android dependencies to
 these domain interfaces. All implementations and contracts live in app packages.
 One-shot operations use main-safe suspend functions;
 observable data uses Flow. Keep mutable streams inside implementations.
+
+The initial `EarthquakeRepository` contract exposes a Flow of the rolling
+24-hour list, newest first, and a suspend refresh operation. Refresh outcomes are
+typed as success (with the count of accepted records) or failure classified as
+network, invalid response, storage, or unknown. Infrastructure exception types
+do not cross the domain boundary. Individual-event observation and missing-detail
+fetching will be added when the detail feature needs them.
 
 ## 4. Synchronization behavior
 

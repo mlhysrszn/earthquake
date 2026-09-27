@@ -210,8 +210,8 @@ starting F06. F06 requires its own approval before commit.
 ## F06: Hilt foundation in app
 
 Date: 2026-09-28 (Europe/Istanbul).
-Status: verified; awaiting separate user approval before commit.
-Proposed commit: `build: configure Hilt dependency injection`.
+Status: committed as `2b9789e` after separate user approval.
+Commit: `build: configure Hilt dependency injection`.
 
 ### Scope
 
@@ -288,4 +288,47 @@ warning under the daemon JVM 25. Neither failed the checks; the shared SDK was n
 modified. No full elapsed-work duration was measured; Gradle durations above are
 command-reported execution times, not total development time.
 
-Next: obtain commit approval for F06, then start L01 (domain contracts inside app).
+F06 was committed as `2b9789e` after user approval. L01 followed as the next
+roadmap task.
+
+
+## L01: Initial domain contract
+
+Date: 2026-09-28 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope
+
+- Added the plain Kotlin `Earthquake` model with nullable source fields and
+  constructor invariants for identity, finite measurements, and valid coordinate
+  pairs/ranges. Negative finite magnitudes remain valid.
+- Added `EarthquakeRepository` with a Flow for the rolling 24-hour list (newest
+  first) and a suspend refresh operation.
+- Added typed refresh success/failure outcomes, including accepted-record count
+  and network, invalid-response, storage, and unknown failure categories.
+- Added the direct kotlinx-coroutines-core dependency required by the public Flow
+  contract and focused unit tests for model invariants and refresh outcomes.
+- Updated the roadmap and data contract to distinguish the completed domain
+  contract from the still-pending USGS adapter and concrete repository.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --console=plain` | Passed on retry; Gradle reported 1m 27s, 59 tasks executed |
+| JVM unit tests | 9 passed, 0 failures/errors/skips (5 Earthquake, 3 refresh result, 1 starter) |
+| Debug APK assembly | Passed |
+| Android lint | Passed |
+| `git diff --check` | Passed |
+
+The first Gradle invocation timed out after 120 seconds while downloading the
+Gradle distribution; the retry completed successfully. The build still reports
+the existing local NDK warning (`source.properties` missing; native library
+packaged without symbol stripping). No Android device test was needed for this
+pure domain/API contract change. No full development-time interval was measured.
+
+### Commit
+
+Message: `feat: define earthquake domain contract`.
+Scope is limited to the domain model/repository contract, its focused tests, the
+direct Flow dependency, and the corresponding English documentation/records.

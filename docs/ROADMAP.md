@@ -1,8 +1,8 @@
 # Android Earthquake App Roadmap
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
-(F03) was committed in `c46ce1b`, both after user approval. Hilt setup (F06) is
-verified and awaits its own commit approval. L01 is next after that checkpoint.
+(F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
+L01 is verified and committed.
 
 ## Goal
 
@@ -114,11 +114,13 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### L01 - Define the initial domain contract
 
-- [ ] Add Earthquake, the list observation/refresh contract, and meaningful refresh
+- [x] Add Earthquake, the list observation/refresh contract, and meaningful refresh
   outcomes. Define nullable fields and model invariants.
 - Done when: presentation can consume the contract without any API or Room types;
   model validation rules have focused JVM tests.
 - Depends on: F06.
+- Result: pure Kotlin model and repository contract added; 8 focused domain tests
+  pass, along with the existing starter test. Debug assembly and lint pass.
 
 ### L02 - Add a deterministic sample repository
 
@@ -321,7 +323,8 @@ mandatory; permission to work or run tests does not authorize a commit.
 | F02 | Committed: f224494 | Local main initialized; ignore rules and work records verified |
 | F01 | Committed: f224494 | Debug build, unit/device tests, lint, and emulator launch checked; see Work Log |
 | F03 | Committed: c46ce1b | Only app remains; debug build/unit test/lint passed; package-based plan updated |
-| F06 | Verified; commit approval pending | Debug/release builds, unit/device tests, lint, and production cold launch passed |
+| F06 | Committed: 2b9789e | Debug/release builds, unit/device tests, lint, and production cold launch passed |
+| L01 | Committed | Domain model and repository contract; 9 JVM tests passed, debug build and lint passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.
