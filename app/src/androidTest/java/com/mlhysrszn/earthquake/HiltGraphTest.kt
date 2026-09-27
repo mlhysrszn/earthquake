@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.mlhysrszn.earthquake.data.remote.usgs.UsgsEarthquakeService
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.time.Clock
@@ -11,6 +12,7 @@ import java.time.ZoneOffset
 import javax.inject.Inject
 import javax.inject.Provider
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -29,6 +31,7 @@ class HiltGraphTest {
 
     @Inject lateinit var clock: Clock
     @Inject lateinit var clockProvider: Provider<Clock>
+    @Inject lateinit var usgsEarthquakeService: UsgsEarthquakeService
 
     @Before
     fun inject() {
@@ -39,6 +42,7 @@ class HiltGraphTest {
     fun graphProvidesSharedUtcClockAndActivityStartsOnEarthquakeList() {
         assertEquals(ZoneOffset.UTC, clock.zone)
         assertSame(clock, clockProvider.get())
+        assertNotNull(usgsEarthquakeService)
         val before = System.currentTimeMillis()
         val now = clock.millis()
         val after = System.currentTimeMillis()

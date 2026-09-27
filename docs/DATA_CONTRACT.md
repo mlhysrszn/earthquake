@@ -1,8 +1,8 @@
 # USGS Data Contract
 
-Status: the initial domain model, list repository contract, and deterministic
-sample repository are implemented. USGS integration and the production
-repository remain pending.
+Status: the initial domain model, list repository contract, deterministic sample
+repository, USGS feed client, and GeoJSON mapper are implemented. Repository
+synchronization, persistence, and the production list source remain pending.
 See the [roadmap](ROADMAP.md) for delivery order and the
 [architecture](ARCHITECTURE.md) for package responsibilities inside app.
 
@@ -46,6 +46,20 @@ be finite, and coordinates must be absent together or form a finite longitude/
 latitude pair within their geographic ranges. Negative finite magnitudes remain
 valid. Mapping is responsible for rejecting invalid source records before they
 reach the list.
+
+The USGS mapper ignores unknown JSON keys. A malformed JSON document, a root that
+is not a FeatureCollection, or a FeatureCollection without a features array fails
+as `MalformedUsgsFeedException`; it is never reported as a valid empty feed.
+Within a structurally valid collection, non-Feature entries and features with a
+missing properties object, missing/blank ID, or missing/unconvertible occurrence
+time are skipped. Records whose `properties.type` is not `earthquake` are also
+filtered without rejecting other features. Missing optional values remain null.
+An incomplete or out-of-range longitude/latitude pair is omitted while the
+otherwise valid earthquake is retained. Negative finite magnitudes are preserved.
+Valid events are ordered newest first. `metadata.generated` is exposed separately
+as source generation time, not as the device's successful-fetch time. JSON values
+with incompatible field types make the feed malformed rather than silently
+coercing an individual record.
 
 The summary event already contains the fields needed by the planned detail
 screen. Avoid one detail request per list item. For an event missing locally,

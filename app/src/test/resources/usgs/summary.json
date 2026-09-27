@@ -1,0 +1,53 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "generated": 1790596800000,
+    "status": 200,
+    "title": "USGS Earthquakes"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "usgs-negative-magnitude",
+      "properties": {
+        "mag": -0.3,
+        "place": "Southeast Alaska",
+        "time": 1790596800000,
+        "updated": 1790596801000,
+        "url": "https://earthquake.usgs.gov/example/negative",
+        "magType": "md",
+        "type": "earthquake",
+        "reviewed": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-149.0, 61.0, 20.0],
+        "coordinateReference": "WGS84"
+      },
+      "catalogueNote": "Unknown fields are ignored"
+    },
+    {
+      "type": "Feature",
+      "id": "usgs-missing-optional-fields",
+      "properties": {
+        "time": 1790596860000,
+        "type": "earthquake"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.0, 20.0]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "usgs-quarry-blast",
+      "properties": {
+        "mag": 2.1,
+        "place": "Example quarry",
+        "time": 1790596920000,
+        "type": "quarry blast"
+      }
+    }
+  ],
+  "catalogueVersion": "fixture-1"
+}

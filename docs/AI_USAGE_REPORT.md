@@ -141,3 +141,18 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Follow-up: Gradle commands run by the assistant shell as root created root-owned
   generated outputs under `app/build`; ownership was corrected without deleting
   build files, and the user confirmed Android Studio builds successfully.
+
+
+## D01: USGS GeoJSON client and mapper
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: added Retrofit/serialization configuration, the injectable USGS
+  service, defensive GeoJSON DTO mapping, a recorded fixture, tests, and docs.
+- Verification: 23 JVM tests and 9 Android tests passed; debug and test APKs
+  assembled and lint passed. The Hilt device test resolved the service without
+  issuing a live request.
+- Human role: authorized continuing after the L04 checkpoint and approved the
+  D01 commit.
+- Total elapsed development time was not measured. USGS network fetch behavior
+  remains unverified and is not claimed implemented.

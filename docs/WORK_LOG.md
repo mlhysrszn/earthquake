@@ -466,3 +466,53 @@ Studio builds successfully afterward.
 Message: `feat: build earthquake list screen`.
 Scope is limited to the Compose list route/content, localized strings, Hilt
 ViewModel route integration, screen instrumentation tests, and updated records.
+
+
+## D01: USGS GeoJSON client and mapper
+
+Date: 2026-09-28 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope
+
+- Added a Retrofit 3.0.0 service for the USGS all-day GeoJSON feed and a singleton
+  Hilt Retrofit/JSON setup. Added the Android INTERNET permission. The service is
+  injectable; this task does not yet fetch or persist live data in the repository.
+- Added Kotlin serialization DTOs and mapper. Unknown keys are ignored; accepted
+  earthquakes map to domain fields, sort newest first, and retain source-generated
+  time separately.
+- Defined parsing behavior: malformed JSON/root/feed structure throws
+  `MalformedUsgsFeedException`; missing/blank identity, missing/unconvertible
+  occurrence time, and non-earthquake features are skipped individually.
+  Invalid coordinate pairs are omitted without dropping otherwise valid events;
+  missing optional fields and negative finite magnitudes are preserved.
+- Added a recorded summary JSON fixture and five focused JVM tests for mapping,
+  optional/invalid fields, coordinate order, unknown keys, filtering, and malformed
+  feed handling. Hilt graph smoke test now resolves the service without a network call.
+- Updated the roadmap, architecture, and data contract to show that live
+  repository synchronization and persistence remain future tasks.
+
+### Versions and verification
+
+| Item/check | Result |
+| --- | --- |
+| Retrofit | 3.0.0 |
+| kotlinx.serialization JSON | 1.11.0; compiler plugin aligned to Kotlin 2.3.21 |
+| `sudo -u mlhysrszn -H ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest --console=plain` | Passed; Gradle reported 43s, 85 tasks executed |
+| JVM unit tests | 23 passed, 0 failures/errors/skips (5 USGS mapper, 18 prior) |
+| `sudo -u mlhysrszn -H ./gradlew :app:lintDebug --console=plain` | Passed; Gradle reported 9s |
+| `sudo -u mlhysrszn -H ./gradlew :app:connectedDebugAndroidTest --console=plain` | Passed on Android 10 / API 29; 9 tests, 0 failures/errors/skips; injected Retrofit service resolved |
+| `git diff --check` | Passed |
+
+No live USGS request was made; network fetch, HTTP failure handling, and
+repository synchronization are not claimed complete. Build output remained
+owned by `mlhysrszn` because verification ran as the project user. The existing
+incomplete local NDK warning and native-symbol stripping fallback remain;
+device tooling emitted the known protobuf/JVM 25 `sun.misc.Unsafe` warning.
+Total development time was not measured.
+
+### Commit
+
+Message: `feat: add USGS GeoJSON mapping`.
+Scope is limited to DTOs, mapper and fixture/tests, Retrofit service/Hilt setup,
+INTERNET permission, and corresponding English documentation/records.
