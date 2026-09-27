@@ -108,3 +108,18 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Human role: authorized continuing after the L01 checkpoint and approved the
   L02 commit.
 - Total elapsed development time was not measured.
+
+
+## L03: Earthquake list state and ViewModel
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: implemented the Hilt ViewModel and immutable state, added lifecycle
+  and coroutine test dependencies, wrote fake-repository tests, and updated docs.
+- Verification: 18 JVM tests passed; debug APK assembly, Hilt/KSP generation, and
+  lint passed. The first test compilation failed from missing dispatcher-rule
+  extension imports; the corrected rerun passed.
+- Human role: authorized continuing after the L02 checkpoint and approved the
+  L03 commit.
+- Total elapsed development time was not measured; the successful Gradle run
+  reported 3s, which is build execution time only.

@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01 and L02 are committed.
+L01, L02, and L03 are committed.
 
 ## Goal
 
@@ -133,12 +133,15 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### L03 - Implement list state and ViewModel
 
-- [ ] Add a Hilt ViewModel with immutable UI state, initial load, manual refresh,
+- [x] Add a Hilt ViewModel with immutable UI state, initial load, manual refresh,
   and retry behavior. Handle results as state and use viewModelScope for actions.
 - Done when: tests with fakes and coroutine test dispatchers cover content, empty
   results, initial failure, and failed refresh retaining existing content. Tests
   account for any WhileSubscribed streams.
 - Depends on: L02.
+- Result: Hilt ViewModel and lifecycle-aware state flow added; five coroutine-test
+  cases cover content, empty, initial failure/retry, retained content on failure,
+  and pending refresh. Tests actively collect the WhileSubscribed stream.
 
 ### L04 - Build the list screen
 
@@ -328,6 +331,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | F06 | Committed: 2b9789e | Debug/release builds, unit/device tests, lint, and production cold launch passed |
 | L01 | Committed | Domain model and repository contract; 9 JVM tests passed, debug build and lint passed |
 | L02 | Committed | Sample repository and Hilt binding; 13 JVM tests passed, debug build and lint passed |
+| L03 | Committed | Hilt list ViewModel/state; 18 JVM tests passed, debug build and lint passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

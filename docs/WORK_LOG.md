@@ -371,3 +371,46 @@ measured; the Gradle duration is build execution time only.
 Message: `feat: add deterministic sample repository`.
 Scope is limited to the sample repository, Hilt binding, repository unit tests,
 and the corresponding English documentation/records.
+
+
+## L03: Earthquake list state and ViewModel
+
+Date: 2026-09-28 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope
+
+- Added immutable `EarthquakesUiState` and a Hilt `EarthquakesViewModel` with
+  initial loading, manual refresh, retry, typed error state, and last-success time.
+- Combined the repository list stream with refresh state using
+  `SharingStarted.WhileSubscribed`; refresh work runs in `viewModelScope` and
+  cancellation is rethrown rather than converted to a regular failure.
+- Added lifecycle ViewModel and coroutine test dependencies plus a Main dispatcher
+  rule for deterministic coroutine tests.
+- Added fake-repository tests for content, empty results, initial failure and
+  retry, failed refresh retaining existing content, and a refresh held in progress.
+  Tests actively collect the WhileSubscribed state stream.
+- Updated architecture and roadmap records; the Compose screen remains L04.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --console=plain` | Passed on retry; Gradle reported 3s, 59 tasks (10 executed, 49 up-to-date) |
+| JVM unit tests | 18 passed, 0 failures/errors/skips (5 ViewModel, 13 prior) |
+| Debug APK assembly and Hilt/KSP generation | Passed |
+| Android lint | Passed |
+| `git diff --check` | Passed |
+
+The first build attempt failed compiling the test dispatcher rule because its
+`setMain`/`resetMain` extension imports were missing. Added the imports; the
+subsequent full check passed. The build also reported the existing local NDK
+`source.properties` warning and packaged a native library without symbol
+stripping. No device test was run; this step adds ViewModel logic and JVM tests,
+not a rendered screen. Total development time was not measured.
+
+### Commit
+
+Message: `feat: add earthquake list ViewModel state`.
+Scope is limited to the list UI state/ViewModel, required lifecycle/coroutine test
+dependencies, focused JVM tests, and the corresponding English documentation.
