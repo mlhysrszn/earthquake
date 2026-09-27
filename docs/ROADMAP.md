@@ -1,0 +1,327 @@
+# Android Earthquake App Roadmap
+
+Status: Git setup (F02) and starter verification (F01) are complete. The first
+commit is awaiting explicit user approval. Architecture implementation starts
+with F03 after that checkpoint.
+
+## Goal
+
+Deliver an Android app in which a user can view recent USGS earthquakes, set a
+magnitude threshold, and receive a notification for an eligible new event. The
+code should be easy to explain and modify during the case-study interview.
+
+## Agreed direction
+
+- Native Android with Kotlin and Jetpack Compose.
+- USGS worldwide data without an additional geographic filter.
+- A list covering the past 24 hours, event details, and notification settings.
+- Four modules: app, presentation, domain, and data.
+- MVVM with lifecycle-aware state collection and Hilt constructor injection.
+- A single Activity with Navigation 3 and ViewModels scoped to screen entries.
+- Room for event/cache storage, DataStore for preferences, and WorkManager for
+  periodic background checks.
+- A deterministic demo using the same business rules as real data.
+- Local analytics events, meaningful tests, and an English delivery README.
+- All project documentation is written and maintained in English.
+
+See [Architecture](ARCHITECTURE.md) and [USGS Data Contract](DATA_CONTRACT.md).
+The [Android guideline review](ANDROID_GUIDELINE_REVIEW.md) records reviewed
+choices and project-specific tradeoffs. Library versions are validated during
+setup, including Hilt/KSP/toolchain compatibility.
+
+## Scope boundaries
+
+No account system, payments, embedded map, location permission, custom backend,
+multiple earthquake providers, or store release in the initial delivery.
+Periodic checks do not carry an instant-delivery guarantee. The deadline remains
+unspecified, so this roadmap defines dependencies and completion criteria rather
+than dates or invented time estimates.
+
+## How we will work
+
+1. Work on one small task at a time, in the order below unless a dependency says
+   otherwise. Keep the app buildable after each code task.
+2. Read the task's output and acceptance criteria before changing code.
+3. Run the relevant build/tests or manual checks and record the actual result.
+4. Mark a task complete only after its acceptance criteria pass. Record blockers
+   and unverified behavior explicitly.
+5. Update affected documents in the same step as a changed decision.
+6. Record time and AI assistance in [Work Log](WORK_LOG.md) and
+   [AI Usage Report](AI_USAGE_REPORT.md).
+7. At each small task/batch checkpoint, report the changes and test results, then
+   wait for explicit user approval before committing. After approval, commit only
+   the reviewed scope. Do not start the next batch while commit approval is pending.
+
+Checkboxes track verified work, not whether it has been committed. The progress
+log records commit status separately. The user's requested commit approval is
+mandatory; permission to work or run tests does not authorize a commit.
+
+## Phase 1: Verify and establish the architecture
+
+### F02 - Establish repository and work records
+
+- [x] Check Git state, initialize a repository if still absent, verify ignore
+  rules, and create a work log plus an AI usage report template.
+- Done when: local SDK paths, credentials, and generated build files are excluded;
+  time and AI work can be recorded without inventing measurements.
+- Order: moved before F01 at the user's request. Remote publication is part of
+  delivery, not this task. This initial checkpoint groups F02 and F01 for review.
+- Result: local `main` initialized; ignore rules verified; working agreement and
+  records created. No commit or remote has been created.
+
+### F01 - Verify the starter project
+
+- [x] Inspect the JDK, Android SDK, Gradle, AGP, and Kotlin setup; build and launch
+  the existing app.
+- Done when: the starter builds, baseline tests are run, and the app opens on an
+  emulator/device. A documented environment blocker would keep the task open.
+- Depends on: F02.
+- Result: debug build, 1 template unit test, and 1 template device test passed.
+  Lint reported 0 errors and 16 warnings. Cold launch and the starter greeting
+  were verified on Android 10 / API 29. See [Work Log](WORK_LOG.md) for limits.
+
+### F03 - Add the domain module
+
+- [ ] Create `:domain` as a Kotlin/JVM module with a unit-test setup.
+- Done when: it compiles independently and has no Android dependency.
+- Depends on: F01.
+
+### F04 - Add the data module
+
+- [ ] Create `:data` as an Android library depending on domain.
+- Done when: it builds without dependencies on app or presentation.
+- Depends on: F03.
+
+### F05 - Add the presentation module
+
+- [ ] Create `:presentation`, enable Compose, and move the existing theme and
+  starter composable into it.
+- Done when: presentation builds with domain as its only business-module dependency.
+- Depends on: F03.
+
+### F06 - Connect the modules with Hilt
+
+- [ ] Validate Hilt/KSP/toolchain compatibility and aligned JVM targets. Add the
+  Hilt Application, Activity entry point, and binding/provider setup described
+  in Architecture section 3.1. Keep domain Android-free.
+- Done when: the generated graph compiles, the starter launches through the Hilt
+  entry point, and a graph smoke check resolves an injected dependency. Scopes
+  match ownership and long-lived bindings use application context.
+- Depends on: F04, F05.
+
+**Checkpoint:** a runnable app with enforced module boundaries.
+
+## Phase 2: Deliver the first list using sample data
+
+### L01 - Define the initial domain contract
+
+- [ ] Add Earthquake, the list observation/refresh contract, and meaningful refresh
+  outcomes. Define nullable fields and model invariants.
+- Done when: presentation can consume the contract without any API or Room types;
+  model validation rules have focused JVM tests.
+- Depends on: F06.
+
+### L02 - Add a deterministic sample repository
+
+- [ ] Implement the list contract with fixed sample events and controllable empty,
+  loading, and failure scenarios.
+- Done when: samples can be reset and do not depend on a live earthquake occurring.
+- Depends on: L01.
+
+### L03 - Implement list state and ViewModel
+
+- [ ] Add a Hilt ViewModel with immutable UI state, initial load, manual refresh,
+  and retry behavior. Handle results as state and use viewModelScope for actions.
+- Done when: tests with fakes and coroutine test dispatchers cover content, empty
+  results, initial failure, and failed refresh retaining existing content. Tests
+  account for any WhileSubscribed streams.
+- Depends on: L02.
+
+### L04 - Build the list screen
+
+- [ ] Render magnitude, source place text, occurrence time, and last update;
+  provide refresh/retry and consistent loading/empty/error states. Collect with
+  collectAsStateWithLifecycle; reusable content accepts state and callbacks.
+- Done when: sample scenarios work on-device, labels remain legible with larger
+  font settings, and information does not depend on color alone.
+- Depends on: L03.
+
+**Checkpoint:** a visible, testable list driven through the full architecture.
+
+## Phase 3: Integrate USGS and persistence
+
+### D01 - Implement and test USGS mapping
+
+- [ ] Add the network client, summary DTOs, and DTO-to-domain mapping with recorded
+  or synthetic fixtures. Define malformed-payload versus invalid-record behavior.
+- Done when: mapping tests cover missing fields, invalid identities/times,
+  coordinate order, negative magnitudes, unknown fields, and non-earthquake events.
+- Depends on: L01; perform after the sample list checkpoint.
+
+### D02 - Add the local event store
+
+- [ ] Add Room entities, DAOs, mappings, and synchronization metadata. Define
+  retention, the rolling 24-hour list window, and stale-snapshot handling.
+- Done when: database tests verify insert/update behavior, ordering, observable
+  reads, transactions, and persistence after reopening the database.
+- Depends on: D01.
+
+### D03 - Connect synchronization to the repository
+
+- [ ] Fetch, validate, and store USGS records; expose Room as the UI's event source.
+  Coordinate overlapping refreshes and preserve coroutine cancellation.
+- Done when: real data appears without changing the ViewModel contract; failed
+  refreshes preserve cached content; fetch and source-generation times stay distinct.
+- Depends on: D02, L04.
+
+### D04 - Add event details and navigation
+
+- [ ] Add typed Navigation 3 destinations, a saved back stack, and entry-scoped
+  Hilt ViewModels. Pass event IDs using an explicit supported argument mechanism.
+  Display event details and fetch by ID only when missing locally.
+- Done when: cached details work offline and unavailable events have a clear state.
+  Test the single-event response, list-to-detail flow, Back, recreation, and saved
+  navigation state; verify arguments reach the correct ViewModel.
+- Depends on: D03.
+
+**Checkpoint:** live list and details, with usable cached data when offline.
+
+## Phase 4: Add notification preferences and delivery
+
+### N01 - Write the notification decision table
+
+- [ ] Define eligibility for below/equal/above threshold, first synchronization,
+  duplicate events, threshold changes, late records, revisions, long offline
+  periods, re-enabling notifications, permission denial, and event-ID aliases.
+- Done when: each case has a deterministic expected result, including the
+  baseline/cutoff and retention policy needed to implement it.
+- Depends on: D03.
+
+### N02 - Persist notification preferences
+
+- [ ] Add the preferences contract and DataStore implementation. Specify default
+  enabled state, threshold, selectable range, and step size.
+- Done when: valid preferences survive restart and invalid input is handled.
+- Depends on: N01.
+
+### N03 - Build notification settings
+
+- [ ] Add enabled/disabled controls, threshold selection, and actual OS permission
+  status. Request permission when the user enables notifications.
+- Done when: granted, denied, and system-disabled states are understandable;
+  denied permission does not erase the user's threshold preference.
+- Depends on: N02.
+
+### N04 - Implement domain eligibility rules
+
+- [ ] Implement the decision table with injected time and explicit inputs.
+- Done when: JVM tests cover every decision-table case without Android APIs.
+- Depends on: N01.
+
+### N05 - Add persistent notification processing state
+
+- [ ] Store processed event identities, baselines, and notification outcomes;
+  define retry/crash behavior and coordinate concurrent processors.
+- Done when: integration tests cover restart and concurrent processing without
+  reselecting already handled events contrary to the policy.
+- Depends on: N04, D02.
+
+### N06 - Implement the Android notification adapter
+
+- [ ] Add the notification channel, permission-aware delivery result, stable
+  notification identity, and event-ID navigation when a notification is tapped.
+- Done when: a deterministic eligible event posts a notification and opens the
+  correct detail screen, including a cold app start.
+- Depends on: N03, N05, D04.
+
+### N07 - Schedule and connect background checks
+
+- [ ] Add unique periodic work with network constraints, bounded retries, and
+  scheduling/cancellation tied to preferences. Reuse the same synchronization
+  and notification rules for relevant foreground and background triggers. Use
+  @HiltWorker/@AssistedInject and the injected HiltWorkerFactory through the
+  Application's Configuration.Provider. Remove only the required default
+  WorkManager initializer and verify the merged manifest.
+- Done when: Worker checks verify success/retry/failure, disabled notifications,
+  first-run behavior, and repeat processing; timing limitations are documented.
+  Cold-start execution uses fresh Workers and dependencies available from
+  SingletonComponent; no Activity/ViewModel scope leaks into the worker graph.
+- Depends on: N06.
+
+**Checkpoint:** saved preferences lead to eligible notifications and detail navigation.
+
+## Phase 5: Make the result measurable and demonstrable
+
+### Q01 - Add local product events
+
+- [ ] Implement local event storage and wire list/detail views, preference saves,
+  permission outcomes, notification posting/opening, and refresh failures.
+- Done when: the agreed events can be inspected with timestamps and minimal useful
+  properties. Demo events are identifiable; recomposition does not duplicate views.
+- Metrics: setup completion, notification-to-detail opening, and refresh failures.
+  Define event denominators; posting does not prove that a user saw a notification.
+- Depends on: N07. Instrument earlier flows here without changing their behavior.
+
+### Q02 - Add an isolated demo scenario
+
+- [ ] Provide a clearly labeled demo that injects events through the real domain
+  rules and delivery adapter. Select sources through build-variant Hilt bindings
+  with separate storage and work configuration.
+- Done when: the demo can show an event below threshold, one above threshold, and
+  a duplicate; it resets predictably and cannot mix with live records.
+- Depends on: Q01.
+
+### Q03 - Run the acceptance walkthrough
+
+- [ ] Verify list -> details, preferences -> notification -> details, offline
+  startup, refresh failure, denied permission, restart, and larger font settings.
+- Done when: relevant unit/integration/UI tests pass, on-device checks are logged,
+  and remaining limitations are explicitly recorded. Hilt integration tests use
+  isolated storage and test binding replacements; screen state and navigation
+  restore correctly after recreation.
+- Depends on: Q02.
+
+**Checkpoint:** the core journey works, can be measured, and can be demonstrated on demand.
+
+## Phase 6: Prepare the case-study handoff
+
+### H01 - Finish the README and usage report
+
+- [ ] Document setup, scope, architecture choices, notification limits, testing,
+  demo steps, actual time spent, AI tools/models, delegated work, verification,
+  and the next improvement.
+- Done when: the README links to the roadmap, architecture, data contract, and
+  usage report. Usage figures identify their source and denominator; estimates
+  are labeled and unavailable data is not fabricated.
+- Depends on: Q03 and the ongoing records started in F02.
+
+### H02 - Verify reproducibility and prepare the interview
+
+- [ ] Run the documented setup from a clean checkout, repeat the demo, review
+  tracked files, and prepare a small practice change to a rule or UI behavior.
+- Done when: documented commands work, the repository contains the deliverable,
+  the development environment is ready, and the architecture can be explained
+  using the actual code. Provide a repository URL once a destination is available.
+- Depends on: H01. An absent remote destination blocks publication, not local work.
+
+## Completion checklist
+
+- [ ] Recent USGS events and details work with explicit loading/error/empty states.
+- [ ] Preferences persist and notification behavior matches the decision table.
+- [ ] Duplicate handling and initial synchronization are verified.
+- [ ] Cached content, permission denial, and missing data behave predictably.
+- [ ] Demo, local events, tests, README, and AI usage report are ready.
+- [ ] The repository is reproducible and ready for the interview.
+
+## Progress log
+
+| Task | Status | Verification / blocker |
+| --- | --- | --- |
+| Planning documents | Done | Roadmap created; architecture and data contract written in English |
+| Android guideline review | Done | Hilt selected; architecture tasks remain pending |
+| F02 | Verified; commit approval pending | Local main initialized; ignore rules and work records verified |
+| F01 | Verified; commit approval pending | Debug build, unit/device tests, lint, and emulator launch checked; see Work Log |
+| F03 | Next, after commit approval | Create the domain module |
+
+Add a row for each task as work starts. Record actual commands/results or manual
+checks, and keep task checkboxes consistent with this log.
