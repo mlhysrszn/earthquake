@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01 is verified and committed.
+L01 and L02 are committed.
 
 ## Goal
 
@@ -124,10 +124,12 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### L02 - Add a deterministic sample repository
 
-- [ ] Implement the list contract with fixed sample events and controllable empty,
+- [x] Implement the list contract with fixed sample events and controllable empty,
   loading, and failure scenarios.
 - Done when: samples can be reset and do not depend on a live earthquake occurring.
 - Depends on: L01.
+- Result: singleton sample repository is bound through Hilt; fixed-clock tests cover
+  content, empty/reset, pending refresh, and one-shot failure/retry scenarios.
 
 ### L03 - Implement list state and ViewModel
 
@@ -325,6 +327,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | F03 | Committed: c46ce1b | Only app remains; debug build/unit test/lint passed; package-based plan updated |
 | F06 | Committed: 2b9789e | Debug/release builds, unit/device tests, lint, and production cold launch passed |
 | L01 | Committed | Domain model and repository contract; 9 JVM tests passed, debug build and lint passed |
+| L02 | Committed | Sample repository and Hilt binding; 13 JVM tests passed, debug build and lint passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

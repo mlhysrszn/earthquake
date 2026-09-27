@@ -95,3 +95,16 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
   the L01 commit.
 - Total elapsed development time was not measured; the successful Gradle run
   reported 1m 27s, which is build execution time only.
+
+
+## L02: Deterministic sample repository
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: implemented the Hilt-bound sample repository, controllable list and
+  refresh scenarios, fixed-clock JVM tests, and updated project records.
+- Verification: 13 JVM tests passed; Hilt code generation, debug APK assembly,
+  and lint passed. Gradle reported 8s for 59 tasks, 27 executed and 32 up-to-date.
+- Human role: authorized continuing after the L01 checkpoint and approved the
+  L02 commit.
+- Total elapsed development time was not measured.

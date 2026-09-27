@@ -1,7 +1,8 @@
 # USGS Data Contract
 
-Status: the initial domain model and list repository contract are implemented.
-The USGS API integration and concrete repository implementation remain pending.
+Status: the initial domain model, list repository contract, and deterministic
+sample repository are implemented. USGS integration and the production
+repository remain pending.
 See the [roadmap](ROADMAP.md) for delivery order and the
 [architecture](ARCHITECTURE.md) for package responsibilities inside app.
 

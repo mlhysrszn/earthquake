@@ -1,8 +1,9 @@
 # Architecture
 
 Status: the project uses a single `:app` Gradle module. All planned application
-code and tests belong in app. The Hilt foundation is verified; earthquake
-features remain pending.
+code and tests belong in app. The Hilt foundation, initial domain contract, and
+deterministic sample repository are implemented; UI and USGS features remain
+pending.
 
 ## Purpose
 
@@ -47,8 +48,8 @@ app/src/main/java/com/mlhysrszn/earthquake/
   notifications/
 ```
 
-Only the starter Activity and theme exist today. The remaining paths describe
-where future code will live.
+The starter Activity/theme, domain model and repository contract, and sample
+repository exist today. Other planned paths remain for future code.
 
 | Package | Responsibility |
 | --- | --- |

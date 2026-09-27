@@ -332,3 +332,42 @@ pure domain/API contract change. No full development-time interval was measured.
 Message: `feat: define earthquake domain contract`.
 Scope is limited to the domain model/repository contract, its focused tests, the
 direct Flow dependency, and the corresponding English documentation/records.
+
+
+## L02: Deterministic sample repository
+
+Date: 2026-09-28 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope
+
+- Added a singleton in-memory `SampleEarthquakeRepository` bound to the domain
+  repository contract through Hilt.
+- Added three stable sample events with times based on the injected Clock when the
+  repository is created; reset restores that same immutable sample set.
+- Added controllable empty-list, held-refresh, and one-shot failure scenarios.
+  A failed refresh preserves the observed list, and a later retry succeeds.
+- Added fixed-clock unit tests covering stable newest-first content, empty/reset,
+  failure/retry, and a refresh held until explicitly released.
+- Updated architecture, data contract, and roadmap status to reflect the
+  implemented sample slice and still-pending USGS source.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --console=plain` | Passed; Gradle reported 8s, 59 tasks (27 executed, 32 up-to-date) |
+| JVM unit tests | 13 passed, 0 failures/errors/skips (4 sample repository, 9 prior) |
+| Hilt code generation and debug APK assembly | Passed |
+| Android lint | Passed |
+| `git diff --check` | Passed |
+
+No device test was needed because this step adds a repository and its JVM tests,
+not a screen or Android platform behavior. Total development time was not
+measured; the Gradle duration is build execution time only.
+
+### Commit
+
+Message: `feat: add deterministic sample repository`.
+Scope is limited to the sample repository, Hilt binding, repository unit tests,
+and the corresponding English documentation/records.
