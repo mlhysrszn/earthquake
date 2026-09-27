@@ -516,3 +516,51 @@ Total development time was not measured.
 Message: `feat: add USGS GeoJSON mapping`.
 Scope is limited to DTOs, mapper and fixture/tests, Retrofit service/Hilt setup,
 INTERNET permission, and corresponding English documentation/records.
+
+
+## D02: Room event store and synchronization metadata
+
+Date: 2026-09-28 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope and policy
+
+- Added Room 2.8.5 runtime/ktx/compiler/testing dependencies, KSP schema export,
+  and the version-1 database schema under `app/schemas`.
+- Added event and singleton synchronization-metadata entities, epoch-millisecond
+  mappings, indexed occurrence time, DAO, Room database, and singleton Hilt
+  providers. Hilt graph test resolves the DAO.
+- Defined retention/list window as the inclusive interval `[now - 24 hours, now]`;
+  future-dated and older records are excluded. `observeRecent` uses this window.
+- A fresh, structurally valid feed atomically replaces the event snapshot within
+  that interval, and a valid empty snapshot clears it. A source generation older
+  than the last applied generation is ignored. If the stored generation is known,
+  an incoming snapshot without a generation is also ignored; events and source
+  generation remain intact while local successful-fetch time advances. An initial
+  unversioned snapshot is allowed when no source generation is known.
+- Added entity mapping JVM tests and five Room instrumentation tests for upsert,
+  observable ordering/window bounds, atomic snapshot plus metadata updates, stale
+  and unversioned snapshots, valid empty feeds, and persistence after reopening.
+- Repository/network coordination remains D03; no live network fetch was added.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `sudo -u mlhysrszn -H ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest --console=plain` | Passed; Gradle reported 7s, 85 tasks (22 executed, 63 up-to-date) |
+| JVM unit tests | 25 passed, 0 failures/errors/skips (2 entity mapping, 23 prior) |
+| `sudo -u mlhysrszn -H ./gradlew :app:lintDebug --console=plain` | Passed; Gradle reported 4s |
+| `sudo -u mlhysrszn -H ./gradlew :app:connectedDebugAndroidTest --console=plain` | Passed on Android 10 / API 29; 14 tests, 0 failures/errors/skips (5 Room) |
+| `git diff --check` | Passed |
+| Generated Room schema | Created at `app/schemas/com.mlhysrszn.earthquake.data.local.room.EarthquakeDatabase/1.json` |
+
+Existing local NDK source-properties/native-symbol warnings and the device
+protobuf/JVM 25 `sun.misc.Unsafe` warning remain. Gradle checks ran as the project
+user; no root-owned files were created under `app/build`. Total development time
+was not measured.
+
+### Commit
+
+Message: `feat: add Room earthquake event store`.
+Scope is limited to Room dependencies/configuration/schema, entities/DAO/mappings,
+database Hilt providers, focused tests, and corresponding English records.

@@ -1,8 +1,8 @@
 # USGS Data Contract
 
 Status: the initial domain model, list repository contract, deterministic sample
-repository, USGS feed client, and GeoJSON mapper are implemented. Repository
-synchronization, persistence, and the production list source remain pending.
+repository, USGS feed client/mapper, and Room event store are implemented.
+Repository synchronization and the production list source remain pending.
 See the [roadmap](ROADMAP.md) for delivery order and the
 [architecture](ARCHITECTURE.md) for package responsibilities inside app.
 
@@ -92,6 +92,17 @@ typed as success (with the count of accepted records) or failure classified as
 network, invalid response, storage, or unknown. Infrastructure exception types
 do not cross the domain boundary. Individual-event observation and missing-detail
 fetching will be added when the detail feature needs them.
+
+Room retains only events in the inclusive interval from `now - 24 hours` through
+`now`; future-dated and older events are excluded. A valid, fresh summary feed is
+an authoritative snapshot for this window and atomically replaces the stored
+event set, including clearing it for a valid empty feed. Source generation times
+older than the last applied snapshot are ignored. If a previous source generation
+is known, an incoming snapshot without its own generation time is also ignored;
+the local successful-fetch time may advance, but cached events and the applied
+source generation remain unchanged. When no source generation is known yet, an
+otherwise valid unversioned initial snapshot may be applied. Source-generation
+time and local successful-fetch time are stored separately.
 
 ## 4. Synchronization behavior
 

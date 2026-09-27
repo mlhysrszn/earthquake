@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.mlhysrszn.earthquake.data.local.room.EarthquakeDao
 import com.mlhysrszn.earthquake.data.remote.usgs.UsgsEarthquakeService
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -32,6 +33,7 @@ class HiltGraphTest {
     @Inject lateinit var clock: Clock
     @Inject lateinit var clockProvider: Provider<Clock>
     @Inject lateinit var usgsEarthquakeService: UsgsEarthquakeService
+    @Inject lateinit var earthquakeDao: EarthquakeDao
 
     @Before
     fun inject() {
@@ -43,6 +45,7 @@ class HiltGraphTest {
         assertEquals(ZoneOffset.UTC, clock.zone)
         assertSame(clock, clockProvider.get())
         assertNotNull(usgsEarthquakeService)
+        assertNotNull(earthquakeDao)
         val before = System.currentTimeMillis()
         val now = clock.millis()
         val after = System.currentTimeMillis()
