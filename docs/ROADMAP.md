@@ -1,8 +1,10 @@
 # Android Earthquake App Roadmap
 
-Status: Git setup (F02) and starter verification (F01) are complete. The first
-commit is awaiting explicit user approval. Architecture implementation starts
-with F03 after that checkpoint.
+Status: Git setup (F02) and starter verification (F01) were committed in
+`f224494` after user approval. F03 now records the single app module decision;
+the uncommitted separate domain module was removed at the user's request.
+The app-only project list, debug build, unit test, and lint checks passed.
+Commit approval for this correction is pending; Hilt setup (F06) is next.
 
 ## Goal
 
@@ -15,7 +17,8 @@ code should be easy to explain and modify during the case-study interview.
 - Native Android with Kotlin and Jetpack Compose.
 - USGS worldwide data without an additional geographic filter.
 - A list covering the past 24 hours, event details, and notification settings.
-- Four modules: app, presentation, domain, and data.
+- One Gradle module: app. UI, domain, data, DI, and platform responsibilities use
+  packages inside app; all unit/device tests also remain in app.
 - MVVM with lifecycle-aware state collection and Hilt constructor injection.
 - A single Activity with Navigation 3 and ViewModels scoped to screen entries.
 - Room for event/cache storage, DataStore for preferences, and WorkManager for
@@ -67,7 +70,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 - Order: moved before F01 at the user's request. Remote publication is part of
   delivery, not this task. This initial checkpoint groups F02 and F01 for review.
 - Result: local `main` initialized; ignore rules verified; working agreement and
-  records created. No commit or remote has been created.
+  records created. Initial commit: `f224494`. No remote has been created.
 
 ### F01 - Verify the starter project
 
@@ -80,36 +83,30 @@ mandatory; permission to work or run tests does not authorize a commit.
   Lint reported 0 errors and 16 warnings. Cold launch and the starter greeting
   were verified on Android 10 / API 29. See [Work Log](WORK_LOG.md) for limits.
 
-### F03 - Add the domain module
+### F03 - Confirm the single app module structure
 
-- [ ] Create `:domain` as a Kotlin/JVM module with a unit-test setup.
-- Done when: it compiles independently and has no Android dependency.
+- [x] Keep settings limited to `:app`; remove the uncommitted domain module and
+  its Kotlin/JVM plugin configuration. Document package responsibilities in app.
+- Done when: Gradle lists only app, the starter build/unit test/lint checks pass,
+  and active documentation consistently describes package-based organization.
 - Depends on: F01.
+- Scope: no new business classes or empty placeholder packages. Create actual
+  packages as their features are implemented.
+- Result: Gradle lists only app; debug build and the existing unit test passed.
+  Lint reports 0 errors and the original 16 warnings.
 
-### F04 - Add the data module
-
-- [ ] Create `:data` as an Android library depending on domain.
-- Done when: it builds without dependencies on app or presentation.
-- Depends on: F03.
-
-### F05 - Add the presentation module
-
-- [ ] Create `:presentation`, enable Compose, and move the existing theme and
-  starter composable into it.
-- Done when: presentation builds with domain as its only business-module dependency.
-- Depends on: F03.
-
-### F06 - Connect the modules with Hilt
+### F06 - Configure Hilt in app
 
 - [ ] Validate Hilt/KSP/toolchain compatibility and aligned JVM targets. Add the
   Hilt Application, Activity entry point, and binding/provider setup described
-  in Architecture section 3.1. Keep domain Android-free.
+  in Architecture section 3.1, all inside app. Keep domain rules free of Android
+  runtime APIs and use standard constructor injection.
 - Done when: the generated graph compiles, the starter launches through the Hilt
   entry point, and a graph smoke check resolves an injected dependency. Scopes
   match ownership and long-lived bindings use application context.
-- Depends on: F04, F05.
+- Depends on: F03.
 
-**Checkpoint:** a runnable app with enforced module boundaries.
+**Checkpoint:** a runnable app with Hilt and documented package responsibilities.
 
 ## Phase 2: Deliver the first list using sample data
 
@@ -319,9 +316,10 @@ mandatory; permission to work or run tests does not authorize a commit.
 | --- | --- | --- |
 | Planning documents | Done | Roadmap created; architecture and data contract written in English |
 | Android guideline review | Done | Hilt selected; architecture tasks remain pending |
-| F02 | Verified; commit approval pending | Local main initialized; ignore rules and work records verified |
-| F01 | Verified; commit approval pending | Debug build, unit/device tests, lint, and emulator launch checked; see Work Log |
-| F03 | Next, after commit approval | Create the domain module |
+| F02 | Committed: f224494 | Local main initialized; ignore rules and work records verified |
+| F01 | Committed: f224494 | Debug build, unit/device tests, lint, and emulator launch checked; see Work Log |
+| F03 | Verified; commit approval pending | Only app remains; debug build/unit test/lint passed; package-based plan updated |
+| F06 | Next, after commit approval | Configure Hilt in app |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

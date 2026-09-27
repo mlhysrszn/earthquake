@@ -1,7 +1,7 @@
 # Architecture
 
-Status: implementation plan. Only the original `:app` module exists today; the
-module structure below has not been implemented.
+Status: the project uses a single `:app` Gradle module. All planned application
+code and tests belong in app. Hilt and earthquake features remain pending.
 
 ## Purpose
 
@@ -15,43 +15,62 @@ All project documentation is maintained in English. The
 [Android guideline review](ANDROID_GUIDELINE_REVIEW.md) records which decisions
 changed, which remain, and the official sources behind them.
 
-## 1. Module boundaries
+## 1. Single-module structure and package boundaries
 
-Use four Gradle modules. Arrows represent compile-time dependencies:
+**Decision: keep all application code and tests in `:app`.** Layer responsibilities
+are organized as packages, not separate Gradle modules. Create packages when they
+contain real code; no empty scaffold or marker classes are needed.
+
+Planned packages under `com.mlhysrszn.earthquake`:
 
 ```text
-:app ----------> :presentation ----------> :domain
-  |                                        ^
-  +------------> :data --------------------+
-  +---------------------------------------> :domain
+app/src/main/java/com/mlhysrszn/earthquake/
+  MainActivity.kt
+  EarthquakeApplication.kt
+  ui/
+    theme/
+    earthquakes/list/
+    earthquakes/detail/
+    settings/
+    navigation/
+  domain/
+    model/
+    repository/
+    usecase/
+  data/
+    remote/
+    local/
+    repository/
+  di/
+  background/
+  notifications/
 ```
 
-| Module | Responsibility | Allowed project dependencies |
-| --- | --- | --- |
-| `:app` | Application/Activity, dependency wiring, WorkManager worker, Android notification adapter, external entry points | presentation, data, domain |
-| `:presentation` | Compose screens, ViewModels, UI state, theme, user interactions, navigation graph | domain |
-| `:domain` | Kotlin models, repository interfaces, platform ports, notification rules, necessary use cases | None |
-| `:data` | USGS client, DTO mapping, Room, DataStore, repository implementations, local event storage | domain |
+Only the starter Activity and theme exist today. The remaining paths describe
+where future code will live.
 
-Domain is a Kotlin/JVM module with no Android, Compose, Room, or Retrofit
-references. Platform-independent libraries such as Coroutines/Flow are allowed.
-Presentation cannot depend on data, so screens cannot access API clients or DAOs.
+| Package | Responsibility |
+| --- | --- |
+| `ui` | Compose screens, ViewModels, state, theme, and navigation |
+| `domain` | Plain Kotlin models, repository contracts, and necessary shared rules/use cases |
+| `data` | USGS integration, DTO mapping, Room, DataStore, repositories, and local event storage |
+| `di` | Hilt bindings, providers, and qualifiers |
+| `background` | WorkManager scheduling and Worker orchestration |
+| `notifications` | Android notification delivery and permission integration |
 
-Organize presentation by feature: `earthquakes/list`, `earthquakes/detail`,
-`settings`, `navigation`, and `designsystem`. Keep these as packages initially.
-App hosts the Hilt application component that connects the modules.
+UI depends on domain contracts; data implements those contracts. UI must not
+access API clients, DAOs, or DataStore directly. Keep domain rules free of Android
+runtime APIs so they can be tested locally. Shared notification policy justifies
+use cases; simple reads can use repository interfaces directly.
 
-Tradeoff: four modules require more Gradle setup than one module. In return,
-business rules can run in JVM tests, and the UI/data boundary is enforced by
-module dependencies. Additional feature modules require a concrete need.
+These are package conventions checked in review and behavioral tests. A single
+Gradle module does not enforce layer isolation at compile time, and Kotlin
+`internal` visibility applies to the entire app module. Use private declarations
+where practical; do not claim that packages provide module-level isolation.
 
-Android does not mandate four modules or a separate domain module. We retain
-these boundaries to isolate the shared notification policy and make dependency
-rules enforceable. Our domain module also owns repository contracts as a
-project-specific dependency-inversion choice. This is not the exact module graph
-shown in Android's domain-layer guide. Repository implementations still own
-source coordination, caching, and persistence; use cases handle shared policy or
-orchestration. Simple reads can use repository interfaces directly.
+Local unit tests, including domain rules, live in `app/src/test`; Android/Compose
+integration tests live in `app/src/androidTest`. Additional Gradle modules require
+an explicit change to the user's single-module decision.
 
 ## 2. UI and data flow
 
@@ -113,25 +132,23 @@ implementations, and `@Provides` for external types such as the HTTP client,
 Room database, DataStore, and Clock. Install bindings in the appropriate Hilt
 component. Qualify dispatchers or other bindings with the same underlying type.
 
-#### Module responsibilities
+#### Wiring within app
 
-| Module | Hilt responsibility |
-| --- | --- |
-| `:app` | `@HiltAndroidApp` Application, `@AndroidEntryPoint` Activity, Android adapters, cross-module/domain providers, WorkManager configuration |
-| `:data` | Repository constructor injection, interface bindings, network/storage providers |
-| `:presentation` | `@HiltViewModel` classes with injected constructors; `hiltViewModel()` at destination entry points |
-| `:domain` | Android-free models, contracts, and rules; plain constructors supplied by Hilt `@Provides` methods outside this module |
+- Application uses `@HiltAndroidApp`; MainActivity uses `@AndroidEntryPoint`.
+- `di` contains `@Module` bindings/providers for repositories, storage, network,
+  Android adapters, Clock, and qualified dispatchers as needed.
+- Repository implementations use constructor injection.
+- Screen ViewModels use `@HiltViewModel`; destination entry points retrieve them
+  through `hiltViewModel()`.
+- Domain rules may use standard `javax.inject.Inject` constructor annotations
+  when needed. They must not depend on Context, Android lifecycle types, or Hilt
+  component APIs. Data classes and pure functions need no DI annotations.
+- Background work uses HiltWorkerFactory as described below.
 
-Keeping domain constructors plain is a local choice to keep the JVM module free
-of Android DI tooling. Those objects still belong to the Hilt graph; providers
-receive dependencies as parameters. There is no parallel manual graph.
-
-App must have all Hilt-contributing modules on its transitive dependency path.
-Configure Hilt and KSP only in the modules that need their code generation.
-Validate compatible Hilt, AndroidX Hilt, KSP, Kotlin, AGP, and JDK versions during
-F06; align JVM compilation targets and do not copy versions from guide examples
-without checking compatibility. Gradle modules and Hilt binding modules are
-different concepts and do not need a one-to-one mapping.
+Configure Hilt and KSP in app. Validate compatible Hilt, AndroidX Hilt, KSP,
+Kotlin, AGP, Gradle, and JDK versions during F06; align Java/Kotlin compilation
+settings. Hilt binding modules are annotated classes inside app, not additional
+Gradle modules. There is no separate JVM plugin or manual dependency container.
 
 #### Ownership and lifetimes
 
@@ -182,9 +199,9 @@ implementations in one variant.
 
 - The Worker triggers orchestration and maps outcomes to WorkManager results.
 - Threshold, new-event, and previously-notified rules belong to domain behavior.
-- Data owns persistent event, notification, and synchronization records.
-- App implements a domain notification port using Android APIs. Domain does not
-  reference NotificationManager or Context.
+- The data package owns persistent event, notification, and synchronization records.
+- The notifications package implements a domain notification port using Android
+  APIs. Domain rules do not reference NotificationManager or Context.
 - Coordinate foreground refreshes and background work. An in-memory set of IDs
   is insufficient for deduplication across process restarts.
 - Database writes and operating-system notifications cannot form one atomic
@@ -239,9 +256,8 @@ then replaces that source without changing the presentation contract.
 - If near-real-time delivery becomes a requirement, revisit the delivery design
   before presenting a latency promise.
 - Validate library versions against the existing AGP, Kotlin, and Gradle setup
-  when creating modules. The original starter passed F01 verification; the
-  planned multi-module/Hilt configuration has not yet been implemented or tested.
-  See [Work Log](WORK_LOG.md) for the baseline results.
+  when adding Hilt and other dependencies. The original starter passed F01;
+  Hilt integration is still pending. See [Work Log](WORK_LOG.md) for verification.
 
 ## References
 
@@ -252,12 +268,11 @@ then replaces that source without changing the presentation contract.
 - [Architecture recommendations](https://developer.android.com/topic/architecture/recommendations)
 - [Hilt](https://developer.android.com/training/dependency-injection/hilt-android)
 - [Hilt and Jetpack](https://developer.android.com/training/dependency-injection/hilt-jetpack)
-- [Hilt across modules](https://developer.android.com/training/dependency-injection/hilt-multi-module)
 - [Hilt testing](https://developer.android.com/training/dependency-injection/hilt-testing)
 - [Navigation state](https://developer.android.com/guide/navigation/navigation-3/save-state)
 - [UI events](https://developer.android.com/topic/architecture/ui-layer/events)
 - [Coroutines](https://developer.android.com/kotlin/coroutines/coroutines-best-practices)
 - [Custom WorkManager configuration](https://developer.android.com/develop/background-work/background-tasks/persistent/configuration/custom-configuration)
 
-These are general guidelines. The four-module structure is a project decision
-based on the scope and the importance of explicit architecture boundaries.
+These are general guidelines. The single app module follows the user's chosen
+project scope; package responsibilities provide the architectural organization.

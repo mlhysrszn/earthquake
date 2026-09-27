@@ -11,8 +11,8 @@ is recorded separately.
 ## Initial checkpoint: F02 and F01
 
 Date: 2026-09-27 (Europe/Istanbul).
-Status: verified; awaiting user approval for the first commit.
-Branch: `main`. Commit: none. Remote: none.
+Status: committed after the user approved the proposed scope with "devam".
+Branch: `main`. Commit: `f224494`. Remote: none.
 
 ### Scope
 
@@ -73,7 +73,8 @@ No new application behavior was added in this checkpoint.
 - Device-test cleanup left the app unavailable to the first launch attempt.
   Reinstalling the built APK restored a successful cold launch; no source fix
   was required.
-- Remote publication, Hilt setup, new modules, and feature implementation are pending.
+- At this checkpoint, remote publication, Hilt setup, and feature implementation
+  were pending. Current scope keeps all application code in app.
 
 ### Evidence
 
@@ -97,4 +98,110 @@ estimate. Earlier planning and later documentation time were not measured.
 
 Proposed message: `chore: initialize project and verify Android baseline`.
 Scope: Android starter, Gradle wrapper/configuration, ignore rules, working
-agreement, and English project documents. Approval is pending; nothing is committed.
+agreement, and English project documents. Approved and committed as `f224494`.
+The initial snapshot preserves the starter's Windows wrapper line endings.
+
+
+## Superseded F03 attempt: separate Kotlin/JVM domain module
+
+Date: 2026-09-27 (Europe/Istanbul).
+Status: superseded by the user's single app module instruction. The separate
+module was never approved or committed and has now been removed. Results below
+are historical checks for that discarded setup, not current build instructions.
+
+### Changes
+
+- Registered `:domain` and added the shared Kotlin/JVM plugin alias.
+- Configured a JDK 17 toolchain with matching Java/Kotlin bytecode target 11,
+  consistent with the current app target. Gradle still uses its existing daemon JDK.
+- Configured JUnit 4 using the existing catalog entry.
+- Documented the module's purpose, source layout, and verification commands.
+- Excluded the IDE metadata directory after Android Studio generated additional
+  project files. No IDE files were removed from disk.
+- Updated progress and recorded the approved baseline commit.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `./gradlew :domain:build :domain:dependencies --configuration testRuntimeClasspath :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --console=plain` | Passed; 32s reported by Gradle |
+| `./gradlew :domain:build :domain:dependencies --configuration compileClasspath --console=plain` | Passed independently of app tasks; 1s reported by Gradle |
+| Domain compile classpath | Kotlin stdlib 2.2.10 and JetBrains annotations only |
+| Domain test runtime | Kotlin stdlib, JUnit 4.13.2, Hamcrest, and annotations; no Android dependencies |
+| Domain compile/test tasks | NO-SOURCE; the module has no production or test classes yet |
+| Existing app unit tests | 1 passed; 0 failures/errors/skips |
+| Android lint | 0 errors; 17 warnings |
+| Repository/documents | Diff whitespace, local links, task order, and Git exclusions checked |
+
+No placeholder domain tests were added. A configured test runtime is not a passed
+behavioral test. L01 introduces real models and their tests. Device tests were
+not repeated because this step changes build configuration and documentation;
+the app source is unchanged and its debug assembly/unit checks passed.
+
+### Limits and follow-up
+
+- The added lint warning is a newer-version notice for the new Kotlin/JVM plugin
+  alias. The previous 16 baseline warnings remain.
+- The existing NDK symbol-stripping warning remains; debug packaging succeeded.
+- The shared Kotlin 2.2.10 version is retained. Its published fully supported
+  Gradle range does not cover the existing 9.6.0 wrapper. Successful local checks
+  do not establish full toolchain compatibility; F06 must review and align the
+  Kotlin/AGP/Gradle/Hilt/KSP combination before completing integration.
+- See [Kotlin Gradle configuration](https://kotlinlang.org/docs/gradle-configure-project.html)
+  for toolchains and the support matrix. App targets and daemon JVM requirements
+  are separate settings and should not be changed merely to match a version number.
+
+### Time accounting
+
+Observed interval: 23:46:07 to 23:49:08 Europe/Istanbul (3m 01s). Includes tool
+permission waits and excludes unmeasured planning, final review, and documentation.
+
+### Commit approval
+
+The proposed separate-module commit was not approved and was not created.
+The current F03 correction below supersedes that proposed scope.
+
+
+## F03 correction: keep all code in app
+
+Verification recorded: 2026-09-28, 00:00:36 (Europe/Istanbul).
+Status: verified; awaiting user approval for this corrected scope.
+
+### Scope
+
+- Removed the uncommitted domain build file, README, and generated build outputs.
+- Restored settings, root build plugins, and version catalog to the approved
+  baseline, which includes only app. No committed module was deleted.
+- Documented UI/domain/data/DI/background/notification packages inside app.
+- Kept Hilt as the DI decision and moved all planned unit/device tests under app.
+- Removed the two roadmap tasks for separate data and presentation modules;
+  retained task IDs for the remaining 24 tasks.
+- Recorded the single-module constraint in AGENTS.md.
+- Retained the pending IDE metadata exclusion and baseline commit records.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `./gradlew projects :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --console=plain` | Passed; 10s reported by Gradle |
+| Gradle project hierarchy | Only `:app` |
+| App unit tests | 1 passed; 0 failures/errors/skips |
+| Lint | 0 errors; 16 baseline warnings |
+| Gradle configuration | Byte-for-byte identical to approved baseline settings/root build/version catalog |
+| Domain scaffold | Removed, including the generated JAR; no separate module remains |
+| Documentation | 24 tasks with valid dependencies, local links, and consistent single-module decisions |
+
+The existing local NDK stripping warning remains. No application source or
+runtime behavior changed. Device tests were not repeated for this correction;
+the earlier baseline device test and launch results remain historical evidence.
+The latest build and unit test were rerun after removing the module.
+
+### Commit approval
+
+Proposed message: `docs: adopt single app module architecture`.
+Relative to `f224494`, the pending changes are English planning/progress documents,
+AGENTS.md, and the IDE metadata exclusion. There are no pending Gradle or app
+source changes. The discarded domain module was never committed.
+
+Approval is pending. The earlier "devam" approved the initial baseline commit,
+not this corrected scope. Hilt setup will start after this checkpoint.

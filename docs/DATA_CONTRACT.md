@@ -2,7 +2,7 @@
 
 Status: implementation plan. The API integration and domain contracts have not
 been implemented. See the [roadmap](ROADMAP.md) for delivery order and the
-[architecture](ARCHITECTURE.md) for module boundaries.
+[architecture](ARCHITECTURE.md) for package responsibilities inside app.
 
 ## 1. Source and scope
 
@@ -58,7 +58,8 @@ have an explicit unavailable state.
 Introduce contracts only when their delivery step needs them. Notification
 contracts are completed in the notification phase. Data implements the contracts;
 Hilt bindings select implementations without adding Android dependencies to
-these domain interfaces. One-shot operations use main-safe suspend functions;
+these domain interfaces. All implementations and contracts live in app packages.
+One-shot operations use main-safe suspend functions;
 observable data uses Flow. Keep mutable streams inside implementations.
 
 ## 4. Synchronization behavior
@@ -80,7 +81,7 @@ the corresponding implementation tasks.
 ## 5. First runnable slice: acceptance criteria
 
 1. Deterministic sample events reach the UI through the domain repository interface.
-2. Presentation depends only on domain among the business modules.
+2. UI uses domain contracts; it does not directly access network clients or DAOs.
 3. The list supports loading, content, empty, and error states.
 4. Replacing the sample source with USGS does not change the ViewModel contract.
 

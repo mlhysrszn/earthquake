@@ -6,6 +6,9 @@
 - Maintain all project documentation in English. Conversation may remain Turkish.
 - Follow `docs/ARCHITECTURE.md` and `docs/DATA_CONTRACT.md`.
 - Use Hilt as specified in the architecture; follow official Android guidance.
+- Keep all application code and tests in the single `:app` Gradle module. Organize
+  UI, data, domain, and DI responsibilities as packages inside app. Do not create
+  separate Gradle modules unless the user explicitly changes this decision.
 
 ## Verification and commits
 
