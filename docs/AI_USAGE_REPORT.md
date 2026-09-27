@@ -62,4 +62,22 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
   0 lint errors/16 baseline warnings, and document consistency checks.
 - Gradle reported 10s for the combined verification run. No full elapsed-work
   interval was measured for this correction; no duration estimate is asserted.
-- Commit approval for this corrected scope is pending. Usage totals remain unavailable.
+- The user approved this corrected scope with "go"; committed as `c46ce1b`.
+  Usage totals remain unavailable.
+
+
+## F06: Hilt foundation
+
+- AI work: researched primary Hilt/KSP/Android/Kotlin documentation, configured
+  dependencies and compiler targets, added Application/Activity wiring, the UTC
+  Clock provider, and a device graph/UI test; updated English project records.
+- Validation: debug/release APK builds, test APK build, 1 existing unit test,
+  2 device tests, lint (0 errors/16 warnings), bytecode target inspection, and
+  a normal production-Application cold launch with UI hierarchy inspection.
+- Gradle reported 1m 25s for the build/unit/lint batch and 11s for device tests.
+  These are command durations; total work time was not measured.
+- Human role: approved the prior F03 correction with "go" (commit c46ce1b) and
+  authorized continuing. F06 remains uncommitted pending its own approval.
+- No delegated subagents were used. Exact model/token totals remain unavailable.
+- Compatibility limits and existing local environment warnings are recorded in
+  Work Log; passing local checks does not establish every toolchain combination.

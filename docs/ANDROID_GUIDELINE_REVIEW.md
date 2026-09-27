@@ -1,6 +1,7 @@
 # Android Guideline Review
 
-Status: planning review updated for a single app module; Hilt remains pending.
+Status: single app module confirmed; the F06 Hilt foundation is verified.
+Feature-specific integration checks remain pending.
 Git setup and starter verification are recorded separately in [Work Log](WORK_LOG.md).
 Reviewed on: 2026-09-27. Single-module decision updated on: 2026-09-28.
 
@@ -62,8 +63,9 @@ that Android mandates a particular HTTP client.
 
 ## Integration checks before implementation is considered complete
 
-- F06: confirm a compatible Hilt/KSP/Kotlin/AGP/Gradle/JDK combination and successful
-  Hilt graph generation in app. The Hilt implementation has not yet been tested.
+- F06: completed local graph generation, debug/release builds, tests, and cold
+  launch with Hilt. See Work Log for the exact versions and support-matrix limits.
+  Future dependency changes must repeat the relevant integration checks.
 - D04: verify Navigation 3 saved state and ViewModel ownership. Do not assume an
   event ID in a route is automatically present in SavedStateHandle.
 - N07: verify HiltWorkerFactory, component-compatible dependencies, the merged

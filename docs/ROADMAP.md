@@ -1,10 +1,8 @@
 # Android Earthquake App Roadmap
 
-Status: Git setup (F02) and starter verification (F01) were committed in
-`f224494` after user approval. F03 now records the single app module decision;
-the uncommitted separate domain module was removed at the user's request.
-The app-only project list, debug build, unit test, and lint checks passed.
-Commit approval for this correction is pending; Hilt setup (F06) is next.
+Status: F02/F01 were committed in `f224494`; the single app module correction
+(F03) was committed in `c46ce1b`, both after user approval. Hilt setup (F06) is
+verified and awaits its own commit approval. L01 is next after that checkpoint.
 
 ## Goal
 
@@ -97,7 +95,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### F06 - Configure Hilt in app
 
-- [ ] Validate Hilt/KSP/toolchain compatibility and aligned JVM targets. Add the
+- [x] Validate Hilt/KSP/toolchain compatibility and aligned JVM targets. Add the
   Hilt Application, Activity entry point, and binding/provider setup described
   in Architecture section 3.1, all inside app. Keep domain rules free of Android
   runtime APIs and use standard constructor injection.
@@ -105,6 +103,10 @@ mandatory; permission to work or run tests does not authorize a commit.
   entry point, and a graph smoke check resolves an injected dependency. Scopes
   match ownership and long-lived bindings use application context.
 - Depends on: F03.
+- Result: debug/release builds, the existing unit test, lint, and 2 device tests
+  passed. Hilt resolves a shared UTC Clock; the starter Activity renders under
+  HiltTestApplication and cold-starts under EarthquakeApplication. See Work Log
+  for the tested versions and compatibility limits.
 
 **Checkpoint:** a runnable app with Hilt and documented package responsibilities.
 
@@ -318,8 +320,8 @@ mandatory; permission to work or run tests does not authorize a commit.
 | Android guideline review | Done | Hilt selected; architecture tasks remain pending |
 | F02 | Committed: f224494 | Local main initialized; ignore rules and work records verified |
 | F01 | Committed: f224494 | Debug build, unit/device tests, lint, and emulator launch checked; see Work Log |
-| F03 | Verified; commit approval pending | Only app remains; debug build/unit test/lint passed; package-based plan updated |
-| F06 | Next, after commit approval | Configure Hilt in app |
+| F03 | Committed: c46ce1b | Only app remains; debug build/unit test/lint passed; package-based plan updated |
+| F06 | Verified; commit approval pending | Debug/release builds, unit/device tests, lint, and production cold launch passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

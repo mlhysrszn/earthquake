@@ -1,7 +1,8 @@
 # Architecture
 
 Status: the project uses a single `:app` Gradle module. All planned application
-code and tests belong in app. Hilt and earthquake features remain pending.
+code and tests belong in app. The Hilt foundation is verified; earthquake
+features remain pending.
 
 ## Purpose
 
@@ -145,15 +146,26 @@ component. Qualify dispatchers or other bindings with the same underlying type.
   component APIs. Data classes and pure functions need no DI annotations.
 - Background work uses HiltWorkerFactory as described below.
 
-Configure Hilt and KSP in app. Validate compatible Hilt, AndroidX Hilt, KSP,
-Kotlin, AGP, Gradle, and JDK versions during F06; align Java/Kotlin compilation
-settings. Hilt binding modules are annotated classes inside app, not additional
+Hilt 2.60.1 and KSP 2.3.12 are configured in app with Kotlin/Compose 2.3.21,
+AGP 9.4.1, and Gradle 9.6.0. Java targets 17; built-in Kotlin inherits that
+target. The root build explicitly aligns AGP's Kotlin compiler with the Compose
+compiler. Debug/release builds and device graph checks pass in the local
+environment; see Work Log for support-matrix limits. AndroidX Hilt integrations
+will be version-checked when ViewModels and Workers are added. Hilt binding modules are annotated classes inside app, not additional
 Gradle modules. There is no separate JVM plugin or manual dependency container.
+
+Implemented in F06: `EarthquakeApplication`, the MainActivity entry point, and
+`di/TimeModule` providing one system UTC Clock per application graph. The Clock
+needs no Android context and will support injectable time in subsequent rules.
+`HiltTestRunner` selects HiltTestApplication for device tests; HiltGraphTest
+checks the Clock binding and starter screen. Production cold launch is checked
+separately because the test runner replaces the Application.
 
 #### Ownership and lifetimes
 
 | Dependency | Planned lifetime |
 | --- | --- |
+| Clock | `@Singleton` in SingletonComponent; a shared UTC time source |
 | HTTP client and Room database | `@Singleton` in SingletonComponent |
 | DataStore | One provided instance per backing file in the process |
 | Shared repositories and synchronization coordination | `@Singleton` where shared state/resources require it |
@@ -256,8 +268,9 @@ then replaces that source without changing the presentation contract.
 - If near-real-time delivery becomes a requirement, revisit the delivery design
   before presenting a latency promise.
 - Validate library versions against the existing AGP, Kotlin, and Gradle setup
-  when adding Hilt and other dependencies. The original starter passed F01;
-  Hilt integration is still pending. See [Work Log](WORK_LOG.md) for verification.
+  when adding dependencies. F06 verifies the Hilt foundation locally; ViewModel,
+  Worker, and storage integration remain later tasks. See [Work Log](WORK_LOG.md)
+  for versions, verification, and compatibility limits.
 
 ## References
 

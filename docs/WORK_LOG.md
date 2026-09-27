@@ -165,7 +165,7 @@ The current F03 correction below supersedes that proposed scope.
 ## F03 correction: keep all code in app
 
 Verification recorded: 2026-09-28, 00:00:36 (Europe/Istanbul).
-Status: verified; awaiting user approval for this corrected scope.
+Status: committed as `c46ce1b` after the user approved with "go".
 
 ### Scope
 
@@ -199,9 +199,93 @@ The latest build and unit test were rerun after removing the module.
 ### Commit approval
 
 Proposed message: `docs: adopt single app module architecture`.
-Relative to `f224494`, the pending changes are English planning/progress documents,
-AGENTS.md, and the IDE metadata exclusion. There are no pending Gradle or app
+The committed scope relative to `f224494` contains English planning/progress
+documents, AGENTS.md, and the IDE metadata exclusion. It contains no Gradle or app
 source changes. The discarded domain module was never committed.
 
-Approval is pending. The earlier "devam" approved the initial baseline commit,
-not this corrected scope. Hilt setup will start after this checkpoint.
+The user approved this correction with "go"; commit `c46ce1b` was created before
+starting F06. F06 requires its own approval before commit.
+
+
+## F06: Hilt foundation in app
+
+Date: 2026-09-28 (Europe/Istanbul).
+Status: verified; awaiting separate user approval before commit.
+Proposed commit: `build: configure Hilt dependency injection`.
+
+### Scope
+
+- Added Hilt/KSP catalog entries, plugins, runtime/compiler dependencies, and
+  device-test support. All production and test source remains in app.
+- Added EarthquakeApplication with @HiltAndroidApp and registered it in the
+  manifest; annotated MainActivity with @AndroidEntryPoint.
+- Added di/TimeModule with a singleton system UTC Clock. This is the time source
+  for future window/eligibility rules; no business behavior is implemented yet.
+- Added HiltTestRunner and a graph/UI smoke test. It resolves Clock through Hilt,
+  checks its UTC zone, shared instance and current time, and verifies the greeting.
+- Retained the two starter tests; their coverage remains limited to the test setup.
+- Updated the English architecture, roadmap, guideline review, and work records.
+
+### Versions and compatibility
+
+| Item | F06 configuration |
+| --- | --- |
+| Hilt plugin/runtime/compiler/testing | 2.60.1 |
+| KSP | 2.3.12 |
+| Kotlin Gradle / Compose compiler | 2.3.21 (previously 2.2.10) |
+| AGP / Gradle wrapper | 9.4.1 / 9.6.0, unchanged |
+| Java / Kotlin bytecode target | 17 / 17 (previously 11) |
+| Launcher / daemon JVM | Zulu 17.0.12 / Temurin 25.0.3, unchanged |
+| Compile / target / minimum SDK | 37 / 37 / 29, unchanged |
+
+Hilt 2.59 introduced AGP 9 support; 2.60.1 includes fixes on that line. Its 2.60
+release moved Kotlin dependencies to 2.3.21, so this setup aligns the explicit
+Kotlin Gradle and Compose compiler versions to 2.3.21. AGP's built-in Kotlin
+remains enabled. The root build uses the documented buildscript dependency to
+override AGP's bundled compiler version; no kotlin-android or kapt plugin is added.
+KSP performs code generation, including instrumentation-test components.
+
+Compatibility evidence is the local build/test result, not a claim that every
+combination is officially covered: Kotlin 2.3.21's standalone KGP support table
+lists Gradle through 9.3 and AGP through 9.0, below this project's existing
+AGP/Gradle pair. AGP 9 uses its own built-in Kotlin integration. No compatibility
+opt-out, validation suppression, or framework upgrade beyond F06 dependencies was
+needed. A clean checkout/second-machine reproduction remains H02. AndroidX Hilt
+ViewModel/Worker integrations will be validated when introduced.
+
+References checked:
+
+- [Hilt Gradle setup](https://dagger.dev/hilt/gradle-setup.html)
+- [Dagger/Hilt release notes](https://github.com/google/dagger/releases)
+- [KSP release notes](https://github.com/google/ksp/releases)
+- [AGP built-in Kotlin version override](https://developer.android.com/build/releases/agp-9-0-0-release-notes)
+- [Built-in Kotlin targets](https://developer.android.com/build/migrate-to-built-in-kotlin)
+- [Kotlin Gradle compatibility](https://kotlinlang.org/docs/gradle-configure-project.html)
+- [Hilt instrumentation setup](https://dagger.dev/hilt/instrumentation-testing.html)
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `./gradlew :app:assembleDebug :app:assembleRelease :app:testDebugUnitTest :app:lintDebug :app:assembleDebugAndroidTest --console=plain` | Passed; Gradle reported 1m 25s, 145 tasks executed |
+| Debug/release Hilt generation and bytecode transformation | Passed; Application/Activity graph and Clock provider generated |
+| Java/Kotlin class-file inspection | Both major version 61, confirming JVM 17 targets |
+| Unit tests | 1 starter test passed; 0 failures/errors/skips |
+| Lint | 0 errors, 16 warnings; 8 dependency/plugin notices, 7 unused colors, 1 redundant label |
+| `./gradlew :app:connectedDebugAndroidTest --console=plain` | Passed; Gradle reported 11s |
+| Device tests on Android 10 / API 29 | 2 passed: starter context and Hilt graph/UI smoke test; 0 failures/errors/skips |
+| Production APK reinstallation and cold Activity launch | Passed; adb reported Status: ok, LaunchState: COLD |
+| UI hierarchy after production launch | MainActivity shows Hello Android! |
+
+The device-test runner substitutes HiltTestApplication; the separate normal APK
+launch confirms the production EarthquakeApplication wiring. Release assembly
+uses the existing unoptimized configuration and does not establish a signed
+release or shrinker validation. No feature/domain coverage is claimed yet.
+
+Existing local warnings persist: the incomplete NDK installation prevents native
+symbol stripping, and device-test protobuf tooling emits an Unsafe deprecation
+warning under the daemon JVM 25. Neither failed the checks; the shared SDK was not
+modified. No full elapsed-work duration was measured; Gradle durations above are
+command-reported execution times, not total development time.
+
+Next: obtain commit approval for F06, then start L01 (domain contracts inside app).
