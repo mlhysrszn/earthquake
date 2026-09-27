@@ -123,3 +123,21 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
   L03 commit.
 - Total elapsed development time was not measured; the successful Gradle run
   reported 3s, which is build execution time only.
+
+
+## L04: Earthquake list screen
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: implemented the Compose route/list and state presentations, localized
+  strings and formatting, Hilt ViewModel route wiring, UI tests, and records.
+- Verification: 18 JVM tests and 9 Android tests passed; debug/test APK assembly
+  and standalone lint passed. Manually checked launch and text at font scale 1.3,
+  then restored the emulator to 1.0.
+- Human role: authorized continuing after the L03 checkpoint and approved the
+  L04 commit.
+- Total elapsed development time was not measured. The initial emulator install
+  required a fresh APK because the installed package had a different debug key.
+- Follow-up: Gradle commands run by the assistant shell as root created root-owned
+  generated outputs under `app/build`; ownership was corrected without deleting
+  build files, and the user confirmed Android Studio builds successfully.

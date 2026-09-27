@@ -36,13 +36,13 @@ class HiltGraphTest {
     }
 
     @Test
-    fun graphProvidesSharedUtcClockAndActivityStarts() {
+    fun graphProvidesSharedUtcClockAndActivityStartsOnEarthquakeList() {
         assertEquals(ZoneOffset.UTC, clock.zone)
         assertSame(clock, clockProvider.get())
         val before = System.currentTimeMillis()
         val now = clock.millis()
         val after = System.currentTimeMillis()
         assertTrue(now in before..after)
-        composeRule.onNodeWithText("Hello Android!").assertIsDisplayed()
+        composeRule.onNodeWithText("Depremler").assertIsDisplayed()
     }
 }

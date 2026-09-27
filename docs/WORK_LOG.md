@@ -414,3 +414,55 @@ not a rendered screen. Total development time was not measured.
 Message: `feat: add earthquake list ViewModel state`.
 Scope is limited to the list UI state/ViewModel, required lifecycle/coroutine test
 dependencies, focused JVM tests, and the corresponding English documentation.
+
+
+## L04: Earthquake list screen
+
+Date: 2026-09-28 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope
+
+- Replaced the starter greeting with the Turkish earthquake-list route and screen.
+  The route obtains its Hilt ViewModel and collects state with
+  `collectAsStateWithLifecycle`; reusable screen content takes state and callbacks.
+- Added magnitude, place, occurrence time, depth, last-update display, refresh and
+  retry controls, plus explicit initial-loading, refreshing, empty, and error
+  presentations. Cached content remains visible while an initial refresh runs;
+  labels communicate magnitude and errors in text, not color alone.
+- Added Turkish resources, locale-aware magnitude/time formatting, Hilt Compose
+  ViewModel integration, and seven Compose instrumentation tests.
+- Updated the Hilt Activity smoke test and project records.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest --console=plain` | Passed; Gradle reported 3s, 85 tasks (12 executed, 73 up-to-date) |
+| JVM unit tests | 18 passed, 0 failures/errors/skips |
+| `./gradlew :app:lintDebug --console=plain` | Passed; Gradle reported 2s |
+| `./gradlew :app:connectedDebugAndroidTest --console=plain` | Passed on Android 10 / API 29; 9 tests, 0 failures/errors/skips (7 screen, 2 existing) |
+| Manual launch and UI inspection | Passed; sample list, time/magnitude labels, and font scale 1.3 inspected on emulator |
+| Font setting restoration | Restored to 1.0 after large-font check |
+| `git diff --check` | Passed |
+
+An initial combined lint/build run hit a lint analyzer error while reading a
+missing KSP-generated backup source; a standalone lint run passed. The first
+instrumentation attempt could not install over an app signed with a different
+debug key; installing the current APK and rerunning produced 9 passing tests.
+The compile also reported the existing incomplete local NDK warning and native
+symbol stripping fallback. Device tooling emitted its existing JVM 25
+`sun.misc.Unsafe` warning. No total development-time interval was measured.
+
+The user later reported Android Studio could not delete generated Dex/Hilt output.
+Inspection found 2,466 root-owned entries under `app/build`, created by Gradle
+commands run from the root-owned assistant shell. Stopped that root Gradle daemon
+and changed ownership of only those generated entries to `mlhysrszn:staff`; no
+build files were deleted or source files changed. The user confirmed Android
+Studio builds successfully afterward.
+
+### Commit
+
+Message: `feat: build earthquake list screen`.
+Scope is limited to the Compose list route/content, localized strings, Hilt
+ViewModel route integration, screen instrumentation tests, and updated records.

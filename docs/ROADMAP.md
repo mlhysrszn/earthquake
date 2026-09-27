@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01, L02, and L03 are committed.
+L01, L02, L03, and L04 are committed.
 
 ## Goal
 
@@ -145,12 +145,15 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### L04 - Build the list screen
 
-- [ ] Render magnitude, source place text, occurrence time, and last update;
+- [x] Render magnitude, source place text, occurrence time, and last update;
   provide refresh/retry and consistent loading/empty/error states. Collect with
   collectAsStateWithLifecycle; reusable content accepts state and callbacks.
 - Done when: sample scenarios work on-device, labels remain legible with larger
   font settings, and information does not depend on color alone.
 - Depends on: L03.
+- Result: Turkish Compose list screen uses lifecycle-aware state collection and
+  state/callback content; 7 screen tests and the Hilt Activity test pass. Emulator
+  launch and 1.3 font-scale readability were manually checked.
 
 **Checkpoint:** a visible, testable list driven through the full architecture.
 
@@ -332,6 +335,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | L01 | Committed | Domain model and repository contract; 9 JVM tests passed, debug build and lint passed |
 | L02 | Committed | Sample repository and Hilt binding; 13 JVM tests passed, debug build and lint passed |
 | L03 | Committed | Hilt list ViewModel/state; 18 JVM tests passed, debug build and lint passed |
+| L04 | Committed | Compose list screen; 9 device tests, 18 JVM tests, lint, and emulator/font-scale checks passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

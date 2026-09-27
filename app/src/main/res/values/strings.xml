@@ -1,3 +1,22 @@
 <resources>
-    <string name="app_name">Earthquake</string>
+    <string name="app_name">Deprem Takip</string>
+    <string name="earthquakes_title">Depremler</string>
+    <string name="earthquakes_window">Son 24 saat</string>
+    <string name="refresh">Yenile</string>
+    <string name="last_updated">Son güncelleme: %1$s</string>
+    <string name="updating">Depremler güncelleniyor</string>
+    <string name="loading_earthquakes">Depremler yükleniyor</string>
+    <string name="empty_earthquakes">Son 24 saatte deprem bulunamadı.</string>
+    <string name="earthquakes_load_failed">Depremler yüklenemedi.</string>
+    <string name="refresh_failed">Güncelleme başarısız.</string>
+    <string name="retry">Tekrar dene</string>
+    <string name="network_error">Ağ bağlantısını kontrol edip tekrar deneyin.</string>
+    <string name="invalid_response_error">Deprem verileri okunamadı. Lütfen tekrar deneyin.</string>
+    <string name="storage_error">Kayıtlı deprem verilerine erişilemedi. Lütfen tekrar deneyin.</string>
+    <string name="unknown_error">Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.</string>
+    <string name="magnitude">Büyüklük %1$s</string>
+    <string name="magnitude_unknown">Büyüklük bilinmiyor</string>
+    <string name="place_unknown">Konum bilgisi yok</string>
+    <string name="occurred_at">Oluşma zamanı: %1$s</string>
+    <string name="depth">Derinlik: %1$s km</string>
 </resources>

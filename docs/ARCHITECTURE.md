@@ -2,8 +2,8 @@
 
 Status: the project uses a single `:app` Gradle module. All planned application
 code and tests belong in app. The Hilt foundation, initial domain contract,
-deterministic sample repository, and list ViewModel/state are implemented. The
-list screen and USGS features remain pending.
+deterministic sample repository, list ViewModel/state, and Compose list screen are
+implemented. USGS and remaining product features are pending.
 
 ## Purpose
 
@@ -49,8 +49,8 @@ app/src/main/java/com/mlhysrszn/earthquake/
 ```
 
 The starter Activity/theme, domain model and repository contract, sample
-repository, and list ViewModel/state exist today. Other planned paths remain for
-future code.
+repository, list ViewModel/state, and Compose list screen exist today. Other
+planned paths remain for future code.
 
 | Package | Responsibility |
 | --- | --- |
