@@ -1,8 +1,9 @@
 # USGS Data Contract
 
 Status: the initial domain model, list repository contract, deterministic sample
-repository, USGS feed client/mapper, and Room event store are implemented.
-Repository synchronization and the production list source remain pending.
+repository, USGS feed client/mapper, Room event store, and USGS-to-Room repository
+synchronization are implemented. Notifications and remaining product features
+remain pending.
 See the [roadmap](ROADMAP.md) for delivery order and the
 [architecture](ARCHITECTURE.md) for package responsibilities inside app.
 
@@ -106,10 +107,12 @@ time and local successful-fetch time are stored separately.
 
 ## 4. Synchronization behavior
 
-Validate successful responses and write them to Room. The UI observes Room.
-Network failures preserve cached data. Repository implementations coordinate
-sources and storage; domain use cases hold shared policy or orchestration. Track local successful-fetch time
-separately from the source's `metadata.generated` timestamp.
+`UsgsEarthquakeRepository` fetches the summary service, maps valid records, and
+atomically applies a fresh snapshot to Room. The UI observes Room, not the network
+response. Network, HTTP, malformed-feed, and storage failures become typed refresh
+failures; failed fetches do not modify cached events. Overlapping refreshes are
+serialized, and coroutine cancellation is rethrown. Track local successful-fetch
+time separately from the source's `metadata.generated` timestamp.
 
 The initial synchronization establishes a baseline without posting notifications.
 A 24-hour feed is not a complete historical archive. After a long offline period,

@@ -170,3 +170,17 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Human role: authorized continuing after the D01 checkpoint and approved the
   D02 commit.
 - Total elapsed development time was not measured.
+
+
+## D03: USGS synchronization through the repository
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: connected Retrofit/GeoJSON mapping to Room, added refresh/error and
+  concurrency handling, replaced the production Hilt binding, and added tests.
+- Verification: 25 JVM tests and 20 device tests passed; debug/test APK builds and
+  lint passed. The production app was manually launched and displayed live USGS
+  events; instrumentation used a sample binding and made no network requests.
+- Human role: authorized continuing after the D02 checkpoint and approved the
+  D03 commit.
+- Total elapsed development time was not measured.

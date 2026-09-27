@@ -564,3 +564,52 @@ was not measured.
 Message: `feat: add Room earthquake event store`.
 Scope is limited to Room dependencies/configuration/schema, entities/DAO/mappings,
 database Hilt providers, focused tests, and corresponding English records.
+
+
+## D03: USGS synchronization through the repository
+
+Date: 2026-09-28 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope
+
+- Added singleton `UsgsEarthquakeRepository` as the production
+  `EarthquakeRepository` binding. List observations read the rolling Room window;
+  refresh fetches the USGS service, maps DTOs, and atomically applies the snapshot.
+- Serialized overlapping refreshes with a `Mutex`. Cancellation is rethrown.
+  Network/HTTP errors map to `NETWORK`, malformed feeds to `INVALID_RESPONSE`,
+  Room SQL errors to `STORAGE`, and unexpected exceptions to `UNKNOWN`; failures
+  preserve cached events.
+- Added an Android test `@TestInstallIn` replacement that binds the sample
+  repository, so instrumentation is deterministic and makes no live HTTP calls.
+- Added six repository integration tests using a fake service and in-memory Room:
+  fresh feed storage, network and malformed-response cache preservation, stale
+  snapshot behavior, serialized overlapping requests, and cancellation.
+- Manually launched the production APK on the emulator and confirmed current USGS
+  events appeared in the Room-backed list.
+- Updated architecture, data contract, and roadmap records. The ViewModel contract
+  is unchanged; D02's retention and stale-snapshot policies remain in force.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `sudo -u mlhysrszn -H ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest --console=plain` | Passed; Gradle reported 5s, 85 tasks (26 executed, 59 up-to-date) |
+| JVM unit tests | 25 passed, 0 failures/errors/skips |
+| `sudo -u mlhysrszn -H ./gradlew :app:lintDebug --console=plain` | Passed; Gradle reported 4s |
+| `sudo -u mlhysrszn -H ./gradlew :app:connectedDebugAndroidTest --console=plain` | Passed on Android 10 / API 29; 20 tests, 0 failures/errors/skips (6 repository integration) |
+| Manual production launch | Passed; live USGS magnitudes, places, and times appeared in the list |
+| Generated build-file ownership | No root-owned entries under `app/build` |
+| `git diff --check` | Passed |
+
+The first compile attempt found a missing `toDomain` extension import; the import
+was added and subsequent build/tests passed. Instrumentation used the test sample
+binding and did not call the network; the manual production launch used the public
+USGS summary feed. Existing NDK/source-properties and protobuf/JVM 25 warnings
+remain. Total development time was not measured.
+
+### Commit
+
+Message: `feat: connect USGS feed to Room repository`.
+Scope is limited to the production repository, Hilt binding, deterministic test
+replacement, integration tests, and corresponding English documentation/records.

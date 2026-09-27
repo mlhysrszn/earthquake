@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01, L02, L03, L04, D01, and D02 are committed.
+L01, L02, L03, L04, D01, D02, and D03 are committed.
 
 ## Goal
 
@@ -183,11 +183,15 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### D03 - Connect synchronization to the repository
 
-- [ ] Fetch, validate, and store USGS records; expose Room as the UI's event source.
+- [x] Fetch, validate, and store USGS records; expose Room as the UI's event source.
   Coordinate overlapping refreshes and preserve coroutine cancellation.
 - Done when: real data appears without changing the ViewModel contract; failed
   refreshes preserve cached content; fetch and source-generation times stay distinct.
 - Depends on: D02, L04.
+- Result: production Hilt binding now uses the USGS repository, which fetches and
+  maps the all-day feed into atomic Room snapshots. Six integration tests cover
+  success, cache-preserving failures, stale data, overlap, and cancellation; a
+  live feed was manually displayed on the emulator.
 
 ### D04 - Add event details and navigation
 
@@ -344,6 +348,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | L04 | Committed | Compose list screen; 9 device tests, 18 JVM tests, lint, and emulator/font-scale checks passed |
 | D01 | Committed | USGS Retrofit service/GeoJSON mapper; 23 JVM tests and 9 device tests passed, debug build and lint passed |
 | D02 | Committed | Room event store/sync metadata; 25 JVM tests and 14 device tests passed, debug build and lint passed |
+| D03 | Committed | USGS-to-Room repository; 25 JVM tests and 20 device tests, lint, and live-feed check passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.
