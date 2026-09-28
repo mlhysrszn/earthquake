@@ -788,3 +788,41 @@ Message: `feat: add notification settings and permission handling`.
 Scope is limited to the settings screen/ViewModel, OS permission status/request
 integration, Navigation 3 entry, manifest permission, focused tests, and updated
 English project records.
+
+
+## N04: Notification eligibility policy
+
+Date: 2026-09-28 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope
+
+- Added the pure Kotlin `NotificationEligibilityPolicy`, injected with Clock and
+  driven by explicit event, preference, permission, snapshot, and identity inputs.
+- Encoded deterministic precedence for initial baseline/stale snapshots,
+  ambiguous aliases, already-processed/revised identities, the rolling 24-hour
+  event window, disabled preferences, denied permission, missing magnitude, and
+  strict below/equal/above threshold decisions.
+- Added seven JVM tests covering the documented decision branches, threshold
+  changes, late arrivals inside the window, and boundary/out-of-window times.
+- Added explicit multi-condition suppression precedence to the decision table and
+  linked the pure policy implementation from architecture/data contract.
+- Persistent identity/alias tracking and applying decisions remain N05; Android
+  delivery remains N06. N04 does not send notifications.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `sudo -u mlhysrszn -H ./gradlew :app:testDebugUnitTest :app:assembleDebug --console=plain` | Passed; Gradle reported 7s, 50 tasks (16 executed, 34 up-to-date) |
+| JVM unit tests | 46 passed, 0 failures/errors/skips (7 policy, 39 prior) |
+| `sudo -u mlhysrszn -H ./gradlew :app:lintDebug --console=plain` | Passed; Gradle reported 9s |
+| `git diff --check` | Passed |
+
+This policy-only task required no device test. The existing DataStore/protobuf JVM
+25 deprecation warning remains. Total development time was not measured.
+
+### Commit
+
+Message: `feat: add notification eligibility policy`.
+Scope is limited to the pure domain policy/tests and linked English documentation.

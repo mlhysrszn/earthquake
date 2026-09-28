@@ -3,7 +3,8 @@
 Status: the initial domain model, list repository contract, deterministic sample
 repository, USGS feed client/mapper, Room event store, USGS-to-Room repository
 synchronization, typed detail navigation, detail lookup, and persisted notification
-preferences/settings are implemented. Eligibility and delivery remain pending.
+preferences/settings, and pure notification eligibility policy are implemented.
+Persistent notification processing and delivery remain pending.
 See the [roadmap](ROADMAP.md) for delivery order and the
 [architecture](ARCHITECTURE.md) for package responsibilities inside app.
 

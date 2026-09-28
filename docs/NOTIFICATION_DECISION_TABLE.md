@@ -44,6 +44,11 @@ After handling every event in an accepted snapshot, persist the processed feed
 cursor. The first baseline uses the source generation time when present and local
 successful-fetch time otherwise. A failed or stale snapshot never advances it.
 
+When multiple suppression conditions apply to one record, use this deterministic
+precedence: initial baseline, stale snapshot, ambiguous alias, already processed,
+outside event window, disabled preference, denied permission, missing magnitude,
+below threshold, equal threshold. Only a record passing every check is eligible.
+
 ## Identity and alias rules
 
 - `feature.id` is the canonical identity for a new event.

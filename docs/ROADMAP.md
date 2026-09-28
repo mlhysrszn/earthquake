@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, and N03 are committed.
+L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, and N04 are committed.
 
 ## Goal
 
@@ -246,9 +246,12 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### N04 - Implement domain eligibility rules
 
-- [ ] Implement the decision table with injected time and explicit inputs.
+- [x] Implement the decision table with injected time and explicit inputs.
 - Done when: JVM tests cover every decision-table case without Android APIs.
 - Depends on: N01.
+- Result: pure Kotlin eligibility policy uses injected `Clock` and explicit
+  snapshot, identity, preference, permission, event, and magnitude inputs. Seven
+  JVM tests cover the documented branches and rolling-window boundaries.
 
 ### N05 - Add persistent notification processing state
 
@@ -366,6 +369,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | N01 | Committed | Notification policy documented, including baseline, aliases, suppression, late arrivals, retries, and retention |
 | N02 | Committed | DataStore preferences; 36 JVM tests, 28 device tests, debug build and lint passed |
 | N03 | Committed | Notification settings/permission UI; 39 JVM tests, 32 device tests, debug build and lint passed |
+| N04 | Committed | Pure eligibility policy; 46 JVM tests passed, including seven policy cases |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

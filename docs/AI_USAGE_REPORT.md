@@ -239,3 +239,16 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Human role: authorized continuing after the N02 checkpoint and approved the
   N03 commit.
 - Total elapsed development time was not measured.
+
+
+## N04: Notification eligibility policy
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: implemented the pure notification decision policy and tests, clarified
+  suppression precedence in the decision table, and synchronized project docs.
+- Verification: 46 JVM tests passed; debug build and lint passed. No Android
+  behavior was added or claimed in this policy step.
+- Human role: authorized continuing after the N03 checkpoint and approved the
+  N04 commit.
+- Total elapsed development time was not measured.

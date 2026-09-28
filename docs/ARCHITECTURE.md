@@ -6,8 +6,8 @@ deterministic sample repository, Room event store, list ViewModel/state, and
 Compose list/detail screens and Navigation 3 are implemented. The USGS feed
 client, mapper, and Room-backed repository synchronization are implemented;
 notification preferences, settings UI, and permission-state integration are
-implemented. Notification eligibility/delivery and remaining product features
-are pending.
+implemented. The pure Kotlin notification eligibility policy is implemented;
+persistent processing, OS delivery, and remaining product features are pending.
 
 ## Purpose
 
@@ -234,7 +234,9 @@ alias handling, preference/permission suppression, retry/crash behavior, and
 retention policy are defined in the [Notification Decision Table](NOTIFICATION_DECISION_TABLE.md).
 The core rules are strict magnitude-above-threshold eligibility, no historical
 notifications on initial synchronization, and no replay after lowering the
-threshold.
+threshold. `NotificationEligibilityPolicy` implements the pure domain decision
+using an injected Clock and explicit snapshot/identity inputs; notification
+history and delivery remain later tasks.
 
 ## 5. Verification boundaries
 
