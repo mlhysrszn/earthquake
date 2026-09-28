@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01, L02, L03, L04, D01, D02, D03, and D04 are committed.
+L01, L02, L03, L04, D01, D02, D03, D04, and N01 are committed.
 
 ## Goal
 
@@ -213,12 +213,15 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### N01 - Write the notification decision table
 
-- [ ] Define eligibility for below/equal/above threshold, first synchronization,
+- [x] Define eligibility for below/equal/above threshold, first synchronization,
   duplicate events, threshold changes, late records, revisions, long offline
   periods, re-enabling notifications, permission denial, and event-ID aliases.
 - Done when: each case has a deterministic expected result, including the
   baseline/cutoff and retention policy needed to implement it.
 - Depends on: D03.
+- Result: [Notification Decision Table](NOTIFICATION_DECISION_TABLE.md) defines
+  baseline/cursor behavior, candidate eligibility, alias deduplication,
+  permission/preferences suppression, retry/crash outcomes, and retention.
 
 ### N02 - Persist notification preferences
 
@@ -354,6 +357,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | D02 | Committed | Room event store/sync metadata; 25 JVM tests and 14 device tests passed, debug build and lint passed |
 | D03 | Committed | USGS-to-Room repository; 25 JVM tests and 20 device tests, lint, and live-feed check passed |
 | D04 | Committed | Typed detail navigation; 30 JVM tests, 28 device tests, lint, and live detail/Back check passed |
+| N01 | Committed | Notification policy documented, including baseline, aliases, suppression, late arrivals, retries, and retention |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

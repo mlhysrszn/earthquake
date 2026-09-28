@@ -199,3 +199,16 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Human role: authorized continuing after the D03 checkpoint and approved the
   D04 commit.
 - Total elapsed development time was not measured.
+
+
+## N01: Notification decision table
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: drafted the explicit notification policy matrix and synchronized the
+  roadmap, architecture, data contract, work log, and usage report.
+- Verification: reviewed scenarios/references and `git diff --check` passed. No
+  application code changed, so app tests/build were not rerun.
+- Human role: authorized continuing after the D04 checkpoint and approved the
+  N01 commit.
+- Total elapsed development time was not measured.

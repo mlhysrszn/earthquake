@@ -661,3 +661,42 @@ Message: `feat: add earthquake detail navigation`.
 Scope is limited to Navigation 3 routes/state, detail UI/ViewModel and assisted
 Hilt wiring, single-event service mapping/repository behavior, focused tests, and
 the corresponding English project records.
+
+
+## N01: Notification decision table
+
+Date: 2026-09-28 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope
+
+- Added `docs/NOTIFICATION_DECISION_TABLE.md` as the N01 source of truth for
+  initial baseline/cursor, strict magnitude threshold, duplicates and aliases,
+  threshold changes, late arrivals, revisions, long offline periods, disabled
+  preferences, denied OS permission, delivery retries/crashes, and retention.
+- Defined candidate evaluation over accepted snapshots and the rolling 24-hour
+  window. Late arrivals may be evaluated only while still in that window; older
+  events are never backfilled. Suppressed and previously processed events do not
+  replay when preferences or permission change.
+- Defined canonical identity/alias matching using `feature.id` and USGS
+  `properties.ids`, including ambiguous-alias handling. Parsing and persistent
+  history implementation are future N05 work.
+- Linked the policy from roadmap, architecture, and data contract. No application
+  code was changed; N02/N04/N05 still implement the policy.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `git diff --check` | Passed |
+| Documentation references and task status | Reviewed; N01 marked verified, implementation tasks remain pending |
+| Application tests/build | Not rerun; this checkpoint changed documentation only |
+
+No notification implementation or runtime behavior is claimed complete. Total
+development time was not measured.
+
+### Commit
+
+Message: `docs: define notification decision policy`.
+Scope is limited to the decision table and linked English documentation/progress
+records.

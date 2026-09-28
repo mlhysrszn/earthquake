@@ -124,7 +124,8 @@ time separately from the source's `metadata.generated` timestamp.
 The initial synchronization establishes a baseline without posting notifications.
 A 24-hour feed is not a complete historical archive. After a long offline period,
 the MVP does not guarantee retrospective notifications for events outside that
-window. Define late events, revisions, and retention before implementing delivery.
+window. Late events, revisions, and notification retention follow the
+[Notification Decision Table](NOTIFICATION_DECISION_TABLE.md).
 
 Do not silently treat an invalid payload as a successful empty feed. Define
 partial-record failures, stale source snapshots, and cache reconciliation during

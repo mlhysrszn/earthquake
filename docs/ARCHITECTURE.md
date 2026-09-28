@@ -227,11 +227,12 @@ implementations in one variant.
 - Demo events pass through the same orchestration and eligibility rules, with
   separate storage/work configuration and visible demo labels.
 
-Working rules: magnitude must be strictly greater than the threshold; initial
-synchronization must not notify historical events; lowering a threshold must not
-replay historical records. Before implementing notification delivery, define
-late-arriving events, magnitude revisions, long offline periods, re-enabling
-notifications, and retention behavior in a decision table.
+The notification baseline, candidate cutoff, magnitude revisions, late records,
+alias handling, preference/permission suppression, retry/crash behavior, and
+retention policy are defined in the [Notification Decision Table](NOTIFICATION_DECISION_TABLE.md).
+The core rules are strict magnitude-above-threshold eligibility, no historical
+notifications on initial synchronization, and no replay after lowering the
+threshold.
 
 ## 5. Verification boundaries
 
