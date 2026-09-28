@@ -5,7 +5,8 @@ code and tests belong in app. The Hilt foundation, initial domain contract,
 deterministic sample repository, Room event store, list ViewModel/state, and
 Compose list/detail screens and Navigation 3 are implemented. The USGS feed
 client, mapper, and Room-backed repository synchronization are implemented;
-notifications and remaining product features are pending.
+notification preferences are persisted. Notification eligibility/delivery and
+remaining product features are pending.
 
 ## Purpose
 

@@ -6,12 +6,16 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mlhysrszn.earthquake.data.local.room.EarthquakeDao
 import com.mlhysrszn.earthquake.data.remote.usgs.UsgsEarthquakeService
+import com.mlhysrszn.earthquake.domain.model.NotificationPreferences
+import com.mlhysrszn.earthquake.domain.repository.NotificationPreferencesRepository
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.time.Clock
 import java.time.ZoneOffset
 import javax.inject.Inject
 import javax.inject.Provider
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertSame
@@ -34,6 +38,7 @@ class HiltGraphTest {
     @Inject lateinit var clockProvider: Provider<Clock>
     @Inject lateinit var usgsEarthquakeService: UsgsEarthquakeService
     @Inject lateinit var earthquakeDao: EarthquakeDao
+    @Inject lateinit var notificationPreferencesRepository: NotificationPreferencesRepository
 
     @Before
     fun inject() {
@@ -46,6 +51,10 @@ class HiltGraphTest {
         assertSame(clock, clockProvider.get())
         assertNotNull(usgsEarthquakeService)
         assertNotNull(earthquakeDao)
+        val preferences = runBlocking {
+            notificationPreferencesRepository.observePreferences().first()
+        }
+        assertEquals(NotificationPreferences(), preferences)
         val before = System.currentTimeMillis()
         val now = clock.millis()
         val after = System.currentTimeMillis()

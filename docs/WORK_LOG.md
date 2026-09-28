@@ -700,3 +700,45 @@ development time was not measured.
 Message: `docs: define notification decision policy`.
 Scope is limited to the decision table and linked English documentation/progress
 records.
+
+
+## N02: Persist notification preferences
+
+Date: 2026-09-28 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope and defaults
+
+- Added the plain Kotlin `NotificationPreferences` model and domain repository
+  contract. Notifications default to disabled; magnitude threshold defaults to 4.0.
+- Defined a 0.0–9.5 selectable threshold range in 0.5 increments. Invalid model
+  values and writes are rejected; an invalid persisted threshold falls back to
+  4.0 while leaving the enabled preference intact.
+- Added DataStore Preferences 1.2.1 storage and singleton Hilt providers. The OS
+  notification permission remains separate from the persisted user preference.
+- Added JVM tests for defaults, validation, persistence after reopening the
+  DataStore file, independent preference updates, and invalid stored values.
+- The notification settings screen and permission request remain N03 work.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `sudo -u mlhysrszn -H ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest --console=plain` | Passed; Gradle reported 5s, 85 tasks (17 executed, 68 up-to-date) |
+| JVM unit tests | 36 passed, 0 failures/errors/skips (6 preferences, 30 prior) |
+| `sudo -u mlhysrszn -H ./gradlew :app:lintDebug --console=plain` | Passed; Gradle reported 12s |
+| `sudo -u mlhysrszn -H ./gradlew :app:connectedDebugAndroidTest --console=plain` | Passed on Android 10 / API 29; 28 tests, 0 failures/errors/skips; Hilt graph reads default preferences |
+| `git diff --check` | Passed |
+
+The first test compile reported a missing test import; it was added and the full
+build/test retry passed. The build also reported the existing incomplete NDK and
+native-symbol warnings plus a DataStore protobuf/JVM 25 `sun.misc.Unsafe`
+deprecation warning. No UI or notification delivery behavior is claimed complete.
+Total development time was not measured.
+
+### Commit
+
+Message: `feat: persist notification preferences`.
+Scope is limited to the preference model/contract, DataStore implementation and
+Hilt binding, focused tests, version-catalog/build configuration, and English
+project records.

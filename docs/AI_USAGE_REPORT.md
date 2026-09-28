@@ -212,3 +212,16 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Human role: authorized continuing after the D04 checkpoint and approved the
   N01 commit.
 - Total elapsed development time was not measured.
+
+
+## N02: Persist notification preferences
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: added the validated preference model/contract, DataStore persistence
+  and Hilt providers, restart/validation tests, and updated project records.
+- Verification: 36 JVM tests and 28 Android tests passed; debug/test APK assembly
+  and lint passed. Hilt graph integration checked default preferences.
+- Human role: authorized continuing after the N01 checkpoint and approved the
+  N02 commit.
+- Total elapsed development time was not measured.

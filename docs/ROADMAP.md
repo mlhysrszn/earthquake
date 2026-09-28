@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01, L02, L03, L04, D01, D02, D03, D04, and N01 are committed.
+L01, L02, L03, L04, D01, D02, D03, D04, N01, and N02 are committed.
 
 ## Goal
 
@@ -225,10 +225,13 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### N02 - Persist notification preferences
 
-- [ ] Add the preferences contract and DataStore implementation. Specify default
+- [x] Add the preferences contract and DataStore implementation. Specify default
   enabled state, threshold, selectable range, and step size.
 - Done when: valid preferences survive restart and invalid input is handled.
 - Depends on: N01.
+- Result: default-disabled preferences and the validated 0.0–9.5 magnitude
+  threshold (0.5 steps, default 4.0) persist with DataStore; invalid stored values
+  fall back safely and invalid writes are rejected.
 
 ### N03 - Build notification settings
 
@@ -358,6 +361,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | D03 | Committed | USGS-to-Room repository; 25 JVM tests and 20 device tests, lint, and live-feed check passed |
 | D04 | Committed | Typed detail navigation; 30 JVM tests, 28 device tests, lint, and live detail/Back check passed |
 | N01 | Committed | Notification policy documented, including baseline, aliases, suppression, late arrivals, retries, and retention |
+| N02 | Committed | DataStore preferences; 36 JVM tests, 28 device tests, debug build and lint passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

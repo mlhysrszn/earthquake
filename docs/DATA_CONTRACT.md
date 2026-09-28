@@ -1,9 +1,9 @@
 # USGS Data Contract
 
 Status: the initial domain model, list repository contract, deterministic sample
-repository, USGS feed client/mapper, Room event store, and USGS-to-Room repository
-synchronization, typed detail navigation, and detail lookup are implemented.
-Notifications and remaining product features remain pending.
+repository, USGS feed client/mapper, Room event store, USGS-to-Room repository
+synchronization, typed detail navigation, detail lookup, and persisted notification
+preferences are implemented. Eligibility and delivery remain pending.
 See the [roadmap](ROADMAP.md) for delivery order and the
 [architecture](ARCHITECTURE.md) for package responsibilities inside app.
 
@@ -87,12 +87,18 @@ Fetched events are cached only when they fit the current 24-hour retention windo
 - `EarthquakeNotificationSender`: send domain notification requests through the
   Android adapter in app.
 
-Introduce contracts only when their delivery step needs them. Notification
-contracts are completed in the notification phase. Data implements the contracts;
+Introduce contracts only when their delivery step needs them. Preference
+storage is implemented with DataStore; history and sender contracts remain for
+later notification tasks. Data implements the contracts;
 Hilt bindings select implementations without adding Android dependencies to
 these domain interfaces. All implementations and contracts live in app packages.
 One-shot operations use main-safe suspend functions;
 observable data uses Flow. Keep mutable streams inside implementations.
+
+Notification preferences default to disabled with a magnitude threshold of 4.0.
+The accepted threshold range is 0.0 through 9.5 in 0.5 steps. Invalid writes are
+rejected without changing the saved setting; invalid persisted threshold values
+fall back to 4.0. OS notification permission is not stored as a user preference.
 
 The initial `EarthquakeRepository` contract exposes a Flow of the rolling
 24-hour list, newest first, and a suspend refresh operation. Refresh outcomes are
