@@ -5,6 +5,10 @@ import java.time.DateTimeException
 import java.time.Instant
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.decodeFromJsonElement
 import javax.inject.Inject
 
 data class MappedUsgsFeed(
@@ -20,6 +24,34 @@ class MalformedUsgsFeedException(
 class UsgsGeoJsonMapper @Inject constructor(
     private val json: Json,
 ) {
+    fun decodeSingleEvent(payload: String): Earthquake? {
+        val root = try {
+            json.parseToJsonElement(payload) as? JsonObject
+                ?: throw MalformedUsgsFeedException("USGS detail response must be a JSON object")
+        } catch (exception: SerializationException) {
+            throw MalformedUsgsFeedException("USGS detail response is not valid GeoJSON", exception)
+        }
+        val rootType = (root["type"] as? JsonPrimitive)?.contentOrNull
+
+        return when (rootType) {
+            FEATURE_TYPE -> decodeFeature(root)
+            FEATURE_COLLECTION_TYPE -> {
+                val earthquakes = decode(payload).earthquakes
+                when (earthquakes.size) {
+                    0 -> null
+                    1 -> earthquakes.single()
+                    else -> throw MalformedUsgsFeedException(
+                        "USGS event query returned more than one earthquake",
+                    )
+                }
+            }
+
+            else -> throw MalformedUsgsFeedException(
+                "USGS detail response is neither a Feature nor a FeatureCollection",
+            )
+        }
+    }
+
     fun decode(payload: String): MappedUsgsFeed {
         val feed = try {
             json.decodeFromString<UsgsFeatureCollectionDto>(payload)
@@ -64,6 +96,15 @@ class UsgsGeoJsonMapper @Inject constructor(
             depthKm = coordinates.depthKm,
             sourceUrl = properties.url,
         )
+    }
+
+    private fun decodeFeature(feature: JsonObject): Earthquake? {
+        val dto = try {
+            json.decodeFromJsonElement<UsgsFeatureDto>(feature)
+        } catch (exception: SerializationException) {
+            throw MalformedUsgsFeedException("USGS detail Feature is malformed", exception)
+        }
+        return mapFeature(dto)
     }
 
     private fun mapCoordinates(values: List<Double>?): MappedCoordinates {

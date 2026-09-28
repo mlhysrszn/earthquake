@@ -1,0 +1,57 @@
+package com.mlhysrszn.earthquake.ui.navigation
+
+import androidx.compose.runtime.Composable
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
+import com.mlhysrszn.earthquake.ui.earthquakes.detail.EarthquakeDetailRoute
+import com.mlhysrszn.earthquake.ui.earthquakes.detail.EarthquakeDetailViewModel
+import com.mlhysrszn.earthquake.ui.earthquakes.list.EarthquakesRoute
+import kotlinx.serialization.Serializable
+
+@Serializable
+private data object EarthquakeListKey : NavKey
+
+@Serializable
+private data class EarthquakeDetailKey(
+    val earthquakeId: String,
+) : NavKey
+
+@Composable
+fun EarthquakeNavigation() {
+    val backStack = rememberNavBackStack(EarthquakeListKey)
+
+    NavDisplay(
+        backStack = backStack,
+        onBack = { backStack.removeLastOrNull() },
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator(),
+        ),
+        entryProvider = entryProvider {
+            entry<EarthquakeListKey> {
+                EarthquakesRoute(
+                    onEarthquakeClick = { earthquakeId ->
+                        backStack.add(EarthquakeDetailKey(earthquakeId))
+                    },
+                )
+            }
+            entry<EarthquakeDetailKey> { key ->
+                val viewModel = hiltViewModel<
+                    EarthquakeDetailViewModel,
+                    EarthquakeDetailViewModel.Factory,
+                >(
+                    creationCallback = { factory -> factory.create(key.earthquakeId) },
+                )
+                EarthquakeDetailRoute(
+                    viewModel = viewModel,
+                    onBack = { backStack.removeLastOrNull() },
+                )
+            }
+        },
+    )
+}

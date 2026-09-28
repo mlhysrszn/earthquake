@@ -613,3 +613,51 @@ remain. Total development time was not measured.
 Message: `feat: connect USGS feed to Room repository`.
 Scope is limited to the production repository, Hilt binding, deterministic test
 replacement, integration tests, and corresponding English documentation/records.
+
+
+## D04: Event details and Navigation 3
+
+Date: 2026-09-28 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope
+
+- Added typed serializable Navigation 3 list/detail keys, a saved back stack,
+  saveable-state and entry-scoped ViewModel decorators, and system/toolbar Back.
+- Made list cards navigable and added a reusable Turkish event-detail screen with
+  loading, content, failure/retry, and unavailable states.
+- Added an assisted Hilt detail ViewModel. The event ID is passed explicitly from
+  the typed Navigation 3 key through its factory. It observes Room first and only
+  asks the repository to fetch when that ID is absent locally.
+- Added single-event GeoJSON decoding for a root `Feature` or one-record
+  `FeatureCollection`; empty/404 responses map to unavailable. The repository
+  verifies response identity and caches details only inside the rolling window.
+- Upgraded Navigation 3 to 1.2.0, Lifecycle to 2.11.0, and AndroidX Hilt to 1.4.0
+  for the supported Navigation 3 ViewModel decorator and Compose assisted factory.
+- Added detail ViewModel/mapper tests, repository detail lookup tests, unavailable
+  and retry UI tests, and Navigation 3 list/detail/Back/recreation tests.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `sudo -u mlhysrszn -H ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest --console=plain` | Passed; Gradle reported 4s, 85 tasks (17 executed, 68 up-to-date) |
+| JVM unit tests | 30 passed, 0 failures/errors/skips (3 detail ViewModel, 2 single-event mapping, 25 prior) |
+| `sudo -u mlhysrszn -H ./gradlew :app:connectedDebugAndroidTest --console=plain` | Passed on Android 10 / API 29; 28 tests, 0 failures/errors/skips |
+| `sudo -u mlhysrszn -H ./gradlew :app:lintDebug --console=plain` | Passed; Gradle reported 13s |
+| Navigation UI | List → selected detail → Back and Activity recreation retained route/event ID |
+| Manual production detail | Live Room-cached USGS event opened; Back returned to the live list |
+| `git diff --check` | Passed |
+
+The detail integration tests use fake HTTP responses; no live catalog-detail
+request was made. The manual detail used an event already cached from the live
+summary feed. Instrumentation uses the sample repository test binding and makes
+no network requests. Existing NDK/native-symbol and protobuf/JVM 25 warnings
+remain. Total development time was not measured.
+
+### Commit
+
+Message: `feat: add earthquake detail navigation`.
+Scope is limited to Navigation 3 routes/state, detail UI/ViewModel and assisted
+Hilt wiring, single-event service mapping/repository behavior, focused tests, and
+the corresponding English project records.

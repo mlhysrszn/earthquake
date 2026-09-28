@@ -8,6 +8,7 @@ import com.mlhysrszn.earthquake.data.remote.usgs.MalformedUsgsFeedException
 import com.mlhysrszn.earthquake.data.remote.usgs.UsgsEarthquakeService
 import com.mlhysrszn.earthquake.data.remote.usgs.UsgsGeoJsonMapper
 import com.mlhysrszn.earthquake.domain.model.Earthquake
+import com.mlhysrszn.earthquake.domain.repository.EarthquakeLookupResult
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeRepository
 import com.mlhysrszn.earthquake.domain.repository.RefreshResult
 import java.io.IOException
@@ -34,6 +35,9 @@ class UsgsEarthquakeRepository @Inject constructor(
         earthquakeDao.observeRecent(clock.millis()).map { entities ->
             entities.map { entity -> entity.toDomain() }
         }
+
+    override fun observeEarthquake(id: String): Flow<Earthquake?> =
+        earthquakeDao.observeEarthquake(id).map { entity -> entity?.toDomain() }
 
     override suspend fun refresh(): RefreshResult = try {
         refreshMutex.withLock {
@@ -64,5 +68,49 @@ class UsgsEarthquakeRepository @Inject constructor(
         RefreshResult.Failure(RefreshResult.Reason.STORAGE)
     } catch (_: Exception) {
         RefreshResult.Failure(RefreshResult.Reason.UNKNOWN)
+    }
+
+    override suspend fun fetchEarthquakeById(id: String): EarthquakeLookupResult = try {
+        refreshMutex.withLock {
+            earthquakeDao.findEarthquake(id)?.let { cached ->
+                return@withLock EarthquakeLookupResult.Found(cached.toDomain())
+            }
+
+            val earthquake = usgsService.fetchEventById(id).use { responseBody ->
+                mapper.decodeSingleEvent(responseBody.string())
+            } ?: return@withLock EarthquakeLookupResult.Unavailable
+
+            if (earthquake.id != id) {
+                return@withLock EarthquakeLookupResult.Failure(
+                    RefreshResult.Reason.INVALID_RESPONSE,
+                )
+            }
+
+            earthquakeDao.upsertDetailIfRecent(
+                earthquake = earthquake.toEntity(),
+                nowEpochMillis = clock.millis(),
+            )
+            EarthquakeLookupResult.Found(earthquake)
+        }
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (exception: HttpException) {
+        if (exception.code() == HTTP_NOT_FOUND) {
+            EarthquakeLookupResult.Unavailable
+        } else {
+            EarthquakeLookupResult.Failure(RefreshResult.Reason.NETWORK)
+        }
+    } catch (_: IOException) {
+        EarthquakeLookupResult.Failure(RefreshResult.Reason.NETWORK)
+    } catch (_: MalformedUsgsFeedException) {
+        EarthquakeLookupResult.Failure(RefreshResult.Reason.INVALID_RESPONSE)
+    } catch (_: SQLiteException) {
+        EarthquakeLookupResult.Failure(RefreshResult.Reason.STORAGE)
+    } catch (_: Exception) {
+        EarthquakeLookupResult.Failure(RefreshResult.Reason.UNKNOWN)
+    }
+
+    private companion object {
+        const val HTTP_NOT_FOUND = 404
     }
 }

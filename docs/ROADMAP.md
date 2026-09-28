@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01, L02, L03, L04, D01, D02, and D03 are committed.
+L01, L02, L03, L04, D01, D02, D03, and D04 are committed.
 
 ## Goal
 
@@ -195,13 +195,17 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### D04 - Add event details and navigation
 
-- [ ] Add typed Navigation 3 destinations, a saved back stack, and entry-scoped
+- [x] Add typed Navigation 3 destinations, a saved back stack, and entry-scoped
   Hilt ViewModels. Pass event IDs using an explicit supported argument mechanism.
   Display event details and fetch by ID only when missing locally.
 - Done when: cached details work offline and unavailable events have a clear state.
   Test the single-event response, list-to-detail flow, Back, recreation, and saved
   navigation state; verify arguments reach the correct ViewModel.
 - Depends on: D03.
+- Result: typed serializable routes, saved Navigation 3 back stack, entry-scoped
+  Hilt ViewModels, and assisted event-ID delivery added. Detail first uses Room,
+  fetches only when missing, and shows an unavailable state for removed events.
+  Tests cover single-event mapping, detail fetching, list/detail/Back, and restore.
 
 **Checkpoint:** live list and details, with usable cached data when offline.
 
@@ -349,6 +353,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | D01 | Committed | USGS Retrofit service/GeoJSON mapper; 23 JVM tests and 9 device tests passed, debug build and lint passed |
 | D02 | Committed | Room event store/sync metadata; 25 JVM tests and 14 device tests passed, debug build and lint passed |
 | D03 | Committed | USGS-to-Room repository; 25 JVM tests and 20 device tests, lint, and live-feed check passed |
+| D04 | Committed | Typed detail navigation; 30 JVM tests, 28 device tests, lint, and live detail/Back check passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

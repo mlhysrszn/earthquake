@@ -2,8 +2,8 @@
 
 Status: the initial domain model, list repository contract, deterministic sample
 repository, USGS feed client/mapper, Room event store, and USGS-to-Room repository
-synchronization are implemented. Notifications and remaining product features
-remain pending.
+synchronization, typed detail navigation, and detail lookup are implemented.
+Notifications and remaining product features remain pending.
 See the [roadmap](ROADMAP.md) for delivery order and the
 [architecture](ARCHITECTURE.md) for package responsibilities inside app.
 
@@ -67,6 +67,13 @@ screen. Avoid one detail request per list item. For an event missing locally,
 use the catalog query `query?format=geojson&eventid=...` when needed. Handle its
 single-event response separately from a collection. Missing or removed events
 have an explicit unavailable state.
+
+The detail destination passes the event ID explicitly into its entry-scoped Hilt
+ViewModel through an assisted factory. The ViewModel observes Room first. Only an
+uncached ID triggers the catalog request. A single `Feature` response and a
+one-record `FeatureCollection` are accepted; an empty response or HTTP 404 maps to
+unavailable, while malformed data and other network failures remain distinct.
+Fetched events are cached only when they fit the current 24-hour retention window.
 
 ## 3. Domain contracts
 

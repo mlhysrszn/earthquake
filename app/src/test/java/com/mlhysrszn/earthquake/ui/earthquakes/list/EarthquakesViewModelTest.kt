@@ -2,6 +2,7 @@ package com.mlhysrszn.earthquake.ui.earthquakes.list
 
 import androidx.lifecycle.ViewModelStore
 import com.mlhysrszn.earthquake.domain.model.Earthquake
+import com.mlhysrszn.earthquake.domain.repository.EarthquakeLookupResult
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeRepository
 import com.mlhysrszn.earthquake.domain.repository.RefreshResult
 import java.time.Clock
@@ -13,6 +14,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -197,6 +199,9 @@ class EarthquakesViewModelTest {
 
         override fun observeEarthquakes(): Flow<List<Earthquake>> = events
 
+        override fun observeEarthquake(id: String): Flow<Earthquake?> =
+            events.map { list -> list.firstOrNull { it.id == id } }
+
         override suspend fun refresh(): RefreshResult {
             val gate = nextRefreshGate.also { nextRefreshGate = null }
             return gate?.await() ?: queuedResults.removeFirstOrNull()
@@ -206,5 +211,10 @@ class EarthquakesViewModelTest {
         fun enqueue(result: RefreshResult) {
             queuedResults.addLast(result)
         }
+
+        override suspend fun fetchEarthquakeById(id: String): EarthquakeLookupResult =
+            events.value.firstOrNull { it.id == id }
+                ?.let(EarthquakeLookupResult::Found)
+                ?: EarthquakeLookupResult.Unavailable
     }
 }

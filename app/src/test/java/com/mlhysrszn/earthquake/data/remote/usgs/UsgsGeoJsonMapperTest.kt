@@ -94,6 +94,40 @@ class UsgsGeoJsonMapperTest {
         }
     }
 
+    @Test
+    fun `single event endpoint accepts a Feature or a one-record FeatureCollection`() {
+        val feature = """
+            {
+              "type":"Feature",
+              "id":"detail-event",
+              "properties":{"mag":3.7,"time":1790596800000,"type":"earthquake"},
+              "geometry":{"coordinates":[-120.0,35.0,7.0]}
+            }
+        """.trimIndent()
+        val oneRecordCollection = """
+            {"type":"FeatureCollection","features":[$feature]}
+        """.trimIndent()
+
+        assertEquals("detail-event", mapper.decodeSingleEvent(feature)?.id)
+        assertEquals("detail-event", mapper.decodeSingleEvent(oneRecordCollection)?.id)
+    }
+
+    @Test
+    fun `single event endpoint maps empty results to unavailable and rejects ambiguity`() {
+        assertNull(mapper.decodeSingleEvent("""{"type":"FeatureCollection","features":[]}"""))
+
+        val duplicateFeature = """
+            {"type":"Feature","id":"event","properties":{"time":1790596800000,"type":"earthquake"}}
+        """.trimIndent()
+        val ambiguousCollection = """
+            {"type":"FeatureCollection","features":[$duplicateFeature,$duplicateFeature]}
+        """.trimIndent()
+
+        assertThrows(MalformedUsgsFeedException::class.java) {
+            mapper.decodeSingleEvent(ambiguousCollection)
+        }
+    }
+
     private fun fixture(name: String): String =
         checkNotNull(javaClass.classLoader?.getResource("usgs/$name")) {
             "Missing USGS fixture: $name"

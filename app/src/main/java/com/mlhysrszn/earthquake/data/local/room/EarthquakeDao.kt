@@ -29,11 +29,27 @@ abstract class EarthquakeDao {
     @Query("SELECT * FROM earthquakes WHERE id = :id")
     abstract suspend fun findEarthquake(id: String): EarthquakeEntity?
 
+    @Query("SELECT * FROM earthquakes WHERE id = :id")
+    abstract fun observeEarthquake(id: String): Flow<EarthquakeEntity?>
+
     @Query("SELECT * FROM earthquakes ORDER BY occurredAtEpochMillis DESC")
     abstract suspend fun getAllEarthquakes(): List<EarthquakeEntity>
 
     @Upsert
     abstract suspend fun upsertEarthquakes(earthquakes: List<EarthquakeEntity>)
+
+    @Transaction
+    open suspend fun upsertDetailIfRecent(
+        earthquake: EarthquakeEntity,
+        nowEpochMillis: Long,
+    ): Boolean {
+        val windowStartEpochMillis = nowEpochMillis - ROLLING_WINDOW_MILLIS
+        if (earthquake.occurredAtEpochMillis !in windowStartEpochMillis..nowEpochMillis) {
+            return false
+        }
+        upsertEarthquakes(listOf(earthquake))
+        return true
+    }
 
     @Query("DELETE FROM earthquakes")
     abstract suspend fun deleteAllEarthquakes()

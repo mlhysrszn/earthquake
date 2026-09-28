@@ -1,5 +1,6 @@
 package com.mlhysrszn.earthquake.ui.earthquakes.list
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,9 +27,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mlhysrszn.earthquake.R
 import com.mlhysrszn.earthquake.domain.model.Earthquake
@@ -42,6 +44,7 @@ import java.util.Locale
 
 @Composable
 fun EarthquakesRoute(
+    onEarthquakeClick: (String) -> Unit,
     viewModel: EarthquakesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -49,6 +52,7 @@ fun EarthquakesRoute(
         state = state,
         onRefresh = viewModel::refresh,
         onRetry = viewModel::retry,
+        onEarthquakeClick = onEarthquakeClick,
     )
 }
 
@@ -57,6 +61,7 @@ fun EarthquakesScreen(
     state: EarthquakesUiState,
     onRefresh: () -> Unit,
     onRetry: () -> Unit,
+    onEarthquakeClick: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -145,7 +150,10 @@ fun EarthquakesScreen(
                     }
                 }
                 items(state.earthquakes, key = Earthquake::id) { earthquake ->
-                    EarthquakeCard(earthquake = earthquake)
+                    EarthquakeCard(
+                        earthquake = earthquake,
+                        onClick = { onEarthquakeClick(earthquake.id) },
+                    )
                 }
             }
         }
@@ -240,11 +248,15 @@ private fun RefreshErrorContent(
 }
 
 @Composable
-private fun EarthquakeCard(earthquake: Earthquake) {
+private fun EarthquakeCard(
+    earthquake: Earthquake,
+    onClick: () -> Unit,
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .clickable(role = Role.Button, onClick = onClick),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),

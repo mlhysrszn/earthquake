@@ -3,9 +3,9 @@
 Status: the project uses a single `:app` Gradle module. All planned application
 code and tests belong in app. The Hilt foundation, initial domain contract,
 deterministic sample repository, Room event store, list ViewModel/state, and
-Compose list screen are implemented. The USGS feed client, mapper, and
-Room-backed repository synchronization are implemented; remaining product
-features are pending.
+Compose list/detail screens and Navigation 3 are implemented. The USGS feed
+client, mapper, and Room-backed repository synchronization are implemented;
+notifications and remaining product features are pending.
 
 ## Purpose
 
@@ -51,8 +51,8 @@ app/src/main/java/com/mlhysrszn/earthquake/
 ```
 
 The starter Activity/theme, domain model and repository contract, sample
-repository, Room entities/DAO, USGS repository, list ViewModel/state, Compose
-list screen, and USGS feed client/mapper exist today. Other planned paths remain
+repository, Room entities/DAO, USGS repository, list/detail ViewModels and screens,
+Navigation 3, and USGS feed client/mapper exist today. Other planned paths remain
 for future code.
 
 | Package | Responsibility |

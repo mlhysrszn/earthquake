@@ -9,6 +9,7 @@ import com.mlhysrszn.earthquake.data.local.room.EarthquakeEntity
 import com.mlhysrszn.earthquake.data.local.room.SyncMetadataEntity
 import com.mlhysrszn.earthquake.data.remote.usgs.UsgsEarthquakeService
 import com.mlhysrszn.earthquake.data.remote.usgs.UsgsGeoJsonMapper
+import com.mlhysrszn.earthquake.domain.repository.EarthquakeLookupResult
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeRepository
 import com.mlhysrszn.earthquake.domain.repository.RefreshResult
 import java.io.IOException
@@ -31,6 +32,8 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import retrofit2.HttpException
+import retrofit2.Response
 
 @RunWith(AndroidJUnit4::class)
 class UsgsEarthquakeRepositoryTest {
@@ -157,6 +160,76 @@ class UsgsEarthquakeRepositoryTest {
         }
     }
 
+    @Test
+    fun missingEventIsFetchedFromTheSingleFeatureResponseAndCached() = runBlocking {
+        val service = FakeUsgsEarthquakeService { responseBody(validFeed()) }.apply {
+            detailResponse = { id -> responseBody(singleEvent(id)) }
+        }
+        withRepository(service) { dao, repository ->
+            val result = repository.fetchEarthquakeById("detail-event")
+
+            assertEquals("detail-event", (result as EarthquakeLookupResult.Found).earthquake.id)
+            assertEquals("detail-event", dao.findEarthquake("detail-event")?.id)
+            assertEquals(1, service.detailCallCount)
+        }
+    }
+
+    @Test
+    fun cachedDetailReturnsOfflineWithoutCallingTheService() = runBlocking {
+        val service = FakeUsgsEarthquakeService { responseBody(validFeed()) }.apply {
+            detailResponse = { throw IOException("should not be called for a cached event") }
+        }
+        withRepository(service) { dao, repository ->
+            seedCachedEvent(dao)
+
+            val result = repository.fetchEarthquakeById("cached-event")
+
+            assertEquals("cached-event", (result as EarthquakeLookupResult.Found).earthquake.id)
+            assertEquals(0, service.detailCallCount)
+        }
+    }
+
+    @Test
+    fun emptySingleEventResponseAndHttpNotFoundAreUnavailable() = runBlocking {
+        val emptyService = FakeUsgsEarthquakeService { responseBody(validFeed()) }.apply {
+            detailResponse = {
+                responseBody("""{"type":"FeatureCollection","features":[]}""")
+            }
+        }
+        withRepository(emptyService) { _, repository ->
+            assertEquals(
+                EarthquakeLookupResult.Unavailable,
+                repository.fetchEarthquakeById("removed-event"),
+            )
+        }
+
+        val notFoundService = FakeUsgsEarthquakeService { responseBody(validFeed()) }.apply {
+            detailResponse = {
+                throw HttpException(Response.error<Any>(404, responseBody("Not Found")))
+            }
+        }
+        withRepository(notFoundService) { _, repository ->
+            assertEquals(
+                EarthquakeLookupResult.Unavailable,
+                repository.fetchEarthquakeById("removed-event"),
+            )
+        }
+    }
+
+    @Test
+    fun detailResponseForAnotherIdentityIsRejected() = runBlocking {
+        val service = FakeUsgsEarthquakeService { responseBody(validFeed()) }.apply {
+            detailResponse = { responseBody(singleEvent("different-event")) }
+        }
+        withRepository(service) { dao, repository ->
+            assertEquals(
+                EarthquakeLookupResult.Failure(RefreshResult.Reason.INVALID_RESPONSE),
+                repository.fetchEarthquakeById("requested-event"),
+            )
+            assertNull(dao.findEarthquake("different-event"))
+        }
+    }
+
     private suspend fun withRepository(
         service: UsgsEarthquakeService,
         test: suspend (EarthquakeDao, EarthquakeRepository) -> Unit,
@@ -224,6 +297,23 @@ class UsgsEarthquakeRepositoryTest {
         }
     """.trimIndent()
 
+    private fun singleEvent(id: String): String = """
+        {
+          "type":"Feature",
+          "id":"$id",
+          "properties":{
+            "mag":4.6,
+            "place":"Northern California",
+            "time":${nowEpochMillis - 45_000},
+            "updated":${nowEpochMillis - 20_000},
+            "url":"https://earthquake.usgs.gov/example/$id",
+            "magType":"mw",
+            "type":"earthquake"
+          },
+          "geometry":{"type":"Point","coordinates":[-123.0,40.0,9.0]}
+        }
+    """.trimIndent()
+
     private fun responseBody(payload: String): ResponseBody =
         payload.toResponseBody("application/json".toMediaType())
 
@@ -236,6 +326,11 @@ class UsgsEarthquakeRepositoryTest {
             private set
         var maximumConcurrentCalls: Int = 0
             private set
+        var detailCallCount: Int = 0
+            private set
+        var detailResponse: suspend (eventId: String) -> ResponseBody = {
+            throw IOException("Detail response not configured for this test: $it")
+        }
 
         override suspend fun fetchAllDaySummary(): ResponseBody {
             val callNumber = ++callCount
@@ -246,6 +341,11 @@ class UsgsEarthquakeRepositoryTest {
             } finally {
                 activeCalls--
             }
+        }
+
+        override suspend fun fetchEventById(eventId: String): ResponseBody {
+            detailCallCount++
+            return detailResponse(eventId)
         }
     }
 }

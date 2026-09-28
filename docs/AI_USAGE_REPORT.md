@@ -184,3 +184,18 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Human role: authorized continuing after the D02 checkpoint and approved the
   D03 commit.
 - Total elapsed development time was not measured.
+
+
+## D04: Event details and Navigation 3
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: added typed Navigation 3 routes and state restoration, assisted Hilt
+  detail ViewModel, local-first/detail fallback behavior, and UI/repository tests.
+- Verification: 30 JVM tests and 28 Android tests passed; debug/test APK assembly
+  and lint passed. Manually opened a live Room-cached event and returned to the
+  list with Back. Instrumentation used the sample binding; detail HTTP tests used
+  fakes.
+- Human role: authorized continuing after the D03 checkpoint and approved the
+  D04 commit.
+- Total elapsed development time was not measured.

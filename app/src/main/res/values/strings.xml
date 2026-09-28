@@ -19,4 +19,12 @@
     <string name="place_unknown">Konum bilgisi yok</string>
     <string name="occurred_at">Oluşma zamanı: %1$s</string>
     <string name="depth">Derinlik: %1$s km</string>
+    <string name="back">Geri</string>
+    <string name="earthquake_detail_title">Deprem ayrıntıları</string>
+    <string name="loading_earthquake_detail">Deprem ayrıntıları yükleniyor</string>
+    <string name="earthquake_unavailable">Bu deprem bulunamadı veya artık mevcut değil.</string>
+    <string name="detail_load_failed">Deprem ayrıntıları yüklenemedi.</string>
+    <string name="magnitude_type">Büyüklük türü: %1$s</string>
+    <string name="event_updated">Kaynak güncellemesi: %1$s</string>
+    <string name="source_url">Kaynak: %1$s</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.mlhysrszn.earthquake.data.repository
 
 import com.mlhysrszn.earthquake.domain.model.Earthquake
+import com.mlhysrszn.earthquake.domain.repository.EarthquakeLookupResult
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeRepository
 import com.mlhysrszn.earthquake.domain.repository.RefreshResult
 import java.time.Clock
@@ -10,6 +11,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
@@ -29,6 +31,14 @@ class SampleEarthquakeRepository @Inject constructor(
     private val earthquakes = mutableEarthquakes.asStateFlow()
 
     override fun observeEarthquakes(): Flow<List<Earthquake>> = earthquakes
+
+    override fun observeEarthquake(id: String): Flow<Earthquake?> =
+        earthquakes.map { events -> events.firstOrNull { it.id == id } }
+
+    override suspend fun fetchEarthquakeById(id: String): EarthquakeLookupResult =
+        mutableEarthquakes.value.firstOrNull { it.id == id }
+            ?.let(EarthquakeLookupResult::Found)
+            ?: EarthquakeLookupResult.Unavailable
 
     override suspend fun refresh(): RefreshResult {
         val gate = mutex.withLock {
