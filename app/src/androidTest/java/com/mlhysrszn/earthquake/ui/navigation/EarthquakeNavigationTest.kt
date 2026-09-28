@@ -54,4 +54,16 @@ class EarthquakeNavigationTest {
         composeRule.onNodeWithText("Western Texas").assertIsDisplayed()
         composeRule.onNodeWithText("Büyüklük 2,1").assertIsDisplayed()
     }
+
+    @Test
+    fun listOpensNotificationSettingsAndShowsThisDevicesPermissionState() {
+        composeRule.onNodeWithText("Bildirimler").performClick()
+
+        composeRule.onNodeWithText("Bildirim ayarları").assertIsDisplayed()
+        composeRule.onNodeWithText("Bu Android sürümünde ayrıca bildirim izni gerekmiyor.")
+            .assertIsDisplayed()
+
+        composeRule.onNodeWithText("Geri").performClick()
+        composeRule.onNodeWithText("Depremler").assertIsDisplayed()
+    }
 }

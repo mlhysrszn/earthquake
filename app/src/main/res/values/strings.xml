@@ -27,4 +27,15 @@
     <string name="magnitude_type">Büyüklük türü: %1$s</string>
     <string name="event_updated">Kaynak güncellemesi: %1$s</string>
     <string name="source_url">Kaynak: %1$s</string>
+    <string name="notification_settings_title">Bildirim ayarları</string>
+    <string name="notification_settings_short">Bildirimler</string>
+    <string name="notifications_enabled">Deprem bildirimlerini etkinleştir</string>
+    <string name="magnitude_threshold">Büyüklük eşiği: %1$s</string>
+    <string name="magnitude_threshold_range">0,0–9,5 arasında, 0,5 adımlarla seçin. Yalnızca eşiğin üzerindeki depremler bildirilir.</string>
+    <string name="notification_permission_granted">Android bildirim izni verildi.</string>
+    <string name="notification_permission_denied">Android bildirim izni verilmedi. İzin olmadan bildirim gösteremeyiz.</string>
+    <string name="notification_permission_system_disabled">Bu uygulamanın bildirimleri Android ayarlarında kapalı.</string>
+    <string name="notification_permission_not_required">Bu Android sürümünde ayrıca bildirim izni gerekmiyor.</string>
+    <string name="open_notification_settings">Android bildirim ayarlarını aç</string>
+    <string name="preferences_save_failed">Ayar kaydedilemedi. Lütfen tekrar deneyin.</string>
 </resources>

@@ -45,6 +45,7 @@ import java.util.Locale
 @Composable
 fun EarthquakesRoute(
     onEarthquakeClick: (String) -> Unit,
+    onSettingsClick: () -> Unit,
     viewModel: EarthquakesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -53,6 +54,7 @@ fun EarthquakesRoute(
         onRefresh = viewModel::refresh,
         onRetry = viewModel::retry,
         onEarthquakeClick = onEarthquakeClick,
+        onSettingsClick = onSettingsClick,
     )
 }
 
@@ -62,6 +64,7 @@ fun EarthquakesScreen(
     onRefresh: () -> Unit,
     onRetry: () -> Unit,
     onEarthquakeClick: (String) -> Unit = {},
+    onSettingsClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -89,10 +92,19 @@ fun EarthquakesScreen(
                             Text(text = stringResource(R.string.refresh))
                         }
                     }
-                    Text(
-                        text = stringResource(R.string.earthquakes_window),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.earthquakes_window),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        TextButton(onClick = onSettingsClick) {
+                            Text(text = stringResource(R.string.notification_settings_short))
+                        }
+                    }
                 }
             }
         },

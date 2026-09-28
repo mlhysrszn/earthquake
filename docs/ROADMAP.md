@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01, L02, L03, L04, D01, D02, D03, D04, N01, and N02 are committed.
+L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, and N03 are committed.
 
 ## Goal
 
@@ -235,11 +235,14 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### N03 - Build notification settings
 
-- [ ] Add enabled/disabled controls, threshold selection, and actual OS permission
+- [x] Add enabled/disabled controls, threshold selection, and actual OS permission
   status. Request permission when the user enables notifications.
 - Done when: granted, denied, and system-disabled states are understandable;
   denied permission does not erase the user's threshold preference.
 - Depends on: N02.
+- Result: Compose settings route exposes persisted controls, checks Android runtime
+  permission and app-level notification status, requests permission on opt-in, and
+  links to OS settings when blocked.
 
 ### N04 - Implement domain eligibility rules
 
@@ -362,6 +365,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | D04 | Committed | Typed detail navigation; 30 JVM tests, 28 device tests, lint, and live detail/Back check passed |
 | N01 | Committed | Notification policy documented, including baseline, aliases, suppression, late arrivals, retries, and retention |
 | N02 | Committed | DataStore preferences; 36 JVM tests, 28 device tests, debug build and lint passed |
+| N03 | Committed | Notification settings/permission UI; 39 JVM tests, 32 device tests, debug build and lint passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

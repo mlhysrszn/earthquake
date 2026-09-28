@@ -225,3 +225,17 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Human role: authorized continuing after the N01 checkpoint and approved the
   N02 commit.
 - Total elapsed development time was not measured.
+
+
+## N03: Notification settings and OS permission state
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: added the notification settings route/UI, preference ViewModel,
+  runtime permission status/request handling, navigation, tests, and records.
+- Verification: 39 JVM tests and 32 Android tests passed; debug/test APK assembly
+  and lint passed. The API 29 emulator displayed the not-required runtime status;
+  API 33+ permission prompting remains unverified on a device.
+- Human role: authorized continuing after the N02 checkpoint and approved the
+  N03 commit.
+- Total elapsed development time was not measured.

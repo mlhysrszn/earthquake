@@ -11,6 +11,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.mlhysrszn.earthquake.ui.earthquakes.detail.EarthquakeDetailRoute
 import com.mlhysrszn.earthquake.ui.earthquakes.detail.EarthquakeDetailViewModel
 import com.mlhysrszn.earthquake.ui.earthquakes.list.EarthquakesRoute
+import com.mlhysrszn.earthquake.ui.settings.NotificationSettingsRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -38,6 +39,7 @@ fun EarthquakeNavigation() {
                     onEarthquakeClick = { earthquakeId ->
                         backStack.add(EarthquakeDetailKey(earthquakeId))
                     },
+                    onSettingsClick = { backStack.add(NotificationSettingsKey) },
                 )
             }
             entry<EarthquakeDetailKey> { key ->
@@ -49,6 +51,11 @@ fun EarthquakeNavigation() {
                 )
                 EarthquakeDetailRoute(
                     viewModel = viewModel,
+                    onBack = { backStack.removeLastOrNull() },
+                )
+            }
+            entry<NotificationSettingsKey> {
+                NotificationSettingsRoute(
                     onBack = { backStack.removeLastOrNull() },
                 )
             }

@@ -742,3 +742,49 @@ Message: `feat: persist notification preferences`.
 Scope is limited to the preference model/contract, DataStore implementation and
 Hilt binding, focused tests, version-catalog/build configuration, and English
 project records.
+
+
+## N03: Notification settings and OS permission state
+
+Date: 2026-09-28 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope
+
+- Added a lifecycle-aware notification settings route/screen with an enabled
+  switch and 0.0–9.5 magnitude slider in 0.5 steps, backed by the N02 DataStore
+  repository. The stored threshold is not modified when permission is denied.
+- Added actual OS status checks that distinguish Android 13+ runtime denial,
+  app-level system disablement, granted permission, and Android versions where a
+  runtime permission is not required.
+- Enabling notifications persists the user's preference and requests
+  `POST_NOTIFICATIONS` on Android 13+ when denied. A settings link is shown for
+  denied/system-disabled states; status is rechecked on Activity resume.
+- Added pure permission-state/request policy tests and Compose tests for the
+  enable/threshold controls, denied/system-disabled explanations, and preserving
+  the selected threshold when permission is denied. Added the Navigation 3 entry
+  and list-settings link.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `sudo -u mlhysrszn -H ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest --console=plain` | Passed; Gradle reported 2s, 85 tasks (8 executed, 77 up-to-date) |
+| JVM unit tests | 39 passed, 0 failures/errors/skips (3 permission-state, 36 prior) |
+| `sudo -u mlhysrszn -H ./gradlew :app:lintDebug --console=plain` | Passed; Gradle reported 9s |
+| `sudo -u mlhysrszn -H ./gradlew :app:connectedDebugAndroidTest --console=plain` | Passed on Android 10 / API 29; 32 tests, 0 failures/errors/skips |
+| Settings navigation/status | Passed; settings opens from the list and API 29 reports that runtime permission is not required |
+| `git diff --check` | Passed |
+
+The connected emulator is API 29, so the Android 13+ permission prompt was not
+manually exercised; permission-state branches are unit-tested and denied/system
+states are rendered in Compose tests. Actual notification posting/channel behavior
+remains N06. The existing NDK/native-symbol and protobuf/DataStore JVM 25 warnings
+remain. Total development time was not measured.
+
+### Commit
+
+Message: `feat: add notification settings and permission handling`.
+Scope is limited to the settings screen/ViewModel, OS permission status/request
+integration, Navigation 3 entry, manifest permission, focused tests, and updated
+English project records.
