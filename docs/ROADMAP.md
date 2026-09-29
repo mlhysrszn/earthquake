@@ -358,13 +358,17 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### H01 - Finish the README and usage report
 
-- [ ] Document setup, scope, architecture choices, notification limits, testing,
+- [x] Document setup, scope, architecture choices, notification limits, testing,
   demo steps, actual time spent, AI tools/models, delegated work, verification,
   and the next improvement.
 - Done when: the README links to the roadmap, architecture, data contract, and
   usage report. Usage figures identify their source and denominator; estimates
   are labeled and unavailable data is not fabricated.
 - Depends on: Q03 and the ongoing records started in F02.
+- Result: root README documents scope, flavors and build commands, demo steps,
+  notification limits, testing, gaps, and the next improvement, linking every
+  project document. The AI report gained a per-assistant summary; time and token
+  usage remain explicitly unmeasured.
 
 ### H02 - Verify reproducibility and prepare the interview
 
@@ -412,6 +416,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | Q01 | Committed | Local Room product events and prior-flow instrumentation; 53 JVM tests, 54 device tests, schema migration, debug build and lint passed |
 | Q02 | Committed: e7b4d9b | Live/demo flavors and isolated demo scenario; 53 JVM tests, 55 live and 57 demo device tests, lint (0 errors) on both variants passed |
 | Q03 | Verified, awaiting commit approval | Automated suites plus manual API 29 walkthrough; Android 13+ permission denial not exercised |
+| H01 | Verified, awaiting commit approval | README and usage-report summary written; commands checked against build config; clean-checkout run deferred to H02 |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

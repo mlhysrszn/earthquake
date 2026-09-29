@@ -22,6 +22,18 @@ Status: initial record; update at each implementation checkpoint.
 | Implementation | No new application behavior; starter code retained | Existing template tests passed with limits documented in Work Log |
 | Commit | Created the reviewed baseline snapshot | User approved; commit f224494 |
 
+## Summary by assistant (from the per-task records below)
+
+| Tasks | Assistant / model |
+| --- | --- |
+| F02, F01, F03, F06 | OpenAI Codex (exact model identifier not captured) |
+| L01–L04, D01–D04, N01–N07, Q01 | OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`) |
+| Q02, Q03, H01 | Claude Code, Claude Sonnet 5.5 (`claude-sonnet-5-5`) |
+
+No task used delegated subagents. Token/request totals, total development time,
+and the share of AI-written code were not measured. All commits were made only
+after the user's explicit approval.
+
 ## Usage measurements
 
 | Measurement | Value | Basis |
@@ -339,3 +351,16 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Human role: approved continuing after the Q02 commit.
 - Limitations: Android 13+ permission denial was not exercised; development time
   was not measured.
+
+
+## H01: README and usage report
+
+- Assistant: Claude Code, Claude Sonnet 5.5 (`claude-sonnet-5-5`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: wrote the README from the existing documents, code, and recorded test
+  results, and added the per-assistant summary above.
+- Verification: documented commands and the demo steps were checked against the
+  current build configuration and the manual Q03 walkthrough; a clean-checkout
+  run is deferred to H02.
+- Human role: asked to continue; commit approval is pending.
+- Limitations: development time and token usage were not measured.

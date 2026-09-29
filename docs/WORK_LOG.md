@@ -1127,3 +1127,14 @@ tests, lint 0 errors); no application code changed for Q03.
 ### Commit
 
 Not committed; waiting for explicit approval.
+
+
+## H01: README and usage report
+
+Date: 2026-09-30 (Europe/Istanbul).
+Status: written; awaiting user approval to commit. Documentation-only change.
+
+- Added `README.md` and a per-assistant summary in the AI usage report.
+- Checked that the referenced Gradle tasks exist for both flavors (they were run
+  during Q02/Q03) and that all linked documents exist.
+- Not verified: setup from a clean checkout (H02).
