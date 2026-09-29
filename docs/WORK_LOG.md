@@ -1138,3 +1138,33 @@ Status: written; awaiting user approval to commit. Documentation-only change.
 - Checked that the referenced Gradle tasks exist for both flavors (they were run
   during Q02/Q03) and that all linked documents exist.
 - Not verified: setup from a clean checkout (H02).
+
+
+## H02: Reproducibility check
+
+Date: 2026-09-30 (Europe/Istanbul).
+Status: partially complete; awaiting user approval to commit. Documentation-only change.
+
+| Check | Result |
+| --- | --- |
+| `git clone` of the local repo into a temp directory, `local.properties` copied in, `./gradlew :app:testLiveDebugUnitTest :app:assembleLiveDebug :app:assembleDemoDebug` | Passed in 23s (existing NDK/strip warnings only) |
+| Tracked-file review (`git ls-files`) | Only sources, schemas, docs, Gradle wrapper/config; no `local.properties`, keys, `.env`, or build output |
+| Working tree | Clean before this record |
+| Demo repeat | Done in the Q03 walkthrough on the API 29 emulator |
+| `git remote -v` | No remote configured |
+
+The clean-clone run did not repeat device tests; those were recorded under Q02/Q03.
+
+### Practice change (prepared, not applied)
+
+Change the default magnitude threshold (`NotificationPreferences.DEFAULT_MAGNITUDE_THRESHOLD`,
+currently 4.0) and follow it through `DataStoreNotificationPreferencesRepository`
+and `NotificationEligibilityPolicyTest`. A second option: shorten
+`NotificationEligibilityPolicy.ELIGIBILITY_WINDOW` (24 h) and update the late-record
+cases in the decision table and tests. Both touch one rule, one persistence path,
+and the tests, which suits an interview walkthrough.
+
+### Remaining
+
+- Publication and the repository URL: no destination has been authorized.
+- Interview preparation and environment readiness are the user's to confirm.

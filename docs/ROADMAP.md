@@ -372,12 +372,18 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### H02 - Verify reproducibility and prepare the interview
 
-- [ ] Run the documented setup from a clean checkout, repeat the demo, review
+- [x] Run the documented setup from a clean checkout, repeat the demo, review
   tracked files, and prepare a small practice change to a rule or UI behavior.
 - Done when: documented commands work, the repository contains the deliverable,
   the development environment is ready, and the architecture can be explained
   using the actual code. Provide a repository URL once a destination is available.
 - Depends on: H01. An absent remote destination blocks publication, not local work.
+- Result: a fresh local clone (plus the untracked `local.properties`) passed the JVM
+  tests and built both flavors; the demo was repeated during Q03; tracked files
+  contain no credentials, signing keys, `local.properties`, or build output. A
+  practice change is prepared in the Work Log but not applied. **Blocked:** no remote
+  exists, so publication and the repository URL are pending an authorized
+  destination; the interview-readiness item stays open for the user.
 
 ## Completion checklist
 
@@ -417,6 +423,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | Q02 | Committed: e7b4d9b | Live/demo flavors and isolated demo scenario; 53 JVM tests, 55 live and 57 demo device tests, lint (0 errors) on both variants passed |
 | Q03 | Verified, awaiting commit approval | Automated suites plus manual API 29 walkthrough; Android 13+ permission denial not exercised |
 | H01 | Verified, awaiting commit approval | README and usage-report summary written; commands checked against build config; clean-checkout run deferred to H02 |
+| H02 | Partially done | Clean-clone build/tests and tracked-file review passed; remote publication and interview preparation pending the user |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.
