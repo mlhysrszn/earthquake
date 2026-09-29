@@ -6,6 +6,11 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
+data class PersistedEarthquakeSnapshot(
+    val earthquakes: List<EarthquakeEntity>,
+    val syncMetadata: SyncMetadataEntity?,
+)
+
 @Dao
 abstract class EarthquakeDao {
     @Query(
@@ -56,6 +61,13 @@ abstract class EarthquakeDao {
 
     @Query("SELECT * FROM sync_metadata WHERE id = ${SyncMetadataEntity.SINGLETON_ID}")
     abstract suspend fun getSyncMetadata(): SyncMetadataEntity?
+
+    @Transaction
+    open suspend fun loadPersistedSnapshot(): PersistedEarthquakeSnapshot =
+        PersistedEarthquakeSnapshot(
+            earthquakes = getAllEarthquakes(),
+            syncMetadata = getSyncMetadata(),
+        )
 
     @Upsert
     abstract suspend fun upsertSyncMetadata(metadata: SyncMetadataEntity)

@@ -6,8 +6,9 @@ deterministic sample repository, Room event store, list ViewModel/state, and
 Compose list/detail screens and Navigation 3 are implemented. The USGS feed
 client, mapper, and Room-backed repository synchronization are implemented;
 notification preferences, settings UI, and permission-state integration are
-implemented. The pure Kotlin notification eligibility policy is implemented;
-persistent processing, OS delivery, and remaining product features are pending.
+implemented. The pure Kotlin notification eligibility policy and persistent
+event/alias processing, baseline, and retry state are implemented; OS delivery and
+remaining product features are pending.
 
 ## Purpose
 
@@ -219,6 +220,9 @@ implementations in one variant.
 - The Worker triggers orchestration and maps outcomes to WorkManager results.
 - Threshold, new-event, and previously-notified rules belong to domain behavior.
 - The data package owns persistent event, notification, and synchronization records.
+- Notification processing state persists baselines, canonical identities/aliases,
+  decisions, and pending outcomes. A singleton processor serializes foreground/
+  background callers and uses Room compare-and-set transactions.
 - The notifications package implements a domain notification port using Android
   APIs. Domain rules do not reference NotificationManager or Context.
 - Coordinate foreground refreshes and background work. An in-memory set of IDs

@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, and N04 are committed.
+L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, N04, and N05 are committed.
 
 ## Goal
 
@@ -255,11 +255,15 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### N05 - Add persistent notification processing state
 
-- [ ] Store processed event identities, baselines, and notification outcomes;
+- [x] Store processed event identities, baselines, and notification outcomes;
   define retry/crash behavior and coordinate concurrent processors.
 - Done when: integration tests cover restart and concurrent processing without
   reselecting already handled events contrary to the policy.
 - Depends on: N04, D02.
+- Result: Room v2 migration adds canonical identity/alias history, baseline/cursor,
+  and notification outcomes. A singleton processor commits decisions atomically,
+  recovers pending work after restart, and serializes concurrent calls. Six
+  instrumentation cases cover these flows and migration.
 
 ### N06 - Implement the Android notification adapter
 
@@ -370,6 +374,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | N02 | Committed | DataStore preferences; 36 JVM tests, 28 device tests, debug build and lint passed |
 | N03 | Committed | Notification settings/permission UI; 39 JVM tests, 32 device tests, debug build and lint passed |
 | N04 | Committed | Pure eligibility policy; 46 JVM tests passed, including seven policy cases |
+| N05 | Committed | Persistent processing/baseline/alias state; 46 JVM tests and 39 device tests passed, debug build and lint passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

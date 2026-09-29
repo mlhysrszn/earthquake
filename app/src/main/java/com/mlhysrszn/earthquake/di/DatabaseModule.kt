@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import com.mlhysrszn.earthquake.data.local.room.EarthquakeDao
 import com.mlhysrszn.earthquake.data.local.room.EarthquakeDatabase
+import com.mlhysrszn.earthquake.data.local.room.EarthquakeDatabaseMigrations
+import com.mlhysrszn.earthquake.data.local.room.NotificationProcessingDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,12 +24,17 @@ object DatabaseModule {
         context,
         EarthquakeDatabase::class.java,
         DATABASE_NAME,
-    ).build()
+    ).addMigrations(EarthquakeDatabaseMigrations.MIGRATION_1_2).build()
 
     @Provides
     @Singleton
     fun provideEarthquakeDao(database: EarthquakeDatabase): EarthquakeDao =
         database.earthquakeDao()
+
+    @Provides
+    @Singleton
+    fun provideNotificationProcessingDao(database: EarthquakeDatabase): NotificationProcessingDao =
+        database.notificationProcessingDao()
 
     private const val DATABASE_NAME = "earthquake.db"
 }

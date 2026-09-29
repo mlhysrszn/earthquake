@@ -4,10 +4,18 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [EarthquakeEntity::class, SyncMetadataEntity::class],
-    version = 1,
+    entities = [
+        EarthquakeEntity::class,
+        SyncMetadataEntity::class,
+        NotificationProcessingEntity::class,
+        NotificationEventAliasEntity::class,
+        NotificationProcessingMetadataEntity::class,
+    ],
+    version = 2,
     exportSchema = true,
 )
 abstract class EarthquakeDatabase : RoomDatabase() {
     abstract fun earthquakeDao(): EarthquakeDao
+
+    abstract fun notificationProcessingDao(): NotificationProcessingDao
 }

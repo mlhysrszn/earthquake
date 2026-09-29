@@ -95,8 +95,17 @@ class UsgsGeoJsonMapper @Inject constructor(
             latitude = coordinates.latitude,
             depthKm = coordinates.depthKm,
             sourceUrl = properties.url,
+            aliases = parseAliases(id, properties.ids),
         )
     }
+
+    private fun parseAliases(canonicalId: String, sourceIds: String?): Set<String> =
+        sourceIds.orEmpty()
+            .split(',')
+            .asSequence()
+            .map(String::trim)
+            .filter { it.isNotEmpty() && it != canonicalId }
+            .toSet()
 
     private fun decodeFeature(feature: JsonObject): Earthquake? {
         val dto = try {

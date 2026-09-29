@@ -17,6 +17,7 @@
         "url": "https://earthquake.usgs.gov/example/negative",
         "magType": "md",
         "type": "earthquake",
+        "ids": ",us7000fixture, us7000alternate,us7000fixture,,",
         "reviewed": true
       },
       "geometry": {

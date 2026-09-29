@@ -252,3 +252,16 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Human role: authorized continuing after the N03 checkpoint and approved the
   N04 commit.
 - Total elapsed development time was not measured.
+
+
+## N05: Persistent notification processing state
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: added alias persistence and Room migration, baseline/cursor/outcome
+  storage, a concurrency-coordinated processor, restart/retry tests, and records.
+- Verification: 46 JVM tests and 39 Android tests passed; debug build, test APK
+  assembly, schema migration, and lint passed. No OS notification was sent.
+- Human role: authorized continuing after the N04 checkpoint and approved the
+  N05 commit.
+- Total elapsed development time was not measured.

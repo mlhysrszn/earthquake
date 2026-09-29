@@ -1,10 +1,14 @@
 package com.mlhysrszn.earthquake.data.local.room
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.mlhysrszn.earthquake.domain.model.Earthquake
 import java.time.Instant
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @Entity(
     tableName = "earthquakes",
@@ -21,6 +25,7 @@ data class EarthquakeEntity(
     val latitude: Double?,
     val depthKm: Double?,
     val sourceUrl: String?,
+    @ColumnInfo(defaultValue = "'[]'") val aliasIdsJson: String = "[]",
 )
 
 fun Earthquake.toEntity(): EarthquakeEntity = EarthquakeEntity(
@@ -34,6 +39,7 @@ fun Earthquake.toEntity(): EarthquakeEntity = EarthquakeEntity(
     latitude = latitude,
     depthKm = depthKm,
     sourceUrl = sourceUrl,
+    aliasIdsJson = aliases.toJsonString(),
 )
 
 fun EarthquakeEntity.toDomain(): Earthquake = Earthquake(
@@ -47,4 +53,11 @@ fun EarthquakeEntity.toDomain(): Earthquake = Earthquake(
     latitude = latitude,
     depthKm = depthKm,
     sourceUrl = sourceUrl,
+    aliases = aliasIdsJson.toAliasSet(),
 )
+
+private fun Set<String>.toJsonString(): String =
+    Json.encodeToString(sorted())
+
+private fun String.toAliasSet(): Set<String> =
+    Json.decodeFromString<List<String>>(this).toSet()

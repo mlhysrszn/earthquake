@@ -1,7 +1,9 @@
 # Notification Decision Table
 
-Status: N01 policy; implementation is planned in N04-N07. This document is the
-source of truth for event eligibility, baselines, deduplication, and suppression.
+Status: N01 policy is implemented by the N04 pure eligibility policy and N05
+persistent processor. N06/N07 add Android delivery and scheduling. This document
+is the source of truth for event eligibility, baselines, deduplication, and
+suppression.
 
 ## Inputs and evaluation boundary
 

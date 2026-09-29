@@ -14,6 +14,7 @@ data class Earthquake(
     val latitude: Double?,
     val depthKm: Double?,
     val sourceUrl: String?,
+    val aliases: Set<String> = emptySet(),
 ) {
     init {
         require(id.isNotBlank()) { "Earthquake ID must not be blank" }

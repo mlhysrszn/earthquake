@@ -1,17 +1,28 @@
 package com.mlhysrszn.earthquake.data.local.room
 
 import androidx.room.Room
+import androidx.room.migration.AutoMigrationSpec
+import androidx.room.testing.MigrationTestHelper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import java.util.UUID
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
+import org.junit.Rule
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class EarthquakeDatabaseTest {
+    @get:Rule
+    val migrationTestHelper = MigrationTestHelper(
+        InstrumentationRegistry.getInstrumentation(),
+        EarthquakeDatabase::class.java,
+        emptyList<AutoMigrationSpec>(),
+    )
+
     private val nowEpochMillis = 24L * 60 * 60 * 1_000 + 15_000L
 
     private val context
@@ -161,6 +172,54 @@ class EarthquakeDatabaseTest {
             assertEquals(20_000L, dao.getSyncMetadata()?.sourceGeneratedAtEpochMillis)
         } finally {
             reopenedDatabase.close()
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    @Test
+    fun v1MigrationPreservesEventRowsAndCreatesNotificationStateTables() = runBlocking {
+        val databaseName = "notification-state-migration-${UUID.randomUUID()}.db"
+        val oldDatabase = migrationTestHelper.createDatabase(databaseName, 1)
+        oldDatabase.execSQL(
+            """
+            INSERT INTO earthquakes (
+                id, magnitude, magnitudeType, place, occurredAtEpochMillis,
+                updatedAtEpochMillis, longitude, latitude, depthKm, sourceUrl
+            ) VALUES ('existing-event', 4.0, 'ml', 'Legacy event', 12345,
+                NULL, -122.0, 37.0, 8.0, NULL)
+            """.trimIndent(),
+        )
+        oldDatabase.execSQL(
+            """
+            INSERT INTO sync_metadata (
+                id, sourceGeneratedAtEpochMillis, lastSuccessfulFetchAtEpochMillis
+            ) VALUES (0, 12000, 12400)
+            """.trimIndent(),
+        )
+        oldDatabase.close()
+
+        migrationTestHelper.runMigrationsAndValidate(
+            databaseName,
+            2,
+            true,
+            EarthquakeDatabaseMigrations.MIGRATION_1_2,
+        ).close()
+
+        val migratedDatabase = Room.databaseBuilder(
+            context,
+            EarthquakeDatabase::class.java,
+            databaseName,
+        ).addMigrations(EarthquakeDatabaseMigrations.MIGRATION_1_2).build()
+        try {
+            val dao = migratedDatabase.earthquakeDao()
+            val processingDao = migratedDatabase.notificationProcessingDao()
+            assertEquals("Legacy event", dao.findEarthquake("existing-event")?.place)
+            assertEquals("[]", dao.findEarthquake("existing-event")?.aliasIdsJson)
+            assertEquals(12000L, dao.getSyncMetadata()?.sourceGeneratedAtEpochMillis)
+            assertNull(processingDao.getMetadata())
+            assertEquals(emptyList<NotificationProcessingEntity>(), processingDao.getAllEventStates())
+        } finally {
+            migratedDatabase.close()
             context.deleteDatabase(databaseName)
         }
     }

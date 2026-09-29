@@ -32,6 +32,7 @@ internal data class UsgsPropertiesDto(
     val url: String? = null,
     @SerialName("magType") val magnitudeType: String? = null,
     val type: String? = null,
+    val ids: String? = null,
 )
 
 @Serializable

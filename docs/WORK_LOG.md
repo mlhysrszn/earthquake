@@ -826,3 +826,55 @@ This policy-only task required no device test. The existing DataStore/protobuf J
 
 Message: `feat: add notification eligibility policy`.
 Scope is limited to the pure domain policy/tests and linked English documentation.
+
+
+## N05: Persistent notification processing state
+
+Date: 2026-09-29 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope
+
+- Bumped Room schema to version 2 with a tested migration from version 1. Persisted
+  canonical notification outcomes, processed event aliases, baseline/cursor state,
+  and local decision timestamps.
+- Persisted and normalized USGS `properties.ids` aliases in event rows. The
+  processor maps canonical IDs and aliases, and quarantines conflicting mappings
+  without reassigning existing identities.
+- Added singleton `NotificationProcessor`. It reads accepted Room snapshots,
+  preferences and permission state, applies N04 policy decisions, and atomically
+  commits per-event outcomes with a compare-and-set feed cursor. A `Mutex`
+  serializes concurrent calls in the app process.
+- Eligible events are persisted as `PENDING` before future delivery. Pending items
+  can be marked `POSTED`, `RETRYABLE`, or permission-suppressed. Pending work
+  survives restart for retry; it expires outside the 24-hour event window.
+  Terminal event/alias history is pruned after 30 days. N05 does not send OS
+  notifications; N06/N07 will consume pending items.
+- Added instrumentation tests for initial baseline/new-event processing, alias
+  deduplication/conflicts, disabled/denied suppression without replay, process
+  restart/recovery, concurrent calls, delivery retry/permission suppression, and
+  the schema migration.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `sudo -u mlhysrszn -H ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest --console=plain` | Passed; Gradle reported 4s, 85 tasks (6 executed, 79 up-to-date) |
+| JVM unit tests | 46 passed, 0 failures/errors/skips |
+| `sudo -u mlhysrszn -H ./gradlew :app:connectedDebugAndroidTest --console=plain` | Passed on Android 10 / API 29; 39 tests, 0 failures/errors/skips (6 processor, 1 migration) |
+| `sudo -u mlhysrszn -H ./gradlew :app:lintDebug --console=plain` | Passed; Gradle reported 5s, 31 tasks (7 executed, 24 up-to-date) |
+| `git diff --check` | Passed |
+| Generated Room schema | Version 2 generated, including notification state and alias tables |
+
+No OS notification was posted in this task. Retry outcomes are exposed for the
+N06 adapter; scheduling and foreground/background orchestration remain N07.
+Instrumentation used Room/fake preferences and no network. Existing protobuf/
+DataStore JVM 25 deprecation warnings remain. Total development time was not
+measured.
+
+### Commit
+
+Message: `feat: persist notification processing state`.
+Scope is limited to notification state entities/DAO/processor, the Room v2
+migration/schema, USGS alias persistence, focused integration tests, and updated
+English project records.

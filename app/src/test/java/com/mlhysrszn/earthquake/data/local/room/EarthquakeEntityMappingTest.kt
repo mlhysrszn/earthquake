@@ -20,6 +20,7 @@ class EarthquakeEntityMappingTest {
             latitude = 61.0,
             depthKm = 20.0,
             sourceUrl = "https://earthquake.usgs.gov/example",
+            aliases = setOf("alias-b", "alias-a"),
         )
 
         val entity = earthquake.toEntity()

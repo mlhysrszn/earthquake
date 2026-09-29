@@ -23,6 +23,10 @@ class UsgsGeoJsonMapperTest {
         assertEquals(61.0, feed.earthquakes[1].latitude!!, 0.0)
         assertEquals(20.0, feed.earthquakes[1].depthKm!!, 0.0)
         assertEquals("md", feed.earthquakes[1].magnitudeType)
+        assertEquals(
+            setOf("us7000fixture", "us7000alternate"),
+            feed.earthquakes[1].aliases,
+        )
         assertEquals(Instant.ofEpochMilli(1790596801000), feed.earthquakes[1].updatedAt)
         assertEquals(Instant.ofEpochMilli(1790596800000), feed.sourceGeneratedAt)
     }

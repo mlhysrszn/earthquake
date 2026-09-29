@@ -4,7 +4,8 @@ Status: the initial domain model, list repository contract, deterministic sample
 repository, USGS feed client/mapper, Room event store, USGS-to-Room repository
 synchronization, typed detail navigation, detail lookup, and persisted notification
 preferences/settings, and pure notification eligibility policy are implemented.
-Persistent notification processing and delivery remain pending.
+Persistent notification baselines, identities, aliases, and outcomes are
+implemented. OS notification delivery and scheduling remain pending.
 See the [roadmap](ROADMAP.md) for delivery order and the
 [architecture](ARCHITECTURE.md) for package responsibilities inside app.
 
@@ -100,6 +101,13 @@ Notification preferences default to disabled with a magnitude threshold of 4.0.
 The accepted threshold range is 0.0 through 9.5 in 0.5 steps. Invalid writes are
 rejected without changing the saved setting; invalid persisted threshold values
 fall back to 4.0. OS notification permission is not stored as a user preference.
+
+Notification processing stores a first-sync baseline, source cursor, canonical
+event identities/aliases, and decision outcomes. Decision batches and their cursor
+commit in a Room transaction with compare-and-set protection. Pending outcomes
+survive restart, can be marked posted/retryable/permission-suppressed, and expire
+when the event leaves the 24-hour window. Terminal identity/outcome history is
+retained for 30 days; baseline/cursor metadata is retained independently.
 
 The initial `EarthquakeRepository` contract exposes a Flow of the rolling
 24-hour list, newest first, and a suspend refresh operation. Refresh outcomes are
