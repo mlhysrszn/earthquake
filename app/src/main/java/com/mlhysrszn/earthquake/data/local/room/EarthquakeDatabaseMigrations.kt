@@ -83,4 +83,19 @@ object EarthquakeDatabaseMigrations {
             )
         }
     }
+
+    val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS demo_scenario_events (
+                    id TEXT NOT NULL,
+                    kind TEXT NOT NULL,
+                    addedAtEpochMillis INTEGER NOT NULL,
+                    PRIMARY KEY(id)
+                )
+                """.trimIndent(),
+            )
+        }
+    }
 }

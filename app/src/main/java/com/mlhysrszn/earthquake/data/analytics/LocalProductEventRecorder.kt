@@ -6,6 +6,7 @@ import com.mlhysrszn.earthquake.domain.model.ProductEventEnvironment
 import com.mlhysrszn.earthquake.domain.model.ProductEventName
 import com.mlhysrszn.earthquake.domain.repository.ProductEventRecorder
 import com.mlhysrszn.earthquake.domain.repository.ProductEventRepository
+import com.mlhysrszn.earthquake.di.AppVariantConfiguration
 import java.time.Clock
 import java.util.UUID
 import javax.inject.Inject
@@ -17,11 +18,11 @@ import kotlinx.coroutines.CancellationException
 class LocalProductEventRecorder @Inject constructor(
     private val repository: ProductEventRepository,
     private val clock: Clock,
+    private val variantConfiguration: AppVariantConfiguration,
 ) : ProductEventRecorder {
     override suspend fun record(
         name: ProductEventName,
         properties: Map<String, String>,
-        environment: ProductEventEnvironment,
     ) {
         try {
             repository.record(
@@ -29,7 +30,7 @@ class LocalProductEventRecorder @Inject constructor(
                     id = UUID.randomUUID().toString(),
                     name = name,
                     occurredAt = clock.instant(),
-                    environment = environment,
+                    environment = variantConfiguration.environment,
                     properties = properties.toMap(),
                 ),
             )

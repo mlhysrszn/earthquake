@@ -1039,3 +1039,47 @@ Total development time was not measured.
 Message: `feat: record local product events`.
 Scope is limited to the local event model/storage/migration, event instrumentation,
 focused tests, event-definition documentation, and English project records.
+
+
+## Q02: Isolated demo scenario
+
+Date: 2026-09-30 (Europe/Istanbul).
+Status: verified; awaiting user approval to commit.
+
+### Scope
+
+- Added `live` and `demo` product flavors. `AppVariantConfiguration` supplies the
+  product-event environment, Room file, DataStore file, and unique periodic work
+  name; the demo uses `earthquake_demo.db`, `notification_preferences_demo`,
+  `earthquake-periodic-sync-demo`, and the `.demo` application ID. Live keeps its
+  previous names, so existing live data is not orphaned.
+- Room v3→v4 adds `demo_scenario_events` (migration and schema 4 exported). The
+  demo repository derives snapshots from it; a demo controller adds below/above
+  threshold events, replays the latest event as a duplicate, and resets
+  (`clearAllTables` on the demo database only). Live binds an unavailable no-op
+  controller. Controls appear in the demo build's notification settings screen and
+  every action refreshes through the shared refresher and notification pipeline.
+- `ProductEventRecorder` no longer takes an environment argument; the variant
+  configuration labels events. DataStore instances are cached per file for the
+  process to avoid duplicate-store errors when Hilt components are recreated.
+- Test updates: recorder lambdas, migration builders, and package-name assertion;
+  new `DemoScenarioFlowTest` (demo-only) covers baseline, below threshold, above
+  threshold, duplicate, and reset through the real processor.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `./gradlew :app:testLiveDebugUnitTest :app:testDemoDebugUnitTest :app:lintLiveDebug :app:lintDemoDebug` | Passed; 53 JVM tests, lint 0 errors / 23 warnings on each variant |
+| `./gradlew :app:connectedDemoDebugAndroidTest :app:connectedLiveDebugAndroidTest` | Passed on Android 10 / API 29; 57 demo and 55 live tests, 0 failures |
+| Manual demo launch | Demo app opened with the demo label; settings screen showed the scenario controls and adding an event updated the count |
+
+### Limitations
+
+Notification posting for the demo was verified through instrumentation, not by
+tapping through the demo UI. Demo reset also clears the demo product-event log.
+Android 13+ permission UI was not exercised. Total development time was not measured.
+
+### Commit
+
+Not committed; waiting for explicit approval.

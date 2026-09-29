@@ -38,7 +38,7 @@ class NotificationSettingsViewModelTest {
     fun enablingRecordsCorrelatedSetupAttemptAndCompletionAfterPreferenceSave() = runTest(dispatcher) {
         val repository = FakePreferencesRepository()
         val events = mutableListOf<Pair<ProductEventName, Map<String, String>>>()
-        val viewModel = NotificationSettingsViewModel(repository) { name, properties, _ ->
+        val viewModel = NotificationSettingsViewModel(repository) { name, properties ->
             events += name to properties
         }
         val store = ViewModelStore().apply { put("settings", viewModel) }
@@ -70,7 +70,7 @@ class NotificationSettingsViewModelTest {
     fun permissionOutcomeIsTrackedIndependentlyFromPreference() = runTest(dispatcher) {
         val repository = FakePreferencesRepository()
         val events = mutableListOf<ProductEventName>()
-        val viewModel = NotificationSettingsViewModel(repository) { name, _, _ -> events += name }
+        val viewModel = NotificationSettingsViewModel(repository) { name, _ -> events += name }
         val store = ViewModelStore().apply { put("settings", viewModel) }
 
         try {
@@ -88,7 +88,7 @@ class NotificationSettingsViewModelTest {
     fun failedPreferenceWriteCountsAsSetupAttemptButNotCompletion() = runTest(dispatcher) {
         val repository = FakePreferencesRepository().apply { failEnabledWrite = true }
         val events = mutableListOf<ProductEventName>()
-        val viewModel = NotificationSettingsViewModel(repository) { name, _, _ -> events += name }
+        val viewModel = NotificationSettingsViewModel(repository) { name, _ -> events += name }
         val store = ViewModelStore().apply { put("settings", viewModel) }
 
         try {

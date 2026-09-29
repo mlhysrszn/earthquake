@@ -314,3 +314,16 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
   Q01 commit.
 - Limitations: Android 13+ permission UI was unavailable; there is no user-facing
   event dashboard, and total development time was not measured.
+
+
+## Q02: Isolated demo scenario
+
+- Assistant: Claude Code, Claude Sonnet 5.5 (`claude-sonnet-5-5`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: completed the partially started flavor/DI/demo-storage work, added the
+  demo controller, scenario UI and tests, fixed affected tests, and updated records.
+- Verification: 53 JVM tests, 55 live and 57 demo Android tests, and lint on both
+  variants passed; demo app launched manually.
+- Human role: asked to continue, and fixed file ownership with `sudo chown`
+  after root-owned files blocked edits. Commit approval is pending.
+- Limitations: see the Q02 work log entry; development time was not measured.

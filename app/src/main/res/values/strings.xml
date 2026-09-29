@@ -43,4 +43,10 @@
     <string name="notification_title">Yeni deprem: büyüklük %1$s</string>
     <string name="notification_title_unknown">Yeni deprem</string>
     <string name="notification_body">%1$s · Oluşma zamanı: %2$s</string>
+    <string name="demo_scenario_title">Demo senaryosu</string>
+    <string name="demo_scenario_status">Demo olayları: %1$d</string>
+    <string name="demo_add_below">Eşik altı olay ekle</string>
+    <string name="demo_add_above">Eşik üstü olay ekle</string>
+    <string name="demo_replay_duplicate">Son olayı tekrar gönder</string>
+    <string name="demo_reset">Demoyu sıfırla</string>
 </resources>

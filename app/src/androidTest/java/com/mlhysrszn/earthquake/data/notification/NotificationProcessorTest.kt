@@ -364,6 +364,7 @@ class NotificationProcessorTest {
     ).addMigrations(
         EarthquakeDatabaseMigrations.MIGRATION_1_2,
         EarthquakeDatabaseMigrations.MIGRATION_2_3,
+        EarthquakeDatabaseMigrations.MIGRATION_3_4,
     ).build()
 
     private fun event(

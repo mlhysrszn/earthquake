@@ -22,6 +22,18 @@ android {
         testInstrumentationRunner = "com.mlhysrszn.earthquake.HiltTestRunner"
     }
 
+    flavorDimensions += "environment"
+    productFlavors {
+        create("live") {
+            dimension = "environment"
+        }
+        create("demo") {
+            dimension = "environment"
+            applicationIdSuffix = ".demo"
+            versionNameSuffix = "-demo"
+        }
+    }
+
     buildTypes {
         release {
             optimization {

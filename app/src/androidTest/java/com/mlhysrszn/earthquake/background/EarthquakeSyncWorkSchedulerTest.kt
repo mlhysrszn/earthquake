@@ -5,23 +5,31 @@ import androidx.work.Configuration
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.testing.WorkManagerTestInitHelper
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 
+@HiltAndroidTest
 class EarthquakeSyncWorkSchedulerTest {
+    @get:Rule
+    val hiltRule = HiltAndroidRule(this)
+
     private val context
         get() = InstrumentationRegistry.getInstrumentation().targetContext
 
-    private lateinit var scheduler: EarthquakeSyncWorkScheduler
+    @Inject lateinit var scheduler: EarthquakeSyncWorkScheduler
 
     @Before
     fun initializeWorkManager() {
+        hiltRule.inject()
         WorkManagerTestInitHelper.initializeTestWorkManager(context, Configuration.Builder().build())
-        scheduler = EarthquakeSyncWorkScheduler(context)
         WorkManager.getInstance(context).cancelAllWork().result.get(10, TimeUnit.SECONDS)
     }
 
@@ -36,19 +44,19 @@ class EarthquakeSyncWorkSchedulerTest {
 
         scheduler.setNotificationsEnabled(true).result.get(10, TimeUnit.SECONDS)
         val first = workManager.getWorkInfosForUniqueWork(
-            EarthquakeSyncWorkScheduler.UNIQUE_WORK_NAME,
+            scheduler.uniqueWorkName,
         ).get(10, TimeUnit.SECONDS).single()
 
         scheduler.setNotificationsEnabled(true).result.get(10, TimeUnit.SECONDS)
         val afterDuplicateSchedule = workManager.getWorkInfosForUniqueWork(
-            EarthquakeSyncWorkScheduler.UNIQUE_WORK_NAME,
+            scheduler.uniqueWorkName,
         ).get(10, TimeUnit.SECONDS).single()
         assertEquals(first.id, afterDuplicateSchedule.id)
         assertEquals(WorkInfo.State.ENQUEUED, afterDuplicateSchedule.state)
 
         scheduler.setNotificationsEnabled(false).result.get(10, TimeUnit.SECONDS)
         val afterCancel = workManager.getWorkInfosForUniqueWork(
-            EarthquakeSyncWorkScheduler.UNIQUE_WORK_NAME,
+            scheduler.uniqueWorkName,
         ).get(10, TimeUnit.SECONDS).single()
         assertEquals(WorkInfo.State.CANCELLED, afterCancel.state)
     }

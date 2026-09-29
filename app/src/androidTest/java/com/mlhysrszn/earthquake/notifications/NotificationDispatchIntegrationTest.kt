@@ -102,7 +102,7 @@ class NotificationDispatchIntegrationTest {
             val sharedRefresher = NotificationAwareEarthquakeRefresher(
                 earthquakeRepository = FakeEarthquakeRepository(earthquake),
                 dispatchPendingNotifications = DispatchPendingNotifications { dispatcher.dispatch() },
-                productEventRecorder = ProductEventRecorder { _, _, _ -> },
+                productEventRecorder = ProductEventRecorder { _, _ -> },
             )
             assertEquals(
                 RefreshResult.Success(acceptedEventCount = 1),

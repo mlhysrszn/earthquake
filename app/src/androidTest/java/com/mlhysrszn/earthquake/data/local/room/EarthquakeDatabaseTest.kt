@@ -212,6 +212,7 @@ class EarthquakeDatabaseTest {
         ).addMigrations(
             EarthquakeDatabaseMigrations.MIGRATION_1_2,
             EarthquakeDatabaseMigrations.MIGRATION_2_3,
+            EarthquakeDatabaseMigrations.MIGRATION_3_4,
         ).build()
         try {
             val dao = migratedDatabase.earthquakeDao()
@@ -252,7 +253,10 @@ class EarthquakeDatabaseTest {
             context,
             EarthquakeDatabase::class.java,
             databaseName,
-        ).addMigrations(EarthquakeDatabaseMigrations.MIGRATION_2_3).build()
+        ).addMigrations(
+            EarthquakeDatabaseMigrations.MIGRATION_2_3,
+            EarthquakeDatabaseMigrations.MIGRATION_3_4,
+        ).build()
         try {
             assertEquals(
                 "POSTED",
@@ -260,6 +264,39 @@ class EarthquakeDatabaseTest {
                     .getEventState("existing-event")?.outcome,
             )
             assertEquals(emptyList<ProductEventEntity>(), migratedDatabase.productEventDao().getRecent(10))
+        } finally {
+            migratedDatabase.close()
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    @Test
+    fun v3MigrationAddsDemoScenarioStorageWithoutChangingProductEvents() = runBlocking {
+        val databaseName = "demo-scenario-migration-${UUID.randomUUID()}.db"
+        val oldDatabase = migrationTestHelper.createDatabase(databaseName, 3)
+        oldDatabase.execSQL(
+            """
+            INSERT INTO product_events (id, name, occurredAtEpochMillis, environment, propertiesJson)
+            VALUES ('live-event', 'SCREEN_VIEW', 1000, 'LIVE', '{"screen":"list"}')
+            """.trimIndent(),
+        )
+        oldDatabase.close()
+
+        migrationTestHelper.runMigrationsAndValidate(
+            databaseName,
+            4,
+            true,
+            EarthquakeDatabaseMigrations.MIGRATION_3_4,
+        ).close()
+
+        val migratedDatabase = Room.databaseBuilder(
+            context,
+            EarthquakeDatabase::class.java,
+            databaseName,
+        ).addMigrations(EarthquakeDatabaseMigrations.MIGRATION_3_4).build()
+        try {
+            assertEquals(1, migratedDatabase.productEventDao().getRecent(10).size)
+            assertEquals(emptyList<DemoScenarioEntity>(), migratedDatabase.demoScenarioDao().getAll())
         } finally {
             migratedDatabase.close()
             context.deleteDatabase(databaseName)

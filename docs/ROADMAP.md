@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, N04, N05, N06, N07, and Q01 are committed.
+L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, N04, N05, N06, N07, and Q01 are committed. Q02 is verified and awaiting commit approval.
 
 ## Goal
 
@@ -322,12 +322,19 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### Q02 - Add an isolated demo scenario
 
-- [ ] Provide a clearly labeled demo that injects events through the real domain
+- [x] Provide a clearly labeled demo that injects events through the real domain
   rules and delivery adapter. Select sources through build-variant Hilt bindings
   with separate storage and work configuration.
 - Done when: the demo can show an event below threshold, one above threshold, and
   a duplicate; it resets predictably and cannot mix with live records.
 - Depends on: Q01.
+- Result: `live`/`demo` product flavors (demo has `.demo` application ID, its own
+  Room file, DataStore file, and WorkManager unique name) select bindings through
+  flavor-specific Hilt modules. The demo repository builds snapshots from a
+  scenario table and runs through the real refresher, eligibility policy, and
+  notification adapter. The demo build's notification settings screen adds
+  below-threshold, above-threshold, duplicate-replay, and reset controls; live
+  builds bind a no-op controller. Live keeps its previous storage names.
 
 ### Q03 - Run the acceptance walkthrough
 
@@ -397,6 +404,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | N06 | Committed | Notification channel/adapter and pending dispatcher; 46 JVM tests, 41 device tests, debug build and lint passed |
 | N07 | Committed | Hilt Worker and preference-driven unique periodic scheduling; 50 JVM tests, 50 device tests, debug build and lint passed; merged manifest checked |
 | Q01 | Committed | Local Room product events and prior-flow instrumentation; 53 JVM tests, 54 device tests, schema migration, debug build and lint passed |
+| Q02 | Verified, awaiting commit approval | Live/demo flavors and isolated demo scenario; 53 JVM tests, 55 live and 57 demo device tests, lint (0 errors) on both variants passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

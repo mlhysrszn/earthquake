@@ -111,6 +111,7 @@ fun NotificationSettingsRoute(
                 },
             )
         },
+        demoContent = { DemoScenarioSection() },
     )
 }
 
@@ -123,6 +124,7 @@ fun NotificationSettingsScreen(
     onThresholdChange: (Double) -> Unit,
     onOpenSystemSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    demoContent: @Composable () -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -217,6 +219,8 @@ fun NotificationSettingsScreen(
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
+
+            demoContent()
         }
     }
 }

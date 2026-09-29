@@ -2,6 +2,7 @@ package com.mlhysrszn.earthquake.di
 
 import android.content.Context
 import androidx.room.Room
+import com.mlhysrszn.earthquake.data.local.room.DemoScenarioDao
 import com.mlhysrszn.earthquake.data.local.room.EarthquakeDao
 import com.mlhysrszn.earthquake.data.local.room.EarthquakeDatabase
 import com.mlhysrszn.earthquake.data.local.room.EarthquakeDatabaseMigrations
@@ -21,13 +22,15 @@ object DatabaseModule {
     @Singleton
     fun provideEarthquakeDatabase(
         @ApplicationContext context: Context,
+        variantConfiguration: AppVariantConfiguration,
     ): EarthquakeDatabase = Room.databaseBuilder(
         context,
         EarthquakeDatabase::class.java,
-        DATABASE_NAME,
+        variantConfiguration.databaseName,
     ).addMigrations(
         EarthquakeDatabaseMigrations.MIGRATION_1_2,
         EarthquakeDatabaseMigrations.MIGRATION_2_3,
+        EarthquakeDatabaseMigrations.MIGRATION_3_4,
     ).build()
 
     @Provides
@@ -45,5 +48,8 @@ object DatabaseModule {
     fun provideProductEventDao(database: EarthquakeDatabase): ProductEventDao =
         database.productEventDao()
 
-    private const val DATABASE_NAME = "earthquake.db"
+    @Provides
+    @Singleton
+    fun provideDemoScenarioDao(database: EarthquakeDatabase): DemoScenarioDao =
+        database.demoScenarioDao()
 }

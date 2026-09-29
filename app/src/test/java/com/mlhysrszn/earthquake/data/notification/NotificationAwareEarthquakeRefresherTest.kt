@@ -27,7 +27,7 @@ class NotificationAwareEarthquakeRefresherTest {
                 dispatchCount++
                 1
             },
-            productEventRecorder = ProductEventRecorder { name, _, _ -> recordedEvents += name },
+            productEventRecorder = ProductEventRecorder { name, _ -> recordedEvents += name },
         )
 
         assertEquals(success, refresher.refresh(RefreshOrigin.FOREGROUND))
@@ -48,7 +48,7 @@ class NotificationAwareEarthquakeRefresherTest {
                 dispatched = true
                 0
             },
-            productEventRecorder = ProductEventRecorder { _, _, _ -> },
+            productEventRecorder = ProductEventRecorder { _, _ -> },
         )
 
         assertEquals(failure, refresher.refresh(RefreshOrigin.FOREGROUND))
@@ -63,7 +63,7 @@ class NotificationAwareEarthquakeRefresherTest {
                 RefreshResult.Success(acceptedEventCount = 0)
             },
             dispatchPendingNotifications = DispatchPendingNotifications { throw IOException() },
-            productEventRecorder = ProductEventRecorder { name, _, _ -> recordedEvents += name },
+            productEventRecorder = ProductEventRecorder { name, _ -> recordedEvents += name },
         )
 
         assertEquals(
@@ -91,7 +91,7 @@ class NotificationAwareEarthquakeRefresherTest {
                 dispatchCount++
                 0
             },
-            productEventRecorder = ProductEventRecorder { _, _, _ -> },
+            productEventRecorder = ProductEventRecorder { _, _ -> },
         )
 
         refresher.refresh(RefreshOrigin.BACKGROUND)
