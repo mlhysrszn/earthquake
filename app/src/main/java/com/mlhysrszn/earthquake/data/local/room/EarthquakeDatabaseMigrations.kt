@@ -5,11 +5,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 object EarthquakeDatabaseMigrations {
     val MIGRATION_1_2 = object : Migration(1, 2) {
-        override fun migrate(database: SupportSQLiteDatabase) {
-            database.execSQL(
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
                 "ALTER TABLE earthquakes ADD COLUMN aliasIdsJson TEXT NOT NULL DEFAULT '[]'",
             )
-            database.execSQL(
+            db.execSQL(
                 """
                 CREATE TABLE IF NOT EXISTS notification_processing (
                     canonicalEventId TEXT NOT NULL,
@@ -23,15 +23,15 @@ object EarthquakeDatabaseMigrations {
                 )
                 """.trimIndent(),
             )
-            database.execSQL(
+            db.execSQL(
                 "CREATE INDEX IF NOT EXISTS index_notification_processing_outcome " +
                     "ON notification_processing (outcome)",
             )
-            database.execSQL(
+            db.execSQL(
                 "CREATE INDEX IF NOT EXISTS index_notification_processing_lastSeenAtEpochMillis " +
                     "ON notification_processing (lastSeenAtEpochMillis)",
             )
-            database.execSQL(
+            db.execSQL(
                 """
                 CREATE TABLE IF NOT EXISTS notification_event_aliases (
                     aliasId TEXT NOT NULL,
@@ -41,11 +41,11 @@ object EarthquakeDatabaseMigrations {
                 )
                 """.trimIndent(),
             )
-            database.execSQL(
+            db.execSQL(
                 "CREATE INDEX IF NOT EXISTS index_notification_event_aliases_canonicalEventId " +
                     "ON notification_event_aliases (canonicalEventId)",
             )
-            database.execSQL(
+            db.execSQL(
                 """
                 CREATE TABLE IF NOT EXISTS notification_processing_metadata (
                     id INTEGER NOT NULL,

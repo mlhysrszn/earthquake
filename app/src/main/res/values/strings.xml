@@ -38,4 +38,9 @@
     <string name="notification_permission_not_required">Bu Android sürümünde ayrıca bildirim izni gerekmiyor.</string>
     <string name="open_notification_settings">Android bildirim ayarlarını aç</string>
     <string name="preferences_save_failed">Ayar kaydedilemedi. Lütfen tekrar deneyin.</string>
+    <string name="notification_channel_name">Deprem bildirimleri</string>
+    <string name="notification_channel_description">Eşiğin üzerindeki yeni depremler</string>
+    <string name="notification_title">Yeni deprem: büyüklük %1$s</string>
+    <string name="notification_title_unknown">Yeni deprem</string>
+    <string name="notification_body">%1$s · Oluşma zamanı: %2$s</string>
 </resources>

@@ -878,3 +878,50 @@ Message: `feat: persist notification processing state`.
 Scope is limited to notification state entities/DAO/processor, the Room v2
 migration/schema, USGS alias persistence, focused integration tests, and updated
 English project records.
+
+
+## N06: Android notification delivery
+
+Date: 2026-09-29 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope
+
+- Added a domain notification request/result port and a Hilt-bound Android sender.
+  It creates the notification channel, checks current runtime/app notification
+  permission, and returns posted, denied/disabled, or retryable failure results.
+- Notifications use the canonical event ID as the stable notification tag and a
+  unique event URI/PendingIntent carrying the feature ID into MainActivity.
+  Navigation 3 seeds the typed list/detail back stack from that event ID, including
+  cold Activity startup.
+- Added `PendingNotificationDispatcher` to deliver N05 pending candidates using
+  Room-cached event details first and the detail endpoint only if missing. It
+  persists POSTED, retryable, expired, and permission-denied outcomes back to N05.
+- Added a monochrome notification icon and localized channel/title/body resources.
+- Added Android integration coverage for the permission-aware post, stable
+  identity, eligible-event processing through the adapter, PendingIntent cold
+  launch, and correct detail screen.
+- Notification scheduling and automatic foreground/background invocation remain
+  N07. Runtime permission prompting on Android 13+ has not been device-tested.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `sudo -u mlhysrszn -H ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest --console=plain` | Passed; Gradle reported 56s, 85 tasks executed |
+| JVM unit tests | 46 passed, 0 failures/errors/skips |
+| `sudo -u mlhysrszn -H ./gradlew :app:connectedDebugAndroidTest --console=plain` | Passed on Android 10 / API 29; 41 tests, 0 failures/errors/skips |
+| `sudo -u mlhysrszn -H ./gradlew :app:lintDebug --console=plain` | Passed; Gradle reported under 1s |
+| `git diff --check` | Passed |
+| Notification interaction | Instrumentation posted a deterministic eligible event and tapped it into its matching detail screen from the launcher |
+
+The API 29 device has no POST_NOTIFICATIONS runtime prompt; the permission-aware
+adapter returned the not-required/granted path. Existing NDK/source-properties and
+protobuf/JVM 25 warnings remain. No automatic Worker or refresh scheduling is
+claimed complete. Total development time was not measured.
+
+### Commit
+
+Message: `feat: add Android earthquake notifications`.
+Scope is limited to the sender port/adapter, notification coordinator and channel,
+event PendingIntent routing, deterministic instrumentation, and English records.

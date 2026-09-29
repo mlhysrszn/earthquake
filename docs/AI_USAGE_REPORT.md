@@ -265,3 +265,18 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Human role: authorized continuing after the N04 checkpoint and approved the
   N05 commit.
 - Total elapsed development time was not measured.
+
+
+## N06: Android notification delivery
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: implemented the Android sender/channel and permission-aware results,
+  stable event identity/deep-link PendingIntent, and pending-work dispatcher.
+- Verification: 46 JVM tests and 41 Android tests passed; debug/test APK builds
+  and lint passed. Instrumentation posted a deterministic event and opened its
+  matching detail from a notification tap.
+- Human role: authorized continuing after the N05 checkpoint and approved the
+  N06 commit.
+- Limitation: Android 10/API 29 was the available device, so the Android 13+
+  runtime permission dialog was not manually exercised. N07 scheduling remains.

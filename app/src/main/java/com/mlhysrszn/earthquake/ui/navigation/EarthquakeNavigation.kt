@@ -23,8 +23,13 @@ private data class EarthquakeDetailKey(
 ) : NavKey
 
 @Composable
-fun EarthquakeNavigation() {
-    val backStack = rememberNavBackStack(EarthquakeListKey)
+fun EarthquakeNavigation(initialEarthquakeId: String? = null) {
+    val initialKeys: Array<NavKey> = if (initialEarthquakeId == null) {
+        arrayOf(EarthquakeListKey)
+    } else {
+        arrayOf(EarthquakeListKey, EarthquakeDetailKey(initialEarthquakeId))
+    }
+    val backStack = rememberNavBackStack(*initialKeys)
 
     NavDisplay(
         backStack = backStack,

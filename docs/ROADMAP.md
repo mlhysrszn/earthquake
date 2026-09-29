@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, N04, and N05 are committed.
+L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, N04, N05, and N06 are committed.
 
 ## Goal
 
@@ -267,11 +267,15 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### N06 - Implement the Android notification adapter
 
-- [ ] Add the notification channel, permission-aware delivery result, stable
+- [x] Add the notification channel, permission-aware delivery result, stable
   notification identity, and event-ID navigation when a notification is tapped.
 - Done when: a deterministic eligible event posts a notification and opens the
   correct detail screen, including a cold app start.
 - Depends on: N03, N05, D04.
+- Result: Hilt Android sender/channel and stable canonical-ID tag added. Pending
+  eligible work is dispatched through the adapter, persisted outcomes are updated,
+  and notification taps start Navigation 3 at the typed event detail route.
+  Instrumentation verifies the full eligible-event → post → cold detail flow.
 
 ### N07 - Schedule and connect background checks
 
@@ -375,6 +379,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | N03 | Committed | Notification settings/permission UI; 39 JVM tests, 32 device tests, debug build and lint passed |
 | N04 | Committed | Pure eligibility policy; 46 JVM tests passed, including seven policy cases |
 | N05 | Committed | Persistent processing/baseline/alias state; 46 JVM tests and 39 device tests passed, debug build and lint passed |
+| N06 | Committed | Notification channel/adapter and pending dispatcher; 46 JVM tests, 41 device tests, debug build and lint passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

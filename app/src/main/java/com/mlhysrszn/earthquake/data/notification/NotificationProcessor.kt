@@ -260,6 +260,16 @@ class NotificationProcessor @Inject constructor(
         changed
     }
 
+    suspend fun markExpired(canonicalEventId: String): Boolean = mutex.withLock {
+        val changed = processingDao.updatePendingOutcome(
+            canonicalEventId = canonicalEventId,
+            outcome = NotificationProcessingOutcome.EXPIRED.name,
+            nowEpochMillis = clock.millis(),
+        ) > 0
+        if (changed) emittedPendingIds.remove(canonicalEventId)
+        changed
+    }
+
     private suspend fun pendingBatch(
         snapshotStatus: NotificationSnapshotStatus?,
         now: Instant,

@@ -7,8 +7,9 @@ Compose list/detail screens and Navigation 3 are implemented. The USGS feed
 client, mapper, and Room-backed repository synchronization are implemented;
 notification preferences, settings UI, and permission-state integration are
 implemented. The pure Kotlin notification eligibility policy and persistent
-event/alias processing, baseline, and retry state are implemented; OS delivery and
-remaining product features are pending.
+event/alias processing, baseline, and retry state are implemented. The Android
+notification channel/sender and notification-to-detail routing are implemented;
+periodic scheduling and remaining product features are pending.
 
 ## Purpose
 
@@ -223,8 +224,10 @@ implementations in one variant.
 - Notification processing state persists baselines, canonical identities/aliases,
   decisions, and pending outcomes. A singleton processor serializes foreground/
   background callers and uses Room compare-and-set transactions.
-- The notifications package implements a domain notification port using Android
-  APIs. Domain rules do not reference NotificationManager or Context.
+- The notifications package implements the domain notification port using Android
+  APIs. Domain rules do not reference NotificationManager or Context. Stable
+  notification tags use canonical event IDs, and taps pass the event ID into the
+  typed Navigation 3 detail route, including a cold Activity start.
 - Coordinate foreground refreshes and background work. An in-memory set of IDs
   is insufficient for deduplication across process restarts.
 - Database writes and operating-system notifications cannot form one atomic

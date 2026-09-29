@@ -15,8 +15,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             EarthquakeTheme {
-                EarthquakeNavigation()
+                EarthquakeNavigation(
+                    initialEarthquakeId = intent.getStringExtra(EXTRA_EARTHQUAKE_ID),
+                )
             }
         }
+    }
+
+    companion object {
+        const val EXTRA_EARTHQUAKE_ID = "com.mlhysrszn.earthquake.extra.EARTHQUAKE_ID"
     }
 }

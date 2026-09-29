@@ -4,8 +4,9 @@ Status: the initial domain model, list repository contract, deterministic sample
 repository, USGS feed client/mapper, Room event store, USGS-to-Room repository
 synchronization, typed detail navigation, detail lookup, and persisted notification
 preferences/settings, and pure notification eligibility policy are implemented.
-Persistent notification baselines, identities, aliases, and outcomes are
-implemented. OS notification delivery and scheduling remain pending.
+Persistent notification baselines, identities, aliases, outcomes, Android
+notification delivery, and notification-to-detail navigation are implemented.
+Periodic scheduling and remaining notification workflows are pending.
 See the [roadmap](ROADMAP.md) for delivery order and the
 [architecture](ARCHITECTURE.md) for package responsibilities inside app.
 
@@ -108,6 +109,12 @@ commit in a Room transaction with compare-and-set protection. Pending outcomes
 survive restart, can be marked posted/retryable/permission-suppressed, and expire
 when the event leaves the 24-hour window. Terminal identity/outcome history is
 retained for 30 days; baseline/cursor metadata is retained independently.
+
+The Android adapter checks runtime permission and app-level notification status
+immediately before posting. Notifications use the canonical event ID as a stable
+tag and carry the selected feature ID into the typed detail route. Room outcome
+updates and OS notification posting cannot be atomic; the N01 retry/crash policy
+applies and exactly-once delivery is not promised.
 
 The initial `EarthquakeRepository` contract exposes a Flow of the rolling
 24-hour list, newest first, and a suspend refresh operation. Refresh outcomes are
