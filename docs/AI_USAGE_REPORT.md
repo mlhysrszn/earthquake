@@ -280,3 +280,21 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
   N06 commit.
 - Limitation: Android 10/API 29 was the available device, so the Android 13+
   runtime permission dialog was not manually exercised. N07 scheduling remains.
+
+
+## N07: Preference-driven background synchronization
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: added Hilt WorkManager setup, a unique network-constrained periodic
+  worker reconciled with saved preferences, bounded retry mapping, and a shared
+  foreground/background refresh-and-notification path.
+- Verification: 50 JVM tests and 50 Android tests passed; debug and test APKs,
+  lint, merged-manifest checks, and generated Hilt worker-factory construction
+  passed. One combined test/lint invocation hit an ADB property timeout; the
+  connected suite passed when rerun separately.
+- Human role: authorized continuing after the N06 checkpoint and approved the
+  N07 commit.
+- Limitations: WorkManager's 15-minute minimum is inexact and subject to OS delay;
+  a real timed periodic run after production process death was not observed.
+  Android 13+ notification permission UI was not available on the API 29 device.

@@ -270,6 +270,11 @@ class NotificationProcessor @Inject constructor(
         changed
     }
 
+    /** Releases this process's in-flight reservation if delivery exits unexpectedly. */
+    suspend fun releasePending(canonicalEventId: String) = mutex.withLock {
+        emittedPendingIds.remove(canonicalEventId)
+    }
+
     private suspend fun pendingBatch(
         snapshotStatus: NotificationSnapshotStatus?,
         now: Instant,

@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, N04, N05, and N06 are committed.
+L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, N04, N05, N06, and N07 are committed.
 
 ## Goal
 
@@ -279,7 +279,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### N07 - Schedule and connect background checks
 
-- [ ] Add unique periodic work with network constraints, bounded retries, and
+- [x] Add unique periodic work with network constraints, bounded retries, and
   scheduling/cancellation tied to preferences. Reuse the same synchronization
   and notification rules for relevant foreground and background triggers. Use
   @HiltWorker/@AssistedInject and the injected HiltWorkerFactory through the
@@ -290,6 +290,14 @@ mandatory; permission to work or run tests does not authorize a commit.
   Cold-start execution uses fresh Workers and dependencies available from
   SingletonComponent; no Activity/ViewModel scope leaks into the worker graph.
 - Depends on: N06.
+- Result: A unique 15-minute connected-network WorkManager request is kept while
+  notifications are enabled and cancelled when disabled; Application startup
+  reconciles the persisted preference. A Hilt CoroutineWorker uses a bounded
+  five-attempt policy and maps permanent response failures separately. Foreground
+  and background refreshes share the same notification-aware refresher. Hilt worker
+  creation, preference gating, success/retry/failure, baseline, duplicate/repeat,
+  and scheduling/cancellation paths are covered by tests. WorkManager's minimum
+  periodic interval and OS-dependent execution delay are documented.
 
 **Checkpoint:** saved preferences lead to eligible notifications and detail navigation.
 
@@ -380,6 +388,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | N04 | Committed | Pure eligibility policy; 46 JVM tests passed, including seven policy cases |
 | N05 | Committed | Persistent processing/baseline/alias state; 46 JVM tests and 39 device tests passed, debug build and lint passed |
 | N06 | Committed | Notification channel/adapter and pending dispatcher; 46 JVM tests, 41 device tests, debug build and lint passed |
+| N07 | Committed | Hilt Worker and preference-driven unique periodic scheduling; 50 JVM tests, 50 device tests, debug build and lint passed; merged manifest checked |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

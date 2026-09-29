@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeRepository
 import com.mlhysrszn.earthquake.domain.repository.RefreshResult
+import com.mlhysrszn.earthquake.domain.usecase.RefreshEarthquakes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
 import kotlinx.coroutines.CancellationException
@@ -20,6 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class EarthquakesViewModel @Inject constructor(
     private val repository: EarthquakeRepository,
+    private val refreshEarthquakes: RefreshEarthquakes,
     private val clock: Clock,
 ) : ViewModel() {
     private val mutableRefreshState = MutableStateFlow(EarthquakesUiState())
@@ -63,7 +65,7 @@ class EarthquakesViewModel @Inject constructor(
             }
 
             val result = try {
-                repository.refresh()
+                refreshEarthquakes.refresh()
             } catch (cancellation: CancellationException) {
                 throw cancellation
             } catch (_: Exception) {

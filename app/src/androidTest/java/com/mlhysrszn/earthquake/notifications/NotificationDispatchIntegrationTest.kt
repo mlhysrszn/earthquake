@@ -19,7 +19,10 @@ import com.mlhysrszn.earthquake.domain.repository.EarthquakeLookupResult
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeNotificationSender
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeRepository
 import com.mlhysrszn.earthquake.domain.repository.NotificationPreferencesRepository
+import com.mlhysrszn.earthquake.domain.repository.RefreshResult
+import com.mlhysrszn.earthquake.domain.usecase.DispatchPendingNotifications
 import com.mlhysrszn.earthquake.domain.usecase.NotificationEligibilityPolicy
+import com.mlhysrszn.earthquake.data.notification.NotificationAwareEarthquakeRefresher
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.time.Clock
@@ -89,7 +92,12 @@ class NotificationDispatchIntegrationTest {
                 earthquakeRepository = FakeEarthquakeRepository(earthquake),
                 sender = sender,
             )
-            assertEquals(1, dispatcher.dispatchPending())
+            val sharedRefresher = NotificationAwareEarthquakeRefresher(
+                earthquakeRepository = FakeEarthquakeRepository(earthquake),
+                dispatchPendingNotifications = DispatchPendingNotifications { dispatcher.dispatch() },
+            )
+            assertEquals(RefreshResult.Success(acceptedEventCount = 1), sharedRefresher.refresh())
+            assertEquals(RefreshResult.Success(acceptedEventCount = 1), sharedRefresher.refresh())
 
             val activeNotification = notificationManager.activeNotifications
                 .firstOrNull { it.tag == canonicalId }
@@ -167,8 +175,7 @@ class NotificationDispatchIntegrationTest {
         override fun observeEarthquake(id: String): Flow<Earthquake?> =
             MutableStateFlow(earthquake.takeIf { it.id == id })
 
-        override suspend fun refresh() =
-            com.mlhysrszn.earthquake.domain.repository.RefreshResult.Success(1)
+        override suspend fun refresh() = RefreshResult.Success(1)
 
         override suspend fun fetchEarthquakeById(id: String): EarthquakeLookupResult =
             if (id == earthquake.id) EarthquakeLookupResult.Found(earthquake)

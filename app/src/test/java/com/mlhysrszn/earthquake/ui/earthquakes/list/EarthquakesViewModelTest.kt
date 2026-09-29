@@ -5,6 +5,7 @@ import com.mlhysrszn.earthquake.domain.model.Earthquake
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeLookupResult
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeRepository
 import com.mlhysrszn.earthquake.domain.repository.RefreshResult
+import com.mlhysrszn.earthquake.domain.usecase.RefreshEarthquakes
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -156,7 +157,11 @@ class EarthquakesViewModelTest {
         initialResult: RefreshResult = RefreshResult.Success(initialEvents.size),
     ): Fixture {
         val repository = FakeEarthquakeRepository(initialEvents).apply { enqueue(initialResult) }
-        val viewModel = EarthquakesViewModel(repository, fixedClock)
+        val viewModel = EarthquakesViewModel(
+            repository = repository,
+            refreshEarthquakes = RefreshEarthquakes { repository.refresh() },
+            clock = fixedClock,
+        )
         val viewModelStore = ViewModelStore().apply { put("test", viewModel) }
         val collector = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.uiState.collect()

@@ -82,6 +82,33 @@ class NotificationProcessorTest {
     }
 
     @Test
+    fun pendingReservationCanBeReleasedAndSelectedAgainAfterInterruptedDelivery() = runBlocking {
+        withInMemoryDatabase { earthquakeDao, processingDao ->
+            val processor = processor(earthquakeDao, processingDao)
+            val candidate = event("interrupted-event", magnitude = 5.1)
+            storeSnapshot(earthquakeDao, emptyList(), sourceCursorStart)
+            processor.processLatestSnapshot(notificationPermissionGranted = true)
+            storeSnapshot(earthquakeDao, listOf(candidate), sourceCursorStart + 60_000)
+
+            val firstBatch = processor.processLatestSnapshot(notificationPermissionGranted = true)
+            assertEquals(listOf(candidate.id), firstBatch.pendingNotifications.map { it.eventId })
+            assertTrue(
+                processor.processLatestSnapshot(notificationPermissionGranted = true)
+                    .pendingNotifications.isEmpty(),
+            )
+
+            processor.releasePending(candidate.id)
+
+            val retriedBatch = processor.processLatestSnapshot(notificationPermissionGranted = true)
+            assertEquals(listOf(candidate.id), retriedBatch.pendingNotifications.map { it.eventId })
+            assertEquals(
+                NotificationProcessingOutcome.PENDING.name,
+                processingDao.getEventState(candidate.id)?.outcome,
+            )
+        }
+    }
+
+    @Test
     fun processedIdentitiesAndPendingDeliveryRecoverAfterDatabaseReopen() = runBlocking {
         val databaseName = "notification-recovery-${UUID.randomUUID()}.db"
         val candidate = event("recoverable-event", magnitude = 5.5)

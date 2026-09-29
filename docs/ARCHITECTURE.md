@@ -9,7 +9,8 @@ notification preferences, settings UI, and permission-state integration are
 implemented. The pure Kotlin notification eligibility policy and persistent
 event/alias processing, baseline, and retry state are implemented. The Android
 notification channel/sender and notification-to-detail routing are implemented;
-periodic scheduling and remaining product features are pending.
+WorkManager scheduling and shared foreground/background notification orchestration
+are implemented; remaining product features are pending.
 
 ## Purpose
 
@@ -203,9 +204,14 @@ parameters. Worker dependencies must be available from SingletonComponent, eithe
 unscoped or singleton-scoped. Do not inject activity- or ViewModel-scoped objects.
 
 The Application implements `Configuration.Provider` and supplies the injected
-`HiltWorkerFactory`. Remove WorkManager's default initializer as required by the
-custom configuration, preserving other App Startup initializers. Verify the
-merged manifest and cold-start execution in N07. No handwritten WorkerFactory.
+`HiltWorkerFactory`. Remove only WorkManager's default initializer, preserving
+other App Startup initializers. The unique periodic request requires a connected
+network and follows the saved notification-enabled preference. WorkManager timing
+is inexact: the first run may occur when constraints are met, and later runs are
+not guaranteed at the 15-minute minimum because of system scheduling and Doze.
+Transient refresh errors retry with exponential backoff for at most five attempts
+per cycle; invalid responses fail that cycle. No handwritten production
+WorkerFactory is used.
 
 #### Tests and demo
 
@@ -219,6 +225,9 @@ implementations in one variant.
 ## 4. Notification responsibilities
 
 - The Worker triggers orchestration and maps outcomes to WorkManager results.
+- Foreground refreshes and Workers use the same refresh-and-dispatch use case.
+  Failed source snapshots never advance notification processing; successful ones
+  run the persisted N05 processor and N06 delivery adapter.
 - Threshold, new-event, and previously-notified rules belong to domain behavior.
 - The data package owns persistent event, notification, and synchronization records.
 - Notification processing state persists baselines, canonical identities/aliases,
@@ -243,7 +252,7 @@ The core rules are strict magnitude-above-threshold eligibility, no historical
 notifications on initial synchronization, and no replay after lowering the
 threshold. `NotificationEligibilityPolicy` implements the pure domain decision
 using an injected Clock and explicit snapshot/identity inputs; notification
-history and delivery remain later tasks.
+history, delivery, and WorkManager scheduling share those persisted decisions.
 
 ## 5. Verification boundaries
 

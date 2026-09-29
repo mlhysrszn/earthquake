@@ -925,3 +925,65 @@ claimed complete. Total development time was not measured.
 Message: `feat: add Android earthquake notifications`.
 Scope is limited to the sender port/adapter, notification coordinator and channel,
 event PendingIntent routing, deterministic instrumentation, and English records.
+
+
+## N07: Preference-driven background synchronization
+
+Date: 2026-09-29 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope
+
+- Added WorkManager 2.12 and Hilt Work 1.4 integration, including a `@HiltWorker`
+  `CoroutineWorker`, assisted parameters, and `HiltWorkerFactory` through the
+  Application's `Configuration.Provider`.
+- Removed only WorkManager's default App Startup initializer. The merged debug
+  manifest retains EmojiCompat, ProcessLifecycle, and ProfileInstaller initializers.
+- Added one unique 15-minute periodic request with a connected-network constraint
+  and exponential 30-second backoff. The Application reconciles the saved enabled
+  preference on process startup and after preference changes; disabling cancels
+  the unique work. The Worker independently checks the preference before refresh.
+- Added a shared domain refresh use case used by the foreground list and Worker.
+  Successful source refreshes dispatch pending N05/N06 decisions; failed snapshots
+  do not run notification processing. Repeated executions re-enter persistent
+  deduplication rather than relying on activity or process memory.
+- Worker result mapping succeeds for valid refreshes/disabled preferences, retries
+  transient network/storage/unknown failures for a maximum of five total attempts
+  per cycle, and fails invalid responses immediately. Periodic work remains
+  scheduled for its next interval after a failed cycle.
+- Added JVM coordinator tests plus instrumentation for unique schedule/cancel,
+  network/interval constraints, Hilt worker creation, preference gating, success,
+  retry exhaustion, permanent failures, and repeat dispatch through the shared
+  refresh path. Existing baseline and delivery integration coverage exercises
+  initial-sync suppression and canonical-identity deduplication. A pending
+  in-memory reservation is released in a cancellation-safe `finally` block, so an
+  interrupted dispatch can be selected again in the same process.
+- WorkManager periodic execution is inherently inexact: 15 minutes is the system
+  minimum interval, not a delivery guarantee. Runs can be delayed by constraints,
+  Doze, and OS battery optimization. API 33+ notification permission UI remains
+  untested on the available API 29 emulator.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `sudo -u mlhysrszn -H ./gradlew :app:testDebugUnitTest --console=plain` | Passed; 50 tests, 0 failures/errors |
+| `sudo -u mlhysrszn -H ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --console=plain` | Passed; debug app and instrumentation APK assembled |
+| `sudo -u mlhysrszn -H ./gradlew :app:connectedDebugAndroidTest --console=plain` | Passed on Android 10 / API 29; 50 tests, 0 failures/errors/skips |
+| `sudo -u mlhysrszn -H ./gradlew :app:lintDebug --console=plain` | Passed |
+| Merged debug manifest | Confirmed WorkManagerInitializer absent while other App Startup initializers remain |
+| `git diff --check` | Passed |
+
+The first combined Gradle invocation hit an emulator ADB property-query timeout
+while lint and connected tests ran together. Running `connectedDebugAndroidTest`
+separately succeeded. Fresh Worker construction through the generated Hilt factory
+and its SingletonComponent graph was exercised; a timed OS-triggered periodic run
+after forcibly killing the production process was not manually observed because
+periodic timing is system-controlled. Existing NDK/source-properties and protobuf/
+JVM 25 warnings remain. Total development time was not measured.
+
+### Commit
+
+Message: `feat: schedule background earthquake checks`.
+Scope is limited to WorkManager/Hilt integration, shared refresh orchestration,
+worker/scheduler tests, foreground refresh wiring, and English project records.

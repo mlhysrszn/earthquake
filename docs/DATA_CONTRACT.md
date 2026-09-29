@@ -6,7 +6,8 @@ synchronization, typed detail navigation, detail lookup, and persisted notificat
 preferences/settings, and pure notification eligibility policy are implemented.
 Persistent notification baselines, identities, aliases, outcomes, Android
 notification delivery, and notification-to-detail navigation are implemented.
-Periodic scheduling and remaining notification workflows are pending.
+Preference-driven WorkManager scheduling and shared foreground/background refresh
+orchestration are implemented; remaining notification workflows are pending.
 See the [roadmap](ROADMAP.md) for delivery order and the
 [architecture](ARCHITECTURE.md) for package responsibilities inside app.
 
@@ -91,10 +92,10 @@ Fetched events are cached only when they fit the current 24-hour retention windo
   Android adapter in app.
 
 Introduce contracts only when their delivery step needs them. Preference
-storage is implemented with DataStore; history and sender contracts remain for
-later notification tasks. Data implements the contracts;
-Hilt bindings select implementations without adding Android dependencies to
-these domain interfaces. All implementations and contracts live in app packages.
+storage is implemented with DataStore; notification history, delivery, and shared
+refresh orchestration are implemented. Hilt bindings supply application adapters
+without adding Android dependencies to domain interfaces. All implementations and
+contracts live in app packages.
 One-shot operations use main-safe suspend functions;
 observable data uses Flow. Keep mutable streams inside implementations.
 
@@ -115,6 +116,13 @@ immediately before posting. Notifications use the canonical event ID as a stable
 tag and carry the selected feature ID into the typed detail route. Room outcome
 updates and OS notification posting cannot be atomic; the N01 retry/crash policy
 applies and exactly-once delivery is not promised.
+
+The Hilt Worker runs only while the saved notification preference is enabled.
+Unique connected-network periodic work uses WorkManager's 15-minute minimum and
+exponential backoff with at most five attempts per cycle. Foreground list refreshes
+and Workers share one refresh-and-dispatch use case. WorkManager timing is
+inexact and can be delayed by constraints, battery optimization, and Doze; this
+is not a minute-by-minute alert guarantee.
 
 The initial `EarthquakeRepository` contract exposes a Flow of the rolling
 24-hour list, newest first, and a suspend refresh operation. Refresh outcomes are
