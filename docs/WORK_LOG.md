@@ -1083,3 +1083,47 @@ Android 13+ permission UI was not exercised. Total development time was not meas
 ### Commit
 
 Not committed; waiting for explicit approval.
+
+
+## Q03: Acceptance walkthrough
+
+Date: 2026-09-30 (Europe/Istanbul).
+Status: verified; awaiting user approval to commit. Documentation-only change.
+
+### Environment
+
+Android 10 / API 29 emulator (`flutter_emulator`). The emulator could not resolve
+DNS at first (the host could reach USGS), so it was restarted with
+`-dns-server 8.8.8.8,1.1.1.1`. Before that, the app showed its initial-failure
+state ("Depremler yüklenemedi" with retry), which is an incidental extra check.
+
+### Manual walkthrough (live build unless noted)
+
+| Flow | Result |
+| --- | --- |
+| Cold start with network | Live USGS list loaded; last-update time shown |
+| List → detail → Back | Correct event details; Back returned to the list |
+| Force-stop and cold restart | Cached list shown immediately, then refreshed |
+| Offline cold start (Wi-Fi and data off) | Cached list retained with "Güncelleme başarısız" banner and retry |
+| Refresh while offline | Same failure banner; existing content retained |
+| Detail while offline | Cached event details opened |
+| Reconnect + retry | Banner cleared and list refreshed |
+| Font scale 1.3 (list, settings) | Text wrapped; no clipped controls in the settings screenshot |
+| Demo: reset, below, above, duplicate | Only the above-threshold event posted one notification (title "Yeni deprem: büyüklük 5,5"); duplicate replay posted nothing more |
+| Notification tap after `am kill` (cold) | App started on the matching detail screen |
+| Notifications disabled in Android settings (demo) | Settings screen showed the system-disabled message and an "open settings" button; the threshold stayed visible |
+
+Automated results are those recorded under Q02 (53 JVM, 55 live and 57 demo device
+tests, lint 0 errors); no application code changed for Q03.
+
+### Limitations
+
+- Android 13+ runtime `POST_NOTIFICATIONS` denial could not be exercised on API 29;
+  it is covered only by unit/instrumentation logic.
+- List font scaling was checked from UI text output, not visually on every screen.
+- Periodic background delivery after process death was not observed in real time.
+- Total development time was not measured.
+
+### Commit
+
+Not committed; waiting for explicit approval.

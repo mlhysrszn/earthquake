@@ -327,3 +327,15 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Human role: asked to continue, and fixed file ownership with `sudo chown`
   after root-owned files blocked edits. Commit approval is pending.
 - Limitations: see the Q02 work log entry; development time was not measured.
+
+
+## Q03: Acceptance walkthrough
+
+- Assistant: Claude Code, Claude Sonnet 5.5 (`claude-sonnet-5-5`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: drove the emulator through the acceptance flows with adb, diagnosed and
+  fixed the emulator's DNS, and recorded the results.
+- Verification: see the Q03 work log entry; no application code changed.
+- Human role: approved continuing after the Q02 commit.
+- Limitations: Android 13+ permission denial was not exercised; development time
+  was not measured.
