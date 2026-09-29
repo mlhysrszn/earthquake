@@ -298,3 +298,19 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Limitations: WorkManager's 15-minute minimum is inexact and subject to OS delay;
   a real timed periodic run after production process death was not observed.
   Android 13+ notification permission UI was not available on the API 29 device.
+
+
+## Q01: Local product events
+
+- Assistant: OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: added local Room event history and migration, wired screen, preference,
+  permission, notification, and refresh outcomes, and documented metric
+  denominators without adding external analytics or uploads.
+- Verification: 53 JVM tests and 54 Android tests passed; debug/test APKs and
+  lint passed. Instrumentation verified event persistence, migration, matching
+  notification-to-detail events, and no duplicate list view on recomposition.
+- Human role: authorized continuing after the N07 checkpoint and approved the
+  Q01 commit.
+- Limitations: Android 13+ permission UI was unavailable; there is no user-facing
+  event dashboard, and total development time was not measured.

@@ -20,14 +20,21 @@ private data object EarthquakeListKey : NavKey
 @Serializable
 private data class EarthquakeDetailKey(
     val earthquakeId: String,
+    val entrySource: String,
 ) : NavKey
 
 @Composable
-fun EarthquakeNavigation(initialEarthquakeId: String? = null) {
+fun EarthquakeNavigation(
+    initialEarthquakeId: String? = null,
+    initialEarthquakeSource: String = DETAIL_ENTRY_SOURCE_EXTERNAL,
+) {
     val initialKeys: Array<NavKey> = if (initialEarthquakeId == null) {
         arrayOf(EarthquakeListKey)
     } else {
-        arrayOf(EarthquakeListKey, EarthquakeDetailKey(initialEarthquakeId))
+        arrayOf(
+            EarthquakeListKey,
+            EarthquakeDetailKey(initialEarthquakeId, initialEarthquakeSource),
+        )
     }
     val backStack = rememberNavBackStack(*initialKeys)
 
@@ -42,7 +49,9 @@ fun EarthquakeNavigation(initialEarthquakeId: String? = null) {
             entry<EarthquakeListKey> {
                 EarthquakesRoute(
                     onEarthquakeClick = { earthquakeId ->
-                        backStack.add(EarthquakeDetailKey(earthquakeId))
+                        backStack.add(
+                            EarthquakeDetailKey(earthquakeId, DETAIL_ENTRY_SOURCE_LIST),
+                        )
                     },
                     onSettingsClick = { backStack.add(NotificationSettingsKey) },
                 )
@@ -56,6 +65,7 @@ fun EarthquakeNavigation(initialEarthquakeId: String? = null) {
                 )
                 EarthquakeDetailRoute(
                     viewModel = viewModel,
+                    entrySource = key.entrySource,
                     onBack = { backStack.removeLastOrNull() },
                 )
             }
@@ -67,3 +77,7 @@ fun EarthquakeNavigation(initialEarthquakeId: String? = null) {
         },
     )
 }
+
+const val DETAIL_ENTRY_SOURCE_NOTIFICATION = "notification"
+private const val DETAIL_ENTRY_SOURCE_EXTERNAL = "external"
+private const val DETAIL_ENTRY_SOURCE_LIST = "list"

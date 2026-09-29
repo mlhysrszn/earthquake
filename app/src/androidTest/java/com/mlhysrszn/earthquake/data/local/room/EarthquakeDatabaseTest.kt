@@ -209,7 +209,10 @@ class EarthquakeDatabaseTest {
             context,
             EarthquakeDatabase::class.java,
             databaseName,
-        ).addMigrations(EarthquakeDatabaseMigrations.MIGRATION_1_2).build()
+        ).addMigrations(
+            EarthquakeDatabaseMigrations.MIGRATION_1_2,
+            EarthquakeDatabaseMigrations.MIGRATION_2_3,
+        ).build()
         try {
             val dao = migratedDatabase.earthquakeDao()
             val processingDao = migratedDatabase.notificationProcessingDao()
@@ -218,6 +221,45 @@ class EarthquakeDatabaseTest {
             assertEquals(12000L, dao.getSyncMetadata()?.sourceGeneratedAtEpochMillis)
             assertNull(processingDao.getMetadata())
             assertEquals(emptyList<NotificationProcessingEntity>(), processingDao.getAllEventStates())
+        } finally {
+            migratedDatabase.close()
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    @Test
+    fun v2MigrationAddsProductEventTableAndPreservesNotificationHistory() = runBlocking {
+        val databaseName = "product-event-migration-${UUID.randomUUID()}.db"
+        val oldDatabase = migrationTestHelper.createDatabase(databaseName, 2)
+        oldDatabase.execSQL(
+            """
+            INSERT INTO notification_processing (
+                canonicalEventId, latestEventId, eventOccurredAtEpochMillis,
+                outcome, reason, lastSeenAtEpochMillis, lastDecisionAtEpochMillis
+            ) VALUES ('existing-event', 'existing-event', 1000, 'POSTED', NULL, 2000, 2000)
+            """.trimIndent(),
+        )
+        oldDatabase.close()
+
+        migrationTestHelper.runMigrationsAndValidate(
+            databaseName,
+            3,
+            true,
+            EarthquakeDatabaseMigrations.MIGRATION_2_3,
+        ).close()
+
+        val migratedDatabase = Room.databaseBuilder(
+            context,
+            EarthquakeDatabase::class.java,
+            databaseName,
+        ).addMigrations(EarthquakeDatabaseMigrations.MIGRATION_2_3).build()
+        try {
+            assertEquals(
+                "POSTED",
+                migratedDatabase.notificationProcessingDao()
+                    .getEventState("existing-event")?.outcome,
+            )
+            assertEquals(emptyList<ProductEventEntity>(), migratedDatabase.productEventDao().getRecent(10))
         } finally {
             migratedDatabase.close()
             context.deleteDatabase(databaseName)

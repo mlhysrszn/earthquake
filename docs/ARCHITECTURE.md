@@ -10,7 +10,8 @@ implemented. The pure Kotlin notification eligibility policy and persistent
 event/alias processing, baseline, and retry state are implemented. The Android
 notification channel/sender and notification-to-detail routing are implemented;
 WorkManager scheduling and shared foreground/background notification orchestration
-are implemented; remaining product features are pending.
+and local product-event recording are implemented; the isolated demo and remaining
+product features are pending.
 
 ## Purpose
 
@@ -230,6 +231,11 @@ implementations in one variant.
   run the persisted N05 processor and N06 delivery adapter.
 - Threshold, new-event, and previously-notified rules belong to domain behavior.
 - The data package owns persistent event, notification, and synchronization records.
+- Product-event logging uses Room and is best-effort/local-only. Screen views,
+  preference attempts/saves, permission outcomes, successful posts, notification
+  detail entry, and refresh outcomes share UTC timestamps and an explicit LIVE/DEMO
+  environment. Metric definitions and denominators are in the
+  [Local Product Events](PRODUCT_EVENTS.md) contract.
 - Notification processing state persists baselines, canonical identities/aliases,
   decisions, and pending outcomes. A singleton processor serializes foreground/
   background callers and uses Room compare-and-set transactions.

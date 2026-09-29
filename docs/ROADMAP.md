@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, N04, N05, N06, and N07 are committed.
+L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, N04, N05, N06, N07, and Q01 are committed.
 
 ## Goal
 
@@ -305,13 +305,20 @@ mandatory; permission to work or run tests does not authorize a commit.
 
 ### Q01 - Add local product events
 
-- [ ] Implement local event storage and wire list/detail views, preference saves,
+- [x] Implement local event storage and wire list/detail views, preference saves,
   permission outcomes, notification posting/opening, and refresh failures.
 - Done when: the agreed events can be inspected with timestamps and minimal useful
   properties. Demo events are identifiable; recomposition does not duplicate views.
 - Metrics: setup completion, notification-to-detail opening, and refresh failures.
   Define event denominators; posting does not prove that a user saw a notification.
 - Depends on: N07. Instrument earlier flows here without changing their behavior.
+- Result: Room v3 adds a 90-day, 20,000-row-capped local event log with UTC
+  timestamps, minimal JSON properties, and LIVE/DEMO source. List/detail views,
+  preference setup/save, permission outcomes, notification posts/opens, and
+  foreground/background refresh outcomes are recorded. `docs/PRODUCT_EVENTS.md`
+  defines event properties, local retention/inspection, and all metric denominators.
+  Route-scoped `LaunchedEffect` tests show list refresh recomposition does not
+  duplicate a view event. Local recording is best-effort and never uploads data.
 
 ### Q02 - Add an isolated demo scenario
 
@@ -389,6 +396,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | N05 | Committed | Persistent processing/baseline/alias state; 46 JVM tests and 39 device tests passed, debug build and lint passed |
 | N06 | Committed | Notification channel/adapter and pending dispatcher; 46 JVM tests, 41 device tests, debug build and lint passed |
 | N07 | Committed | Hilt Worker and preference-driven unique periodic scheduling; 50 JVM tests, 50 device tests, debug build and lint passed; merged manifest checked |
+| Q01 | Committed | Local Room product events and prior-flow instrumentation; 53 JVM tests, 54 device tests, schema migration, debug build and lint passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

@@ -58,4 +58,29 @@ object EarthquakeDatabaseMigrations {
             )
         }
     }
+
+    val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS product_events (
+                    id TEXT NOT NULL,
+                    name TEXT NOT NULL,
+                    occurredAtEpochMillis INTEGER NOT NULL,
+                    environment TEXT NOT NULL,
+                    propertiesJson TEXT NOT NULL,
+                    PRIMARY KEY(id)
+                )
+                """.trimIndent(),
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS index_product_events_occurredAtEpochMillis " +
+                    "ON product_events (occurredAtEpochMillis)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS index_product_events_name_occurredAtEpochMillis " +
+                    "ON product_events (name, occurredAtEpochMillis)",
+            )
+        }
+    }
 }

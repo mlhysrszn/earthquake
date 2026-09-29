@@ -987,3 +987,55 @@ JVM 25 warnings remain. Total development time was not measured.
 Message: `feat: schedule background earthquake checks`.
 Scope is limited to WorkManager/Hilt integration, shared refresh orchestration,
 worker/scheduler tests, foreground refresh wiring, and English project records.
+
+
+## Q01: Local product events
+
+Date: 2026-09-29 (Europe/Istanbul).
+Status: committed after user approval.
+
+### Scope
+
+- Added a Room v2→v3 migration and a local `product_events` table containing a
+  generated event UUID, UTC epoch timestamp, typed event name, LIVE/DEMO source,
+  and minimal string properties. Retention is 90 days with a 20,000-row cap;
+  repository APIs expose the newest events for local inspection. No event data is
+  uploaded.
+- Wired list/detail route views, notification preference setup attempts/completion
+  and saves, runtime/system permission outcomes, successful notification posts,
+  notification-origin detail openings, refresh starts/successes/failures, and
+  separate notification-processing failures.
+- Screen views are recorded from route-scoped `LaunchedEffect`s; Compose refresh
+  state recomposition does not produce another view record. The notification-open
+  event is emitted only when the matching detail route is entered.
+- Added `docs/PRODUCT_EVENTS.md` with event properties, local inspection and
+  retention details, environment conventions, and denominators for setup
+  completion, notification-to-detail opening, and refresh failures. Setup
+  completion measures successful preference persistence; permission approval is
+  intentionally a separate outcome. Notification posting is not treated as proof
+  that a user saw the notification.
+- Local telemetry is best-effort: storage failures are logged and do not change
+  application behavior. Data is limited to source event IDs and operational
+  settings/status values; no user/device identity or location is captured.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `sudo -u mlhysrszn -H ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --console=plain` | Passed; 53 JVM tests, debug/test APKs, and lint successful |
+| `sudo -u mlhysrszn -H ./gradlew :app:connectedDebugAndroidTest --console=plain` | Passed on Android 10 / API 29; 54 tests, 0 failures/errors/skips |
+| Product event repository tests | Passed for UTC timestamps, JSON properties, DEMO labeling, ordering, retention, and the v2→v3 migration |
+| Notification integration | Passed for successful post and notification-origin matching detail/open events |
+| Navigation instrumentation | Passed; list refresh recomposition leaves screen-view event count unchanged |
+| `git diff --check` | Passed |
+
+The emulator is API 29; runtime permission outcomes on Android 13+ were not
+manually exercised. Event inspection is through the local Room table/repository,
+not a user-facing analytics dashboard. Existing protobuf/JVM 25 warnings remain.
+Total development time was not measured.
+
+### Commit
+
+Message: `feat: record local product events`.
+Scope is limited to the local event model/storage/migration, event instrumentation,
+focused tests, event-definition documentation, and English project records.

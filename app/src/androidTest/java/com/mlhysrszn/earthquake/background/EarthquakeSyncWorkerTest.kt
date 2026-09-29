@@ -125,7 +125,7 @@ class EarthquakeSyncWorkerTest {
     ): EarthquakeSyncWorker {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val preferences = FakePreferencesRepository(enabled)
-        val refresher = RefreshEarthquakes {
+        val refresher = RefreshEarthquakes { _ ->
             onRefresh()
             result
         }

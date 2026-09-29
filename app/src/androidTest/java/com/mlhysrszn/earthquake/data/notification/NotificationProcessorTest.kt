@@ -361,7 +361,10 @@ class NotificationProcessorTest {
         InstrumentationRegistry.getInstrumentation().targetContext,
         EarthquakeDatabase::class.java,
         name,
-    ).addMigrations(EarthquakeDatabaseMigrations.MIGRATION_1_2).build()
+    ).addMigrations(
+        EarthquakeDatabaseMigrations.MIGRATION_1_2,
+        EarthquakeDatabaseMigrations.MIGRATION_2_3,
+    ).build()
 
     private fun event(
         id: String,

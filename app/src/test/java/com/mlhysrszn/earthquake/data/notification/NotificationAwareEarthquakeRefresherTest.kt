@@ -2,7 +2,10 @@ package com.mlhysrszn.earthquake.data.notification
 
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeLookupResult
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeRepository
+import com.mlhysrszn.earthquake.domain.repository.ProductEventRecorder
 import com.mlhysrszn.earthquake.domain.repository.RefreshResult
+import com.mlhysrszn.earthquake.domain.model.ProductEventName
+import com.mlhysrszn.earthquake.domain.model.RefreshOrigin
 import com.mlhysrszn.earthquake.domain.usecase.DispatchPendingNotifications
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
@@ -16,6 +19,7 @@ class NotificationAwareEarthquakeRefresherTest {
     @Test
     fun successfulRefreshDispatchesPendingNotifications() = runTest {
         var dispatchCount = 0
+        val recordedEvents = mutableListOf<ProductEventName>()
         val success = RefreshResult.Success(acceptedEventCount = 2)
         val refresher = NotificationAwareEarthquakeRefresher(
             earthquakeRepository = FakeEarthquakeRepository { success },
@@ -23,10 +27,15 @@ class NotificationAwareEarthquakeRefresherTest {
                 dispatchCount++
                 1
             },
+            productEventRecorder = ProductEventRecorder { name, _, _ -> recordedEvents += name },
         )
 
-        assertEquals(success, refresher.refresh())
+        assertEquals(success, refresher.refresh(RefreshOrigin.FOREGROUND))
         assertEquals(1, dispatchCount)
+        assertEquals(
+            listOf(ProductEventName.REFRESH_STARTED, ProductEventName.REFRESH_SUCCEEDED),
+            recordedEvents,
+        )
     }
 
     @Test
@@ -39,24 +48,35 @@ class NotificationAwareEarthquakeRefresherTest {
                 dispatched = true
                 0
             },
+            productEventRecorder = ProductEventRecorder { _, _, _ -> },
         )
 
-        assertEquals(failure, refresher.refresh())
+        assertEquals(failure, refresher.refresh(RefreshOrigin.FOREGROUND))
         assertFalse(dispatched)
     }
 
     @Test
     fun dispatcherFailureBecomesRetryableUnknownRefreshFailure() = runTest {
+        val recordedEvents = mutableListOf<ProductEventName>()
         val refresher = NotificationAwareEarthquakeRefresher(
             earthquakeRepository = FakeEarthquakeRepository {
                 RefreshResult.Success(acceptedEventCount = 0)
             },
             dispatchPendingNotifications = DispatchPendingNotifications { throw IOException() },
+            productEventRecorder = ProductEventRecorder { name, _, _ -> recordedEvents += name },
         )
 
         assertEquals(
             RefreshResult.Failure(RefreshResult.Reason.UNKNOWN),
-            refresher.refresh(),
+            refresher.refresh(RefreshOrigin.BACKGROUND),
+        )
+        assertEquals(
+            listOf(
+                ProductEventName.REFRESH_STARTED,
+                ProductEventName.REFRESH_SUCCEEDED,
+                ProductEventName.NOTIFICATION_PROCESSING_FAILED,
+            ),
+            recordedEvents,
         )
     }
 
@@ -71,10 +91,11 @@ class NotificationAwareEarthquakeRefresherTest {
                 dispatchCount++
                 0
             },
+            productEventRecorder = ProductEventRecorder { _, _, _ -> },
         )
 
-        refresher.refresh()
-        refresher.refresh()
+        refresher.refresh(RefreshOrigin.BACKGROUND)
+        refresher.refresh(RefreshOrigin.BACKGROUND)
 
         assertEquals(2, dispatchCount)
     }

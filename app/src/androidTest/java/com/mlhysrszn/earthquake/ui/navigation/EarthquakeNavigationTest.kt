@@ -1,13 +1,19 @@
 package com.mlhysrszn.earthquake.ui.navigation
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mlhysrszn.earthquake.MainActivity
+import com.mlhysrszn.earthquake.domain.model.ProductEventName
+import com.mlhysrszn.earthquake.domain.repository.ProductEventRepository
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -21,6 +27,8 @@ class EarthquakeNavigationTest {
 
     @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<MainActivity>()
+
+    @Inject lateinit var productEventRepository: ProductEventRepository
 
     @Before
     fun inject() {
@@ -54,6 +62,25 @@ class EarthquakeNavigationTest {
         composeRule.onNodeWithText("Western Texas").assertIsDisplayed()
         composeRule.onNodeWithText("Büyüklük 2,1").assertIsDisplayed()
     }
+
+    @Test
+    fun listViewIsNotDuplicatedByRefreshRecomposition() {
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Yenile").assertIsEnabled()
+        val listViewsBeforeRefresh = runBlocking { listViewCount() }
+
+        composeRule.onNodeWithText("Yenile").performClick()
+        composeRule.waitForIdle()
+
+        val listViewsAfterRefresh = runBlocking { listViewCount() }
+        assertEquals(listViewsBeforeRefresh, listViewsAfterRefresh)
+    }
+
+    private suspend fun listViewCount(): Int =
+        productEventRepository.getRecentEvents(500).count { event ->
+            event.name == ProductEventName.SCREEN_VIEW &&
+                event.properties["screen"] == "list"
+        }
 
     @Test
     fun listOpensNotificationSettingsAndShowsThisDevicesPermissionState() {

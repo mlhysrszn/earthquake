@@ -10,12 +10,15 @@ import androidx.room.RoomDatabase
         NotificationProcessingEntity::class,
         NotificationEventAliasEntity::class,
         NotificationProcessingMetadataEntity::class,
+        ProductEventEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class EarthquakeDatabase : RoomDatabase() {
     abstract fun earthquakeDao(): EarthquakeDao
 
     abstract fun notificationProcessingDao(): NotificationProcessingDao
+
+    abstract fun productEventDao(): ProductEventDao
 }

@@ -55,16 +55,36 @@ fun NotificationSettingsRoute(
     val lifecycleOwner = LocalLifecycleOwner.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var permissionStatus by remember { mutableStateOf(notificationPermissionStatus(context)) }
+    var permissionRequestInFlight by remember { mutableStateOf(false) }
+    var returningFromSystemSettings by remember { mutableStateOf(false) }
+    var lastRecordedPermissionStatus by remember { mutableStateOf(permissionStatus) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) {
-        permissionStatus = notificationPermissionStatus(context)
+        val result = notificationPermissionStatus(context)
+        permissionStatus = result
+        lastRecordedPermissionStatus = result
+        permissionRequestInFlight = false
+        viewModel.recordPermissionOutcome(result.name.lowercase(), "runtime_request")
     }
 
     DisposableEffect(lifecycleOwner, context) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                permissionStatus = notificationPermissionStatus(context)
+                val currentStatus = notificationPermissionStatus(context)
+                permissionStatus = currentStatus
+                if (
+                    returningFromSystemSettings &&
+                    !permissionRequestInFlight &&
+                    currentStatus != lastRecordedPermissionStatus
+                ) {
+                    viewModel.recordPermissionOutcome(
+                        currentStatus.name.lowercase(),
+                        "system_settings",
+                    )
+                }
+                if (!permissionRequestInFlight) lastRecordedPermissionStatus = currentStatus
+                returningFromSystemSettings = false
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -78,11 +98,13 @@ fun NotificationSettingsRoute(
         onEnabledChange = { enabled ->
             viewModel.setNotificationsEnabled(enabled)
             if (shouldRequestNotificationPermission(Build.VERSION.SDK_INT, enabled, permissionStatus)) {
+                permissionRequestInFlight = true
                 permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         },
         onThresholdChange = viewModel::setMagnitudeThreshold,
         onOpenSystemSettings = {
+            returningFromSystemSettings = true
             context.startActivity(
                 Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
                     putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)

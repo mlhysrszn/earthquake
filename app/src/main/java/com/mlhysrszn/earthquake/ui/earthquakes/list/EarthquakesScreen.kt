@@ -23,6 +23,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mlhysrszn.earthquake.R
+import com.mlhysrszn.earthquake.ui.analytics.ProductEventViewModel
 import com.mlhysrszn.earthquake.domain.model.Earthquake
 import com.mlhysrszn.earthquake.domain.repository.RefreshResult
 import java.text.DecimalFormat
@@ -48,6 +50,10 @@ fun EarthquakesRoute(
     onSettingsClick: () -> Unit,
     viewModel: EarthquakesViewModel = hiltViewModel(),
 ) {
+    val productEventViewModel = hiltViewModel<ProductEventViewModel>()
+    LaunchedEffect(Unit) {
+        productEventViewModel.recordScreenView(screen = "list")
+    }
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     EarthquakesScreen(
         state = state,

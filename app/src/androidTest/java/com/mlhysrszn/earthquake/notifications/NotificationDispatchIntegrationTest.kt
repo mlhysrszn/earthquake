@@ -15,10 +15,14 @@ import com.mlhysrszn.earthquake.data.local.room.toEntity
 import com.mlhysrszn.earthquake.data.notification.NotificationProcessor
 import com.mlhysrszn.earthquake.domain.model.Earthquake
 import com.mlhysrszn.earthquake.domain.model.NotificationPreferences
+import com.mlhysrszn.earthquake.domain.model.ProductEventName
+import com.mlhysrszn.earthquake.domain.model.RefreshOrigin
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeLookupResult
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeNotificationSender
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeRepository
 import com.mlhysrszn.earthquake.domain.repository.NotificationPreferencesRepository
+import com.mlhysrszn.earthquake.domain.repository.ProductEventRecorder
+import com.mlhysrszn.earthquake.domain.repository.ProductEventRepository
 import com.mlhysrszn.earthquake.domain.repository.RefreshResult
 import com.mlhysrszn.earthquake.domain.usecase.DispatchPendingNotifications
 import com.mlhysrszn.earthquake.domain.usecase.NotificationEligibilityPolicy
@@ -31,7 +35,9 @@ import java.time.ZoneOffset
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -48,6 +54,7 @@ class NotificationDispatchIntegrationTest {
     val hiltRule = HiltAndroidRule(this)
 
     @Inject lateinit var sender: EarthquakeNotificationSender
+    @Inject lateinit var productEventRepository: ProductEventRepository
 
     @Before
     fun inject() {
@@ -95,9 +102,22 @@ class NotificationDispatchIntegrationTest {
             val sharedRefresher = NotificationAwareEarthquakeRefresher(
                 earthquakeRepository = FakeEarthquakeRepository(earthquake),
                 dispatchPendingNotifications = DispatchPendingNotifications { dispatcher.dispatch() },
+                productEventRecorder = ProductEventRecorder { _, _, _ -> },
             )
-            assertEquals(RefreshResult.Success(acceptedEventCount = 1), sharedRefresher.refresh())
-            assertEquals(RefreshResult.Success(acceptedEventCount = 1), sharedRefresher.refresh())
+            assertEquals(
+                RefreshResult.Success(acceptedEventCount = 1),
+                sharedRefresher.refresh(RefreshOrigin.FOREGROUND),
+            )
+            assertEquals(
+                RefreshResult.Success(acceptedEventCount = 1),
+                sharedRefresher.refresh(RefreshOrigin.FOREGROUND),
+            )
+            assertTrue(
+                productEventRepository.getRecentEvents().any { event ->
+                    event.name == ProductEventName.NOTIFICATION_POSTED &&
+                        event.properties["event_id"] == earthquake.id
+                },
+            )
 
             val activeNotification = notificationManager.activeNotifications
                 .firstOrNull { it.tag == canonicalId }
@@ -120,12 +140,26 @@ class NotificationDispatchIntegrationTest {
             )
             assertTrue(device.wait(Until.hasObject(By.text("Deprem ayrıntıları")), 10_000))
             assertTrue(device.wait(Until.hasObject(By.text(earthquake.place!!)), 10_000))
+            withTimeout(10_000) {
+                productEventRepository.observeRecentEvents().first { events ->
+                    events.any { event ->
+                        event.name == ProductEventName.NOTIFICATION_OPENED &&
+                            event.properties["event_id"] == earthquake.id
+                    } && events.any { event ->
+                        event.name == ProductEventName.SCREEN_VIEW &&
+                            event.properties["screen"] == "detail" &&
+                            event.properties["entry_source"] == "notification" &&
+                            event.properties["event_id"] == earthquake.id
+                    }
+                }
+            }
         } finally {
             launchedActivity?.finish()
             instrumentation.removeMonitor(activityMonitor)
             notificationManager.cancel(canonicalId, EarthquakeNotificationConstants.NOTIFICATION_ID)
             database.close()
         }
+        Unit
     }
 
     private suspend fun storeSnapshot(dao: EarthquakeDao, events: List<Earthquake>, generatedAt: Long) {

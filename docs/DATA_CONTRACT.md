@@ -6,10 +6,13 @@ synchronization, typed detail navigation, detail lookup, and persisted notificat
 preferences/settings, and pure notification eligibility policy are implemented.
 Persistent notification baselines, identities, aliases, outcomes, Android
 notification delivery, and notification-to-detail navigation are implemented.
-Preference-driven WorkManager scheduling and shared foreground/background refresh
-orchestration are implemented; remaining notification workflows are pending.
+Preference-driven WorkManager scheduling, shared foreground/background refresh
+orchestration, and local product-event storage are implemented; the isolated demo
+and remaining notification workflows are pending.
 See the [roadmap](ROADMAP.md) for delivery order and the
 [architecture](ARCHITECTURE.md) for package responsibilities inside app.
+Product event names, properties, retention, and metric denominators are defined
+in the [Local Product Events](PRODUCT_EVENTS.md) contract.
 
 ## 1. Source and scope
 
@@ -90,10 +93,12 @@ Fetched events are cached only when they fit the current 24-hour retention windo
   processing states. Data implements storage and atomic deduplication operations.
 - `EarthquakeNotificationSender`: send domain notification requests through the
   Android adapter in app.
+- `ProductEventRepository` / `ProductEventRecorder`: persist and expose minimal
+  UTC-stamped product events locally; event records are never uploaded.
 
 Introduce contracts only when their delivery step needs them. Preference
-storage is implemented with DataStore; notification history, delivery, and shared
-refresh orchestration are implemented. Hilt bindings supply application adapters
+storage is implemented with DataStore; notification history, delivery, shared
+refresh orchestration, and product-event recording are implemented. Hilt bindings supply application adapters
 without adding Android dependencies to domain interfaces. All implementations and
 contracts live in app packages.
 One-shot operations use main-safe suspend functions;

@@ -6,6 +6,7 @@ import com.mlhysrszn.earthquake.data.local.room.EarthquakeDao
 import com.mlhysrszn.earthquake.data.local.room.EarthquakeDatabase
 import com.mlhysrszn.earthquake.data.local.room.EarthquakeDatabaseMigrations
 import com.mlhysrszn.earthquake.data.local.room.NotificationProcessingDao
+import com.mlhysrszn.earthquake.data.local.room.ProductEventDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,7 +25,10 @@ object DatabaseModule {
         context,
         EarthquakeDatabase::class.java,
         DATABASE_NAME,
-    ).addMigrations(EarthquakeDatabaseMigrations.MIGRATION_1_2).build()
+    ).addMigrations(
+        EarthquakeDatabaseMigrations.MIGRATION_1_2,
+        EarthquakeDatabaseMigrations.MIGRATION_2_3,
+    ).build()
 
     @Provides
     @Singleton
@@ -35,6 +39,11 @@ object DatabaseModule {
     @Singleton
     fun provideNotificationProcessingDao(database: EarthquakeDatabase): NotificationProcessingDao =
         database.notificationProcessingDao()
+
+    @Provides
+    @Singleton
+    fun provideProductEventDao(database: EarthquakeDatabase): ProductEventDao =
+        database.productEventDao()
 
     private const val DATABASE_NAME = "earthquake.db"
 }

@@ -6,6 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.mlhysrszn.earthquake.domain.repository.NotificationPreferencesRepository
 import com.mlhysrszn.earthquake.domain.repository.RefreshResult
+import com.mlhysrszn.earthquake.domain.model.RefreshOrigin
 import com.mlhysrszn.earthquake.domain.usecase.RefreshEarthquakes
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -31,7 +32,7 @@ class EarthquakeSyncWorker @AssistedInject constructor(
         if (!enabled) return Result.success()
 
         return when (val result = try {
-            refreshEarthquakes.refresh()
+            refreshEarthquakes.refresh(RefreshOrigin.BACKGROUND)
         } catch (cancellation: CancellationException) {
             throw cancellation
         } catch (_: Exception) {

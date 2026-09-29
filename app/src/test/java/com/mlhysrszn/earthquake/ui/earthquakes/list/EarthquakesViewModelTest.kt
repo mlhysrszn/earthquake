@@ -159,7 +159,7 @@ class EarthquakesViewModelTest {
         val repository = FakeEarthquakeRepository(initialEvents).apply { enqueue(initialResult) }
         val viewModel = EarthquakesViewModel(
             repository = repository,
-            refreshEarthquakes = RefreshEarthquakes { repository.refresh() },
+            refreshEarthquakes = RefreshEarthquakes { _ -> repository.refresh() },
             clock = fixedClock,
         )
         val viewModelStore = ViewModelStore().apply { put("test", viewModel) }

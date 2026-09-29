@@ -18,6 +18,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mlhysrszn.earthquake.R
 import com.mlhysrszn.earthquake.domain.model.Earthquake
+import com.mlhysrszn.earthquake.ui.analytics.ProductEventViewModel
 import com.mlhysrszn.earthquake.domain.repository.RefreshResult
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -39,8 +41,22 @@ import java.util.Locale
 @Composable
 fun EarthquakeDetailRoute(
     viewModel: EarthquakeDetailViewModel,
+    entrySource: String,
     onBack: () -> Unit,
 ) {
+    val productEventViewModel = hiltViewModel<ProductEventViewModel>()
+    LaunchedEffect(viewModel, entrySource) {
+        productEventViewModel.recordScreenView(
+            screen = "detail",
+            properties = mapOf(
+                "event_id" to viewModel.earthquakeId,
+                "entry_source" to entrySource,
+            ),
+        )
+        if (entrySource == "notification") {
+            productEventViewModel.recordNotificationOpened(viewModel.earthquakeId)
+        }
+    }
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     EarthquakeDetailScreen(
         state = state,

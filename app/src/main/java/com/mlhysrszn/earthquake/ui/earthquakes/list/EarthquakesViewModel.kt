@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeRepository
 import com.mlhysrszn.earthquake.domain.repository.RefreshResult
+import com.mlhysrszn.earthquake.domain.model.RefreshOrigin
 import com.mlhysrszn.earthquake.domain.usecase.RefreshEarthquakes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
@@ -65,7 +66,7 @@ class EarthquakesViewModel @Inject constructor(
             }
 
             val result = try {
-                refreshEarthquakes.refresh()
+                refreshEarthquakes.refresh(RefreshOrigin.FOREGROUND)
             } catch (cancellation: CancellationException) {
                 throw cancellation
             } catch (_: Exception) {
