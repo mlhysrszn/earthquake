@@ -1280,7 +1280,7 @@ reported the repository as public with default branch `main`.
 ## R01: Post-review fixes
 
 Date: 2026-09-30 (Europe/Istanbul).
-Status: verified; awaiting user approval to commit.
+Status: verified; committed as `2cb065d` and pushed.
 
 A full review of every layer found one user-facing bug and several product, metric,
 and code issues. The user asked for all of them to be fixed.
