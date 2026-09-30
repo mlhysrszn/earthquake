@@ -1044,7 +1044,7 @@ focused tests, event-definition documentation, and English project records.
 ## Q02: Isolated demo scenario
 
 Date: 2026-09-30 (Europe/Istanbul).
-Status: verified; awaiting user approval to commit.
+Status: verified; committed as `e7b4d9b`.
 
 ### Scope
 
@@ -1088,7 +1088,7 @@ Not committed; waiting for explicit approval.
 ## Q03: Acceptance walkthrough
 
 Date: 2026-09-30 (Europe/Istanbul).
-Status: verified; awaiting user approval to commit. Documentation-only change.
+Status: verified; committed as `248be08`. Documentation-only change.
 
 ### Environment
 
@@ -1132,7 +1132,7 @@ Not committed; waiting for explicit approval.
 ## H01: README and usage report
 
 Date: 2026-09-30 (Europe/Istanbul).
-Status: written; awaiting user approval to commit. Documentation-only change.
+Status: written; committed as `f1371d4`. Documentation-only change.
 
 - Added `README.md` and a per-assistant summary in the AI usage report.
 - Checked that the referenced Gradle tasks exist for both flavors (they were run
@@ -1143,7 +1143,7 @@ Status: written; awaiting user approval to commit. Documentation-only change.
 ## H02: Reproducibility check
 
 Date: 2026-09-30 (Europe/Istanbul).
-Status: partially complete; awaiting user approval to commit. Documentation-only change.
+Status: partially complete; committed as `ce28b6d`. Documentation-only change.
 
 | Check | Result |
 | --- | --- |
@@ -1173,7 +1173,7 @@ and the tests, which suits an interview walkthrough.
 ## Documentation refresh after the checklist review
 
 Date: 2026-09-30 (Europe/Istanbul).
-Status: documentation-only; awaiting user approval to commit.
+Status: documentation-only; committed as `9a9a7cd`.
 
 Removed stale "pending/later task" statements in `ARCHITECTURE.md`,
 `ANDROID_GUIDELINE_REVIEW.md`, and `DATA_CONTRACT.md` that predated the completed
@@ -1185,7 +1185,7 @@ architecture constraints. No application code changed; no tests were re-run.
 ## Android 13+ permission check
 
 Date: 2026-09-30 (Europe/Istanbul).
-Status: manual check; documentation-only change, awaiting user approval to commit.
+Status: manual check; documentation-only change, committed as `fd184ec`.
 
 Created a local AVD `api34_test` (Pixel 6, Android 14 / API 34, Google APIs, arm64)
 and ran the live debug build on it.
@@ -1206,7 +1206,7 @@ API 34; it was verified on API 29. The AVD remains on this machine.
 ## Fix: default variant and top bars under the status bar
 
 Date: 2026-09-30 (Europe/Istanbul).
-Status: verified; awaiting user approval to commit.
+Status: verified; committed as `b549692`.
 
 Reported by the user: Android Studio ran the demo flavor by default, and the top bar
 of each screen sat under the status bar so the Back button could not be tapped.
@@ -1233,3 +1233,33 @@ because preferences left by manual testing were still in the demo app; clearing 
 data fixed it. Device tests use the app's real DataStore file, so clear app data
 after manual testing. The API 29 emulator was used for the final runs. Screens were
 not re-screenshotted on API 29 after the change.
+
+
+## Case-brief review and README gaps
+
+Date: 2026-09-30 (Europe/Istanbul).
+Status: documentation-only; awaiting user approval to commit.
+
+Compared the project with the case-study PDF. The app covers the brief (recent
+events, a personal threshold, notifications above it, local product events), but
+the README was missing items the brief asks for:
+
+| Gap | Change |
+| --- | --- |
+| Target user and problem not stated | Added a "Target user and problem" section (proposal; the user should confirm it) |
+| Important decisions scattered across documents | Added a "Key decisions" table, including why the summary feed replaces the `fdsnws` query from the brief |
+| Time spent "not measured" | Added a labeled lower-bound estimate (about 10 hours) from commit timestamps per session |
+| Model usage share unavailable | Added commit-based shares per model with the denominator stated; token shares remain unavailable |
+| How success is measured not summarized | Listed the three local metrics in the README |
+| Stale statuses | Work-log and roadmap statuses now name their commits; completion checklist updated |
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `./gradlew :app:testLiveDebugUnitTest` | 53 tests passed, 0 failures (no code changed) |
+| Decision table and data contract vs. README claims | Consistent (baseline, aliases, revisions, summary feed) |
+| Commit counts and session spans | Taken from `git log` |
+
+Remaining: publication needs an authorized remote; the time estimate excludes
+work before each session's first commit.

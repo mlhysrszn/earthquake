@@ -4,6 +4,33 @@ An Android app that shows recent USGS earthquakes worldwide, lets the user set a
 magnitude threshold, and posts a notification for an eligible new event. It is a
 case-study project built in small, reviewed steps.
 
+## Target user and problem
+
+Turkish-speaking people who want to know when a significant earthquake happens
+without watching a news feed or a raw seismic list all day. They care about large
+events (for example near family, in neighbouring countries, or anywhere in the
+world), but small, frequent tremors are noise to them.
+
+The app answers two questions: "what happened recently?" (the list and details)
+and "tell me only when it matters to me" (a personal magnitude threshold with a
+notification for each new event above it). It is not an early-warning system; it
+reports events after the seismic network has published them.
+
+## Key decisions
+
+| Decision | Why |
+| --- | --- |
+| USGS as the only source | Free, keyless, stable GeoJSON with documented fields; AFAD/Kandilli have better coverage of small Turkish events but no equally documented public API. Weaker coverage of small local events is an accepted limitation. |
+| USGS summary feed (`summary/all_day.geojson`) instead of `fdsnws/event/1/query` | USGS recommends summary feeds for automated clients, and the feed is updated every minute. The catalog query is only needed for custom date, place, or magnitude filters, which are out of scope. |
+| Worldwide events, past 24 hours, no region filter | No location permission is needed and the threshold already controls noise; a region filter is a possible next step. |
+| The threshold filters notifications, not the list | The list stays a complete picture of recent activity; the threshold expresses what is worth an interruption. |
+| First synchronization never notifies | Installing the app must not post a burst of notifications for events that already happened. |
+| Each event is notified at most once | Events are tracked by ID (and USGS aliases), so revisions and repeated feeds do not re-notify. |
+| Periodic WorkManager checks (15 min minimum) | Reliable without a backend or push service; the tradeoff is that notifications are not instant. |
+| Local-first (Room cache) | The list stays usable offline, and failed refreshes never erase data. |
+| A separate `demo` flavor | Notification behavior can be shown on demand with the same business rules, without waiting for a real earthquake. |
+| Local product events instead of an analytics SDK | The case allows local logging; nothing leaves the device. |
+
 ## Scope
 
 - Native Android (Kotlin, Jetpack Compose), `minSdk` 29, single Activity.
@@ -94,11 +121,40 @@ The app records a small event log (screen views, preference saves, permission
 outcomes, notification posts/opens, refresh outcomes) in a local Room table with
 LIVE/DEMO labels. Nothing is uploaded. See [product events](docs/PRODUCT_EVENTS.md).
 
-## AI assistance and time
+How we would know the product works:
 
-AI tools and models used, delegated work, verification, and their limits are in the
-[AI usage report](docs/AI_USAGE_REPORT.md). Total development time and token usage
-were not measured.
+- **Setup completion:** share of users who start enabling notifications and
+  successfully save the preference.
+- **Notification-to-detail opening:** share of posted notifications whose event
+  detail is opened, a sign that the alerts are relevant rather than noise.
+- **Refresh failure rate:** share of foreground/background refreshes that fail,
+  a sign of whether the data stays fresh.
+
+## Time spent
+
+Estimate: about **10 hours** of active work over 2026-09-27 to 2026-09-30. It is
+the sum of the spans from the first to the last commit in each of five working
+sessions (2h53m, 4h05m, 1h01m, 1h45m, 22m). This is a lower bound: work done before
+each session's first commit (planning, reading documentation) is not included.
+Time was not tracked with a timer.
+
+## AI assistance
+
+AI coding assistants wrote most of the code and documents under step-by-step
+direction; the human set scope and decisions and approved every commit. Every step
+was verified with builds, JVM and device tests, lint, and manual emulator checks
+before approval.
+
+| Assistant / model | Work | Commits | Share |
+| --- | --- | --- | --- |
+| OpenAI Codex (exact model ID not captured) | Planning documents, project setup, Hilt | 3 | 11% |
+| OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`) | Domain, list, USGS/Room data, details, notifications, background work, product events | 16 | 59% |
+| Claude Code, Claude Sonnet 5.5 (`claude-sonnet-5-5`) | Demo flavor, acceptance walkthrough, README, permission check, inset fix | 7 | 26% |
+| Claude Code, Claude Opus 5.5 (`claude-opus-5-5`) | Review against the case brief and this README update | 1 | 4% |
+
+The share is the number of commits per model divided by all 27 commits. Tokens
+were not exported, so token-based shares are unavailable. Details per task are in
+the [AI usage report](docs/AI_USAGE_REPORT.md).
 
 ## Next improvement
 

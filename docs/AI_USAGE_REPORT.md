@@ -28,10 +28,12 @@ Status: initial record; update at each implementation checkpoint.
 | --- | --- |
 | F02, F01, F03, F06 | OpenAI Codex (exact model identifier not captured) |
 | L01–L04, D01–D04, N01–N07, Q01 | OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`) |
-| Q02, Q03, H01 | Claude Code, Claude Sonnet 5.5 (`claude-sonnet-5-5`) |
+| Q02, Q03, H01, H02, post-H02 fixes | Claude Code, Claude Sonnet 5.5 (`claude-sonnet-5-5`) |
+| Case-brief review and README gaps | Claude Code, Claude Opus 5.5 (`claude-opus-5-5`) |
 
-No task used delegated subagents. Token/request totals, total development time,
-and the share of AI-written code were not measured. All commits were made only
+No task used delegated subagents. Token/request totals and the share of
+AI-written code were not measured. Development time is estimated from commit
+timestamps (see below). All commits were made only
 after the user's explicit approval.
 
 ## Usage measurements
@@ -39,7 +41,9 @@ after the user's explicit approval.
 | Measurement | Value | Basis |
 | --- | --- | --- |
 | Exact tokens by model | Unavailable | No session token export captured |
-| Model usage percentages | Unavailable | No measured token/request denominator captured |
+| Model usage percentages (by tokens) | Unavailable | No measured token/request denominator captured |
+| Model usage percentages (by commits) | Codex 3/27 (11%), GPT-6 Luna 16/27 (59%), Claude Sonnet 5.5 7/27 (26%), Claude Opus 5.5 1/27 (4%) | Commits per model divided by all commits, including the case-brief review commit; commit size is not weighted |
+| Development time (estimate) | About 10 hours, lower bound | Sum of first-to-last commit spans in five sessions (2h53m, 4h05m, 1h01m, 1h45m, 22m); excludes work before each session's first commit |
 | Measured AI share of code | Not measured | No generated feature implementation in this checkpoint |
 | Observed verification interval | 8m 06s | Tool timestamps; includes permission waits, excludes unmeasured work |
 
@@ -337,7 +341,7 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Verification: 53 JVM tests, 55 live and 57 demo Android tests, and lint on both
   variants passed; demo app launched manually.
 - Human role: asked to continue, and fixed file ownership with `sudo chown`
-  after root-owned files blocked edits. Commit approval is pending.
+  after root-owned files blocked edits. Committed as `e7b4d9b`.
 - Limitations: see the Q02 work log entry; development time was not measured.
 
 
@@ -362,5 +366,19 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Verification: documented commands and the demo steps were checked against the
   current build configuration and the manual Q03 walkthrough; a clean-checkout
   run is deferred to H02.
-- Human role: asked to continue; commit approval is pending.
-- Limitations: development time and token usage were not measured.
+- Human role: asked to continue and approved the commit (`f1371d4`).
+- Limitations: token usage was not measured.
+
+
+## Case-brief review
+
+- Assistant: Claude Code, Claude Opus 5.5 (`claude-opus-5-5`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: compared the project with the case-study PDF and found missing README
+  items: target user, key decisions, time spent, and model usage share. Added
+  them to the README, derived the time estimate and commit-based shares from Git
+  history, and refreshed stale status text in the roadmap and work log.
+- Verification: 53 JVM tests passed (no code changed); README claims were checked
+  against the data contract, the notification decision table, and Git history.
+- Human role: asked for the review and for the gaps to be fixed. The target-user
+  statement is a proposal for the user to confirm.
