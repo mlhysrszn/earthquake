@@ -1180,3 +1180,24 @@ Removed stale "pending/later task" statements in `ARCHITECTURE.md`,
 Hilt, ViewModel, Worker, detail, notification, and demo work. No decisions changed.
 The Android 13+ permission-denial limitation is now stated explicitly in the
 architecture constraints. No application code changed; no tests were re-run.
+
+
+## Android 13+ permission check
+
+Date: 2026-09-30 (Europe/Istanbul).
+Status: manual check; documentation-only change, awaiting user approval to commit.
+
+Created a local AVD `api34_test` (Pixel 6, Android 14 / API 34, Google APIs, arm64)
+and ran the live debug build on it.
+
+| Step | Result |
+| --- | --- |
+| Open settings before any choice | "Android bildirim izni verilmedi" message and a button to Android settings |
+| Turn notifications on | System prompt "Allow Deprem Takip to send you notifications?" appeared |
+| Tap "Don't allow" | Same denied message stayed; switch and 4,0 threshold kept |
+| Force-stop and reopen | Enabled switch and denied message persisted |
+| Open Android settings, grant, return | Message changed to "Android bildirim izni verildi" on resume |
+
+Permission was then revoked again and the emulator closed. Limitations: manual
+only (no instrumentation test), and notification posting itself was not repeated on
+API 34; it was verified on API 29. The AVD remains on this machine.

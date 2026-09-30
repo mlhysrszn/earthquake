@@ -81,8 +81,9 @@ for duplicates, late records, revisions, and permission states.
   [work log](docs/WORK_LOG.md). Current results: 53 JVM tests, 55 live and 57 demo
   device tests, lint with 0 errors, all on an API 29 emulator.
 
-Known gaps: Android 13+ runtime-permission denial was not exercised on a device,
-and a real timed background run after process death was not observed.
+The Android 13+ permission prompt, denial, and grant were checked manually on an
+API 34 emulator. Known gap: a real timed background run after process death was
+not observed.
 
 ## Local product events
 
@@ -98,5 +99,5 @@ were not measured.
 
 ## Next improvement
 
-Add a user-facing view of the local event log, and exercise the Android 13+
-permission flow on a newer emulator or device.
+Add a user-facing view of the local event log, and automate the Android 13+
+permission flow in an instrumentation test.

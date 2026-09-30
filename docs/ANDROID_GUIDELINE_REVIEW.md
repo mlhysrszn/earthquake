@@ -2,7 +2,7 @@
 
 Status: single app module confirmed; the Hilt foundation and feature integrations
 (ViewModels, Workers, storage, navigation) are implemented and verified on an
-API 29 emulator. Android 13+ permission behavior remains unverified on a device.
+API 29 emulator; the Android 13+ permission flow was checked manually on API 34.
 Git setup and starter verification are recorded separately in [Work Log](WORK_LOG.md).
 Reviewed on: 2026-09-27. Single-module decision updated on: 2026-09-28.
 

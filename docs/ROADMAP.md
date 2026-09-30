@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, N04, N05, N06, N07, and Q01 are committed. Q02 is committed (`e7b4d9b`). Q03 is verified and awaiting commit approval.
+L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, N04, N05, N06, N07, and Q01 are committed. Q02 is committed (`e7b4d9b`). Q03, H01, and H02 records are committed; H02 is partially complete (remote and interview preparation pending).
 
 ## Goal
 
@@ -350,7 +350,8 @@ mandatory; permission to work or run tests does not authorize a commit.
   with cached list and retained content on failed refresh, offline cached detail,
   retry after reconnect, 1.3 font scale, demo below/above/duplicate/reset, cold
   notification tap to the correct detail, and system-disabled notifications.
-  Android 13+ runtime-permission denial could not be exercised on API 29.
+  Android 13+ runtime-permission denial was exercised afterwards on an API 34
+  emulator (see Work Log, "Android 13+ permission check").
 
 **Checkpoint:** the core journey works, can be measured, and can be demonstrated on demand.
 
@@ -421,7 +422,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | N07 | Committed | Hilt Worker and preference-driven unique periodic scheduling; 50 JVM tests, 50 device tests, debug build and lint passed; merged manifest checked |
 | Q01 | Committed | Local Room product events and prior-flow instrumentation; 53 JVM tests, 54 device tests, schema migration, debug build and lint passed |
 | Q02 | Committed: e7b4d9b | Live/demo flavors and isolated demo scenario; 53 JVM tests, 55 live and 57 demo device tests, lint (0 errors) on both variants passed |
-| Q03 | Verified, awaiting commit approval | Automated suites plus manual API 29 walkthrough; Android 13+ permission denial not exercised |
+| Q03 | Committed: 248be08 | Automated suites plus manual API 29 walkthrough; Android 13+ permission flow checked manually on API 34 afterwards |
 | H01 | Verified, awaiting commit approval | README and usage-report summary written; commands checked against build config; clean-checkout run deferred to H02 |
 | H02 | Partially done | Clean-clone build/tests and tracked-file review passed; remote publication and interview preparation pending the user |
 

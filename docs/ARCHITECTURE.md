@@ -301,8 +301,8 @@ then replaces that source without changing the presentation contract.
   before presenting a latency promise.
 - Validate library versions against the existing AGP, Kotlin, and Gradle setup
   when adding dependencies. Hilt, ViewModel, Worker, and storage integration are
-  implemented and verified on an API 29 emulator; Android 13+ runtime-permission
-  denial has not been exercised on a device. See [Work Log](WORK_LOG.md) for
+  implemented and verified on an API 29 emulator; the Android 13+ runtime-permission
+  prompt, denial, and grant were checked manually on an API 34 emulator. See [Work Log](WORK_LOG.md) for
   versions, verification, and compatibility limits.
 
 ## References
