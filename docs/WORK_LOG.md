@@ -1201,3 +1201,35 @@ and ran the live debug build on it.
 Permission was then revoked again and the emulator closed. Limitations: manual
 only (no instrumentation test), and notification posting itself was not repeated on
 API 34; it was verified on API 29. The AVD remains on this machine.
+
+
+## Fix: default variant and top bars under the status bar
+
+Date: 2026-09-30 (Europe/Istanbul).
+Status: verified; awaiting user approval to commit.
+
+Reported by the user: Android Studio ran the demo flavor by default, and the top bar
+of each screen sat under the status bar so the Back button could not be tapped.
+
+- `live` is now the default product flavor (`isDefault = true`); Android Studio had
+  picked `demo`, the first flavor alphabetically. README notes how to pick the demo.
+- The list, detail, and settings top bars now apply safe-drawing insets (top and
+  horizontal), so content starts below the status bar/cutout while the bar
+  background still fills it. Edge-to-edge drawing is unchanged.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `assembleLiveDebug` / `assembleDemoDebug` | Passed |
+| Screenshot of settings on an API 34 emulator | Title and Back clear of the status bar; a tap on Back returned to the list |
+| JVM tests; lint on both variants | 53 tests passed; 0 errors, 23 warnings |
+| Device tests on API 29 (live, demo) | 55 live and 57 demo tests passed |
+
+Notes: the first device run used an API 34 emulator and three tests failed because
+they assume API 29 or a granted notification permission (the existing navigation
+test asserts the "permission not required" text). A first demo run also failed
+because preferences left by manual testing were still in the demo app; clearing app
+data fixed it. Device tests use the app's real DataStore file, so clear app data
+after manual testing. The API 29 emulator was used for the final runs. Screens were
+not re-screenshotted on API 29 after the change.

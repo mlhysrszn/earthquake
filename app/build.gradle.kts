@@ -26,6 +26,8 @@ android {
     productFlavors {
         create("live") {
             dimension = "environment"
+            // Android Studio otherwise selects "demo", the first flavor alphabetically.
+            isDefault = true
         }
         create("demo") {
             dimension = "environment"

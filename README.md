@@ -47,6 +47,9 @@ There are two product flavors:
 ./gradlew :app:lintLiveDebug :app:lintDemoDebug
 ```
 
+`live` is the default variant in Android Studio; pick `demoDebug` in Build Variants
+to run the demo.
+
 The demo uses its own database, preferences file, and WorkManager job name, so it
 never mixes with live data.
 
