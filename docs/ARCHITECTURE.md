@@ -10,8 +10,8 @@ implemented. The pure Kotlin notification eligibility policy and persistent
 event/alias processing, baseline, and retry state are implemented. The Android
 notification channel/sender and notification-to-detail routing are implemented;
 WorkManager scheduling and shared foreground/background notification orchestration
-and local product-event recording are implemented; the isolated demo and remaining
-product features are pending.
+and local product-event recording are implemented. The isolated `demo` flavor and
+its scenario controls are implemented; the remaining work is the project handoff.
 
 ## Purpose
 
@@ -56,10 +56,10 @@ app/src/main/java/com/mlhysrszn/earthquake/
   notifications/
 ```
 
-The starter Activity/theme, domain model and repository contract, sample
-repository, Room entities/DAO, USGS repository, list/detail ViewModels and screens,
-Navigation 3, and USGS feed client/mapper exist today. Other planned paths remain
-for future code.
+The Activity/theme, domain model and repository contract, sample and USGS
+repositories, Room entities/DAOs, list/detail/settings ViewModels and screens,
+Navigation 3, the USGS feed client/mapper, notification, background, analytics, and
+demo code exist today. Add new packages only when a feature needs them.
 
 | Package | Responsibility |
 | --- | --- |
@@ -162,7 +162,7 @@ AGP 9.4.1, and Gradle 9.6.0. Java targets 17; built-in Kotlin inherits that
 target. The root build explicitly aligns AGP's Kotlin compiler with the Compose
 compiler. Debug/release builds and device graph checks pass in the local
 environment; see Work Log for support-matrix limits. AndroidX Hilt integrations
-will be version-checked when ViewModels and Workers are added. Hilt binding modules are annotated classes inside app, not additional
+(ViewModels and Workers) are version-checked and in use. Hilt binding modules are annotated classes inside app, not additional
 Gradle modules. There is no separate JVM plugin or manual dependency container.
 
 Implemented in F06: `EarthquakeApplication`, the MainActivity entry point, and
@@ -300,9 +300,10 @@ then replaces that source without changing the presentation contract.
 - If near-real-time delivery becomes a requirement, revisit the delivery design
   before presenting a latency promise.
 - Validate library versions against the existing AGP, Kotlin, and Gradle setup
-  when adding dependencies. F06 verifies the Hilt foundation locally; ViewModel,
-  Worker, and storage integration remain later tasks. See [Work Log](WORK_LOG.md)
-  for versions, verification, and compatibility limits.
+  when adding dependencies. Hilt, ViewModel, Worker, and storage integration are
+  implemented and verified on an API 29 emulator; Android 13+ runtime-permission
+  denial has not been exercised on a device. See [Work Log](WORK_LOG.md) for
+  versions, verification, and compatibility limits.
 
 ## References
 

@@ -1,7 +1,8 @@
 # Android Guideline Review
 
-Status: single app module confirmed; the F06 Hilt foundation is verified.
-Feature-specific integration checks remain pending.
+Status: single app module confirmed; the Hilt foundation and feature integrations
+(ViewModels, Workers, storage, navigation) are implemented and verified on an
+API 29 emulator. Android 13+ permission behavior remains unverified on a device.
 Git setup and starter verification are recorded separately in [Work Log](WORK_LOG.md).
 Reviewed on: 2026-09-27. Single-module decision updated on: 2026-09-28.
 

@@ -1168,3 +1168,15 @@ and the tests, which suits an interview walkthrough.
 
 - Publication and the repository URL: no destination has been authorized.
 - Interview preparation and environment readiness are the user's to confirm.
+
+
+## Documentation refresh after the checklist review
+
+Date: 2026-09-30 (Europe/Istanbul).
+Status: documentation-only; awaiting user approval to commit.
+
+Removed stale "pending/later task" statements in `ARCHITECTURE.md`,
+`ANDROID_GUIDELINE_REVIEW.md`, and `DATA_CONTRACT.md` that predated the completed
+Hilt, ViewModel, Worker, detail, notification, and demo work. No decisions changed.
+The Android 13+ permission-denial limitation is now stated explicitly in the
+architecture constraints. No application code changed; no tests were re-run.

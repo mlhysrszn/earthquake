@@ -7,8 +7,8 @@ preferences/settings, and pure notification eligibility policy are implemented.
 Persistent notification baselines, identities, aliases, outcomes, Android
 notification delivery, and notification-to-detail navigation are implemented.
 Preference-driven WorkManager scheduling, shared foreground/background refresh
-orchestration, and local product-event storage are implemented; the isolated demo
-and remaining notification workflows are pending.
+orchestration, local product-event storage, and the isolated demo scenario are
+implemented.
 See the [roadmap](ROADMAP.md) for delivery order and the
 [architecture](ARCHITECTURE.md) for package responsibilities inside app.
 Product event names, properties, retention, and metric denominators are defined
@@ -134,7 +134,7 @@ The initial `EarthquakeRepository` contract exposes a Flow of the rolling
 typed as success (with the count of accepted records) or failure classified as
 network, invalid response, storage, or unknown. Infrastructure exception types
 do not cross the domain boundary. Individual-event observation and missing-detail
-fetching will be added when the detail feature needs them.
+fetching are implemented for the detail screen.
 
 Room retains only events in the inclusive interval from `now - 24 hours` through
 `now`; future-dated and older events are excluded. A valid, fresh summary feed is
