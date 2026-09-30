@@ -1,4 +1,4 @@
-package com.mlhysrszn.earthquake.data.local.room
+package com.mlhysrszn.earthquake.data.local.demo
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

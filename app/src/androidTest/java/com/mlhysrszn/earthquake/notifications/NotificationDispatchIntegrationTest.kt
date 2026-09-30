@@ -206,6 +206,8 @@ class NotificationDispatchIntegrationTest {
         override fun observeEarthquakes(): Flow<List<Earthquake>> =
             MutableStateFlow(listOf(earthquake))
 
+        override fun observeLastSuccessfulRefresh(): Flow<Instant?> = MutableStateFlow(null)
+
         override fun observeEarthquake(id: String): Flow<Earthquake?> =
             MutableStateFlow(earthquake.takeIf { it.id == id })
 

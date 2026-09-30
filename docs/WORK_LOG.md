@@ -1275,3 +1275,66 @@ GitHub account (`mlhysrszn`). Before pushing, `git ls-files` was checked for
 `local.properties`, signing keys, `.env` files, and build output; none are tracked.
 `origin` was added and `main` pushed with upstream tracking; `gh repo view`
 reported the repository as public with default branch `main`.
+
+
+## R01: Post-review fixes
+
+Date: 2026-09-30 (Europe/Istanbul).
+Status: verified; awaiting user approval to commit.
+
+A full review of every layer found one user-facing bug and several product, metric,
+and code issues. The user asked for all of them to be fixed.
+
+### Bug reproduced before the fix
+
+On the API 29 emulator (demo build, clean data): two scenario events were added
+from settings and the user returned to the list. The list stayed empty, stayed
+empty after "Yenile", and showed both events only after a force-stop and restart.
+Cause: `observeEarthquakes()` fixed `now` when the list subscribed, and the Room
+query excluded events that occurred after it. The same code path served the live
+feed, so the live list also stopped showing new events and shrank over time.
+
+### Changes
+
+| Area | Change |
+| --- | --- |
+| List window | `EarthquakeDao.observeRecent` reads the clock on every Room emission; regression test `recentWindowIncludesEventsThatOccurAfterSubscription` |
+| Last update | Read from Room sync metadata via `observeLastSuccessfulRefresh`, so it survives restarts and shows during offline cold starts |
+| Resume | The list refreshes on resume when the last success is older than five minutes |
+| Threshold | Inclusive (`>=`); `AT_THRESHOLD` reason removed, legacy outcome kept for old rows |
+| Revisions | An event suppressed as below threshold or missing magnitude is evaluated again when USGS updates it after the decision; posts at most once |
+| Slider | Saves and records `NOTIFICATION_PREFERENCE_SAVED` once, on release |
+| Setup metric | `NOTIFICATION_SETUP_COMPLETED` requires Android to allow notifications |
+| Refresh metric | A stale (ignored) snapshot reports `accepted_count` 0 |
+| Demo storage | Scenario rows moved to a demo-only `DemoScenarioDatabase`; live schema version 5 drops the demo table (migration 4 to 5, tested) |
+| Code | Shared formatters in `ui/format`; duplicate processor branches merged into one helper |
+| UI | Severity-colored magnitude badge, relative ages, magnitude filter (saved in `SavedStateHandle`), pull-to-refresh, detail coordinates, "Haritada aç" and "USGS sayfasını aç" |
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `testLiveDebugUnitTest`, `testDemoDebugUnitTest` | 62 tests each, 0 failures |
+| `connectedLiveDebugAndroidTest` (API 29) | 62 tests, 0 failures |
+| `connectedDemoDebugAndroidTest` (API 29) | 64 tests, 0 failures |
+| `lintLiveDebug`, `lintDemoDebug` | 0 errors, 23 warnings each (same categories as before) |
+| Demo: add below/above events from settings, go back | Both events shown at once, "az önce", no restart needed |
+| Demo: 4,0+ filter | Only the 5,5 event shown; "Tümü" restores both |
+| Live: online cold start | USGS list with relative ages and last update time |
+| Live: offline cold start | Failure banner, cached list, and persisted "Son güncelleme" shown |
+| Live: detail | Coordinates shown; "Haritada aç" opened Google Maps |
+| Live: "USGS sayfasını aç" | Correct VIEW intent sent; this emulator's Chrome crashed in its own first-run screen, so the page itself was not seen |
+
+The first device run had two expected failures: the stale-snapshot test still
+expected the old `accepted_count` of 1, and the list test looked for the badge text,
+which is now merged into its content description for accessibility. Both tests
+were updated to the new behavior. The minor-magnitude badge color was changed from
+`surfaceVariant` to `surface` after a screenshot showed it blending into the card.
+
+### Limitations
+
+- Product decisions changed (inclusive threshold, revision rule) and should be
+  confirmed by the user.
+- The revision rule relies on USGS `updated` time versus the device decision
+  time; large device clock errors could delay or trigger a re-evaluation.
+- Screens were checked on API 29 only; Android 13+ was not re-run for this batch.

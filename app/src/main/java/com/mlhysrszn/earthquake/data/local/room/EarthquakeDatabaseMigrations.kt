@@ -98,4 +98,13 @@ object EarthquakeDatabaseMigrations {
             )
         }
     }
+
+    /** Demo scenarios moved to a demo-only database, so no build keeps this table. */
+    val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("DROP TABLE IF EXISTS demo_scenario_events")
+        }
+    }
+
+    val ALL: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
 }

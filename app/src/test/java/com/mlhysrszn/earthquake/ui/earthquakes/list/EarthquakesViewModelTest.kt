@@ -1,5 +1,6 @@
 package com.mlhysrszn.earthquake.ui.earthquakes.list
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
 import com.mlhysrszn.earthquake.domain.model.Earthquake
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeLookupResult
@@ -8,6 +9,7 @@ import com.mlhysrszn.earthquake.domain.repository.RefreshResult
 import com.mlhysrszn.earthquake.domain.usecase.RefreshEarthquakes
 import java.time.Clock
 import java.time.Instant
+import java.time.ZoneId
 import java.time.ZoneOffset
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -152,15 +154,92 @@ class EarthquakesViewModelTest {
             }
         }
 
+    @Test
+    fun `persisted last update time is shown before and after a failed refresh`() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val persisted = Instant.parse("2026-09-28T09:00:00Z")
+            val fixture = fixture(
+                initialEvents = listOf(sample()),
+                initialResult = RefreshResult.Failure(RefreshResult.Reason.NETWORK),
+                persistedLastRefresh = persisted,
+            )
+            try {
+                val state = fixture.viewModel.uiState.value
+                assertEquals(RefreshResult.Reason.NETWORK, state.refreshError)
+                assertEquals(persisted, state.lastUpdatedAt)
+            } finally {
+                fixture.clear()
+            }
+        }
+
+    @Test
+    fun `resume refreshes only when data is older than the stale limit`() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val clock = MutableClock(fixedClock.instant())
+            val fixture = fixture(initialEvents = listOf(sample()), clock = clock)
+            try {
+                assertEquals(1, fixture.repository.refreshCount)
+
+                clock.now = clock.now.plus(EarthquakesViewModel.STALE_AFTER).minusSeconds(1)
+                fixture.viewModel.refreshIfStale()
+                advanceUntilIdle()
+                assertEquals(1, fixture.repository.refreshCount)
+
+                clock.now = clock.now.plusSeconds(1)
+                fixture.viewModel.refreshIfStale()
+                advanceUntilIdle()
+                assertEquals(2, fixture.repository.refreshCount)
+            } finally {
+                fixture.clear()
+            }
+        }
+
+    @Test
+    fun `magnitude filter hides smaller and unknown magnitudes but keeps the total`() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val strong = sample(id = "strong", magnitude = 5.2)
+            val weak = sample(id = "weak", magnitude = 2.4)
+            val unknown = sample(id = "unknown", magnitude = null)
+            val fixture = fixture(initialEvents = listOf(strong, weak, unknown))
+            try {
+                fixture.viewModel.setMinimumMagnitude(4.0)
+                runCurrent()
+                val filtered = fixture.viewModel.uiState.value
+                assertEquals(listOf("strong"), filtered.earthquakes.map { it.id })
+                assertEquals(3, filtered.totalEarthquakeCount)
+                assertEquals(4.0, filtered.minimumMagnitude!!, 0.0)
+
+                fixture.viewModel.setMinimumMagnitude(null)
+                runCurrent()
+                assertEquals(3, fixture.viewModel.uiState.value.earthquakes.size)
+            } finally {
+                fixture.clear()
+            }
+        }
+
+    private class MutableClock(var now: Instant) : Clock() {
+        override fun getZone(): ZoneId = ZoneOffset.UTC
+
+        override fun withZone(zone: ZoneId): Clock = this
+
+        override fun instant(): Instant = now
+    }
+
     private fun TestScope.fixture(
         initialEvents: List<Earthquake>,
         initialResult: RefreshResult = RefreshResult.Success(initialEvents.size),
+        persistedLastRefresh: Instant? = null,
+        clock: Clock = fixedClock,
     ): Fixture {
-        val repository = FakeEarthquakeRepository(initialEvents).apply { enqueue(initialResult) }
+        val repository = FakeEarthquakeRepository(initialEvents, clock).apply {
+            lastSuccessfulRefresh.value = persistedLastRefresh
+            enqueue(initialResult)
+        }
         val viewModel = EarthquakesViewModel(
             repository = repository,
             refreshEarthquakes = RefreshEarthquakes { _ -> repository.refresh() },
-            clock = fixedClock,
+            clock = clock,
+            savedStateHandle = SavedStateHandle(),
         )
         val viewModelStore = ViewModelStore().apply { put("test", viewModel) }
         val collector = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -170,9 +249,9 @@ class EarthquakesViewModelTest {
         return Fixture(repository, viewModel, viewModelStore, collector)
     }
 
-    private fun sample(id: String = "sample-001") = Earthquake(
+    private fun sample(id: String = "sample-001", magnitude: Double? = 4.2) = Earthquake(
         id = id,
-        magnitude = 4.2,
+        magnitude = magnitude,
         magnitudeType = "ml",
         place = "Near the coast",
         occurredAt = Instant.parse("2026-09-28T11:00:00Z"),
@@ -197,20 +276,29 @@ class EarthquakesViewModelTest {
 
     private class FakeEarthquakeRepository(
         initialEvents: List<Earthquake>,
+        private val clock: Clock,
     ) : EarthquakeRepository {
         val events = MutableStateFlow(initialEvents)
+        val lastSuccessfulRefresh = MutableStateFlow<Instant?>(null)
+        var refreshCount = 0
+            private set
         var nextRefreshGate: CompletableDeferred<RefreshResult>? = null
         private val queuedResults = ArrayDeque<RefreshResult>()
 
         override fun observeEarthquakes(): Flow<List<Earthquake>> = events
 
+        override fun observeLastSuccessfulRefresh(): Flow<Instant?> = lastSuccessfulRefresh
+
         override fun observeEarthquake(id: String): Flow<Earthquake?> =
             events.map { list -> list.firstOrNull { it.id == id } }
 
         override suspend fun refresh(): RefreshResult {
+            refreshCount++
             val gate = nextRefreshGate.also { nextRefreshGate = null }
-            return gate?.await() ?: queuedResults.removeFirstOrNull()
+            val result = gate?.await() ?: queuedResults.removeFirstOrNull()
                 ?: RefreshResult.Success(acceptedEventCount = events.value.size)
+            if (result is RefreshResult.Success) lastSuccessfulRefresh.value = clock.instant()
+            return result
         }
 
         fun enqueue(result: RefreshResult) {

@@ -1,7 +1,8 @@
 package com.mlhysrszn.earthquake.data.repository
 
 import android.database.sqlite.SQLiteException
-import com.mlhysrszn.earthquake.data.local.room.DemoScenarioDao
+import com.mlhysrszn.earthquake.data.local.demo.DemoScenarioDao
+import com.mlhysrszn.earthquake.data.local.demo.DemoScenarioEntity
 import com.mlhysrszn.earthquake.data.local.room.EarthquakeDao
 import com.mlhysrszn.earthquake.data.local.room.SyncMetadataEntity
 import com.mlhysrszn.earthquake.data.local.room.toDomain
@@ -32,7 +33,12 @@ class DemoEarthquakeRepository @Inject constructor(
     private val refreshMutex = Mutex()
 
     override fun observeEarthquakes(): Flow<List<Earthquake>> =
-        earthquakeDao.observeRecent(clock.millis()).map { entities -> entities.map { it.toDomain() } }
+        earthquakeDao.observeRecent(clock::millis).map { entities -> entities.map { it.toDomain() } }
+
+    override fun observeLastSuccessfulRefresh(): Flow<Instant?> =
+        earthquakeDao.observeSyncMetadata().map { metadata ->
+            metadata?.lastSuccessfulFetchAtEpochMillis?.let(Instant::ofEpochMilli)
+        }
 
     override fun observeEarthquake(id: String): Flow<Earthquake?> =
         earthquakeDao.observeEarthquake(id).map { it?.toDomain() }
@@ -84,7 +90,7 @@ class DemoEarthquakeRepository @Inject constructor(
         EarthquakeLookupResult.Failure(RefreshResult.Reason.UNKNOWN)
     }
 
-    private fun com.mlhysrszn.earthquake.data.local.room.DemoScenarioEntity.toEarthquake(): Earthquake {
+    private fun DemoScenarioEntity.toEarthquake(): Earthquake {
         val eventTime = Instant.ofEpochMilli(addedAtEpochMillis)
         val details = when (DemoScenarioKind.valueOf(kind)) {
             DemoScenarioKind.BELOW_THRESHOLD -> DemoEventDetails(

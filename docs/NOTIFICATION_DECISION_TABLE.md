@@ -27,13 +27,13 @@ baselines, deduplication, and suppression.
 | First successful synchronization | Never notify historical records, regardless of magnitude or preferences | Establish the baseline/cursor and mark all identities in that snapshot as baselined |
 | Snapshot cursor is equal to or older than the processed cursor | Do not evaluate it | Do not change the cursor or per-event outcomes |
 | New event magnitude is below threshold | Do not post | Record a terminal `BELOW_THRESHOLD` outcome |
-| New event magnitude equals threshold | Do not post | Record a terminal `AT_THRESHOLD` outcome |
-| New event magnitude is strictly above threshold; enabled and permission granted | Attempt to post | Record `PENDING`, then `POSTED` when the adapter succeeds |
+| New event magnitude equals or exceeds threshold; enabled and permission granted | Attempt to post | Record `PENDING`, then `POSTED` when the adapter succeeds. The threshold is inclusive: with 5.0 selected, a 5.0 event is notified |
 | New event has no magnitude | Do not post | Record a terminal `MISSING_MAGNITUDE` outcome |
 | Same canonical identity appears in a later feed | Do not post again | Update cached event data and last-seen time; retain its existing outcome |
 | Threshold increases | Does not cancel already-posted notifications | Apply the new threshold only to unprocessed candidates |
-| Threshold decreases | Do not replay prior below/equal-threshold events | Keep terminal outcomes; apply the new threshold only to unprocessed candidates |
-| Revision changes magnitude/place/time for a processed identity | Do not post a second notification, even if revised magnitude now exceeds threshold | Update cached event data; retain the original processing outcome |
+| Threshold decreases | Do not replay prior below-threshold events | Keep terminal outcomes; apply the new threshold only to unprocessed candidates and to later source revisions |
+| Source revision (`updatedAt` after the last decision) of an identity previously suppressed as below threshold or missing magnitude | Evaluate it again like a new event with the current preferences; post once if it now qualifies | Replace the suppressed outcome with the new decision and decision time. Legacy `AT_THRESHOLD` rows are re-evaluated the same way |
+| Revision of any other processed identity (posted, baselined, disabled, permission-suppressed, ambiguous) | Do not post a second notification | Update cached event data and last-seen time; retain the processing outcome |
 | Late-arriving event occurred before the feed cursor but is still within the current 24-hour event window | Treat it as a new candidate and apply the current threshold/preferences | Process by its canonical identity; `updatedAt` does not make an old event eligible outside the 24-hour window |
 | Event is older than the current 24-hour window | Do not notify or queue for later | Do not create a candidate; the event-store retention policy is independent |
 | Long offline period | Consider only unseen events present in the current feed and still inside the 24-hour window; events outside it are not backfilled | Advance the cursor only after processing the accepted snapshot |
@@ -50,7 +50,7 @@ successful-fetch time otherwise. A failed or stale snapshot never advances it.
 When multiple suppression conditions apply to one record, use this deterministic
 precedence: initial baseline, stale snapshot, ambiguous alias, already processed,
 outside event window, disabled preference, denied permission, missing magnitude,
-below threshold, equal threshold. Only a record passing every check is eligible.
+below threshold. Only a record passing every check is eligible.
 
 ## Identity and alias rules
 

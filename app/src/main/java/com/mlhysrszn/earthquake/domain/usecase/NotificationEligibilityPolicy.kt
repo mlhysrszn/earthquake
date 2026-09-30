@@ -16,6 +16,9 @@ enum class NotificationIdentityStatus {
     NEW,
     PROCESSED,
     AMBIGUOUS_ALIAS,
+
+    /** Processed earlier without a notification, then revised by the source; evaluated like NEW. */
+    REVISED,
 }
 
 sealed interface NotificationEligibilityDecision {
@@ -33,7 +36,6 @@ sealed interface NotificationEligibilityDecision {
         PERMISSION_DENIED,
         MISSING_MAGNITUDE,
         BELOW_THRESHOLD,
-        AT_THRESHOLD,
     }
 }
 
@@ -64,7 +66,9 @@ class NotificationEligibilityPolicy @Inject constructor(
             NotificationIdentityStatus.PROCESSED ->
                 return input.suppress(NotificationEligibilityDecision.Reason.ALREADY_PROCESSED)
 
-            NotificationIdentityStatus.NEW -> Unit
+            NotificationIdentityStatus.NEW,
+            NotificationIdentityStatus.REVISED,
+            -> Unit
         }
 
         val now = clock.instant()
@@ -85,14 +89,11 @@ class NotificationEligibilityPolicy @Inject constructor(
 
         val magnitude = input.earthquake.magnitude
             ?: return input.suppress(NotificationEligibilityDecision.Reason.MISSING_MAGNITUDE)
-        return when {
-            magnitude < input.preferences.magnitudeThreshold ->
-                input.suppress(NotificationEligibilityDecision.Reason.BELOW_THRESHOLD)
-
-            magnitude == input.preferences.magnitudeThreshold ->
-                input.suppress(NotificationEligibilityDecision.Reason.AT_THRESHOLD)
-
-            else -> NotificationEligibilityDecision.Eligible
+        // The threshold is inclusive: with 5.0 selected, a magnitude 5.0 event is notified.
+        return if (magnitude < input.preferences.magnitudeThreshold) {
+            input.suppress(NotificationEligibilityDecision.Reason.BELOW_THRESHOLD)
+        } else {
+            NotificationEligibilityDecision.Eligible
         }
     }
 

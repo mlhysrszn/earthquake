@@ -25,7 +25,8 @@ reports events after the seismic network has published them.
 | Worldwide events, past 24 hours, no region filter | No location permission is needed and the threshold already controls noise; a region filter is a possible next step. |
 | The threshold filters notifications, not the list | The list stays a complete picture of recent activity; the threshold expresses what is worth an interruption. |
 | First synchronization never notifies | Installing the app must not post a burst of notifications for events that already happened. |
-| Each event is notified at most once | Events are tracked by ID (and USGS aliases), so revisions and repeated feeds do not re-notify. |
+| Each event is notified at most once | Events are tracked by ID (and USGS aliases), so repeated feeds do not re-notify. An event first suppressed as below threshold is checked again when USGS revises it, so an upward magnitude revision still notifies once. |
+| The threshold is inclusive | With 5.0 selected, a magnitude 5.0 event is notified; USGS magnitudes often land exactly on such values. |
 | Periodic WorkManager checks (15 min minimum) | Reliable without a backend or push service; the tradeoff is that notifications are not instant. |
 | Local-first (Room cache) | The list stays usable offline, and failed refreshes never erase data. |
 | A separate `demo` flavor | Notification behavior can be shown on demand with the same business rules, without waiting for a real earthquake. |
@@ -34,11 +35,19 @@ reports events after the seismic network has published them.
 ## Scope
 
 - Native Android (Kotlin, Jetpack Compose), `minSdk` 29, single Activity.
-- A list of worldwide events from the past 24 hours, event details, and
-  notification settings (enable switch, 0.0–9.5 threshold in 0.5 steps).
-- Cached content stays usable offline; failed refreshes keep existing data.
-- Not included: accounts, payments, maps, location permission, a custom backend,
-  other earthquake providers, or a store release.
+- A list of worldwide events from the past 24 hours with severity-colored
+  magnitudes, relative ages ("12 dk önce"), a magnitude filter (all, 3.0+, 4.0+,
+  5.0+), and pull-to-refresh. The list refreshes on return when data is older
+  than five minutes.
+- Event details with coordinates, an "open in map" action (any installed map
+  app), and a link to the USGS event page.
+- Notification settings: enable switch and a 0.0–9.5 threshold in 0.5 steps.
+- Cached content stays usable offline; failed refreshes keep existing data and
+  the last successful update time.
+- Place names come from USGS in English (for example "10 km SW of ..."); they
+  are shown as received and not translated.
+- Not included: accounts, payments, an embedded map, location permission, a
+  custom backend, other earthquake providers, or a store release.
 
 ## Architecture in brief
 
@@ -108,7 +117,7 @@ for duplicates, late records, revisions, and permission states.
   processing and delivery, WorkManager scheduling and workers, Compose screens,
   navigation, and the demo scenario.
 - Recorded results, warnings, and manual checks per task are in the
-  [work log](docs/WORK_LOG.md). Current results: 53 JVM tests, 55 live and 57 demo
+  [work log](docs/WORK_LOG.md). Current results: 62 JVM tests, 62 live and 64 demo
   device tests, lint with 0 errors, all on an API 29 emulator.
 
 The Android 13+ permission prompt, denial, and grant were checked manually on an
@@ -132,9 +141,10 @@ How we would know the product works:
 
 ## Time spent
 
-Estimate: about **10 hours** of active work over 2026-09-27 to 2026-09-30. It is
-the sum of the spans from the first to the last commit in each of five working
-sessions (2h53m, 4h05m, 1h01m, 1h45m, 22m). This is a lower bound: work done before
+Estimate: about **10.5 hours** of active work over 2026-09-27 to 2026-09-30. It is
+the sum of the spans from the first to the last commit in each of six working
+sessions (2h53m, 4h05m, 1h01m, 1h45m, 22m, and about 30m from 17:39 to the
+post-review fix commit on 2026-09-30). This is a lower bound: work done before
 each session's first commit (planning, reading documentation) is not included.
 Time was not tracked with a timer.
 
@@ -147,16 +157,19 @@ before approval.
 
 | Assistant / model | Work | Commits | Share |
 | --- | --- | --- | --- |
-| OpenAI Codex (exact model ID not captured) | Planning documents, project setup, Hilt | 3 | 11% |
-| OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`) | Domain, list, USGS/Room data, details, notifications, background work, product events | 16 | 59% |
-| Claude Code, Claude Sonnet 5.5 (`claude-sonnet-5-5`) | Demo flavor, acceptance walkthrough, README, permission check, inset fix | 7 | 26% |
-| Claude Code, Claude Opus 5.5 (`claude-opus-5-5`) | Review against the case brief and this README update | 1 | 4% |
+| OpenAI Codex (exact model ID not captured) | Planning documents, project setup, Hilt | 3 | 10% |
+| OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`) | Domain, list, USGS/Room data, details, notifications, background work, product events | 16 | 55% |
+| Claude Code, Claude Sonnet 5.5 (`claude-sonnet-5-5`) | Demo flavor, acceptance walkthrough, README, permission check, inset fix | 7 | 24% |
+| Claude Code, Claude Opus 5.5 (`claude-opus-5-5`) | Review against the case brief, README update, publication, code review and post-review fixes | 3 | 10% |
 
-The share is the number of commits per model divided by all 27 commits. Tokens
+The share is the number of commits per model divided by all 29 commits
+(including the post-review fix commit). Commits are not weighted by size; the
+post-review fix batch alone changed about 40 files. Tokens
 were not exported, so token-based shares are unavailable. Details per task are in
 the [AI usage report](docs/AI_USAGE_REPORT.md).
 
 ## Next improvement
 
-Add a user-facing view of the local event log, and automate the Android 13+
-permission flow in an instrumentation test.
+Add an optional region filter (for example "near Türkiye") on top of the magnitude
+threshold, show a user-facing view of the local event log, and automate the
+Android 13+ permission flow in an instrumentation test.

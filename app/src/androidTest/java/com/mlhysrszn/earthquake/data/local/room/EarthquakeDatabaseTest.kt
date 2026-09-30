@@ -62,7 +62,7 @@ class EarthquakeDatabaseTest {
             assertEquals(SnapshotWriteResult.Applied(storedEventCount = 2), result)
             assertEquals(
                 listOf("recent", "at-cutoff"),
-                dao.observeRecent(nowEpochMillis)
+                dao.observeRecent { nowEpochMillis }
                     .first()
                     .map(EarthquakeEntity::id),
             )
@@ -77,6 +77,35 @@ class EarthquakeDatabaseTest {
                 ),
                 dao.getSyncMetadata(),
             )
+        }
+    }
+
+    @Test
+    fun recentWindowIncludesEventsThatOccurAfterSubscription() = runBlocking {
+        withInMemoryDao { dao ->
+            var currentTimeMillis = nowEpochMillis
+            val recent = dao.observeRecent { currentTimeMillis }
+            dao.upsertEarthquakes(listOf(event(id = "before", time = nowEpochMillis)))
+            assertEquals(listOf("before"), recent.first().map(EarthquakeEntity::id))
+
+            currentTimeMillis = nowEpochMillis + 60_000
+            dao.upsertEarthquakes(listOf(event(id = "after", time = currentTimeMillis)))
+
+            assertEquals(listOf("after", "before"), recent.first().map(EarthquakeEntity::id))
+        }
+    }
+
+    @Test
+    fun syncMetadataIsObservable() = runBlocking {
+        withInMemoryDao { dao ->
+            assertNull(dao.observeSyncMetadata().first())
+            dao.applySnapshot(
+                earthquakes = emptyList(),
+                sourceGeneratedAtEpochMillis = 20_000,
+                fetchedAtEpochMillis = 21_000,
+                nowEpochMillis = nowEpochMillis,
+            )
+            assertEquals(21_000L, dao.observeSyncMetadata().first()?.lastSuccessfulFetchAtEpochMillis)
         }
     }
 
@@ -209,11 +238,7 @@ class EarthquakeDatabaseTest {
             context,
             EarthquakeDatabase::class.java,
             databaseName,
-        ).addMigrations(
-            EarthquakeDatabaseMigrations.MIGRATION_1_2,
-            EarthquakeDatabaseMigrations.MIGRATION_2_3,
-            EarthquakeDatabaseMigrations.MIGRATION_3_4,
-        ).build()
+        ).addMigrations(*EarthquakeDatabaseMigrations.ALL).build()
         try {
             val dao = migratedDatabase.earthquakeDao()
             val processingDao = migratedDatabase.notificationProcessingDao()
@@ -253,10 +278,7 @@ class EarthquakeDatabaseTest {
             context,
             EarthquakeDatabase::class.java,
             databaseName,
-        ).addMigrations(
-            EarthquakeDatabaseMigrations.MIGRATION_2_3,
-            EarthquakeDatabaseMigrations.MIGRATION_3_4,
-        ).build()
+        ).addMigrations(*EarthquakeDatabaseMigrations.ALL).build()
         try {
             assertEquals(
                 "POSTED",
@@ -293,12 +315,46 @@ class EarthquakeDatabaseTest {
             context,
             EarthquakeDatabase::class.java,
             databaseName,
-        ).addMigrations(EarthquakeDatabaseMigrations.MIGRATION_3_4).build()
+        ).addMigrations(*EarthquakeDatabaseMigrations.ALL).build()
         try {
             assertEquals(1, migratedDatabase.productEventDao().getRecent(10).size)
-            assertEquals(emptyList<DemoScenarioEntity>(), migratedDatabase.demoScenarioDao().getAll())
         } finally {
             migratedDatabase.close()
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    @Test
+    fun v4MigrationDropsDemoScenarioTableAndKeepsOtherData() = runBlocking {
+        val databaseName = "demo-table-removal-${UUID.randomUUID()}.db"
+        val oldDatabase = migrationTestHelper.createDatabase(databaseName, 4)
+        oldDatabase.execSQL(
+            """
+            INSERT INTO product_events (id, name, occurredAtEpochMillis, environment, propertiesJson)
+            VALUES ('demo-event', 'SCREEN_VIEW', 1000, 'DEMO', '{"screen":"list"}')
+            """.trimIndent(),
+        )
+        oldDatabase.execSQL(
+            "INSERT INTO demo_scenario_events (id, kind, addedAtEpochMillis) " +
+                "VALUES ('demo-1', 'ABOVE_THRESHOLD', 1000)",
+        )
+        oldDatabase.close()
+
+        val migrated = migrationTestHelper.runMigrationsAndValidate(
+            databaseName,
+            5,
+            true,
+            EarthquakeDatabaseMigrations.MIGRATION_4_5,
+        )
+        try {
+            migrated.query(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'demo_scenario_events'",
+            ).use { cursor -> assertEquals(0, cursor.count) }
+            migrated.query("SELECT id FROM product_events").use { cursor ->
+                assertEquals(1, cursor.count)
+            }
+        } finally {
+            migrated.close()
             context.deleteDatabase(databaseName)
         }
     }

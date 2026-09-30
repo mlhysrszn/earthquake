@@ -2,6 +2,7 @@ package com.mlhysrszn.earthquake.data.repository
 
 import android.database.sqlite.SQLiteException
 import com.mlhysrszn.earthquake.data.local.room.EarthquakeDao
+import com.mlhysrszn.earthquake.data.local.room.SnapshotWriteResult
 import com.mlhysrszn.earthquake.data.local.room.toDomain
 import com.mlhysrszn.earthquake.data.local.room.toEntity
 import com.mlhysrszn.earthquake.data.remote.usgs.MalformedUsgsFeedException
@@ -13,6 +14,7 @@ import com.mlhysrszn.earthquake.domain.repository.EarthquakeRepository
 import com.mlhysrszn.earthquake.domain.repository.RefreshResult
 import java.io.IOException
 import java.time.Clock
+import java.time.Instant
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -32,8 +34,13 @@ class UsgsEarthquakeRepository @Inject constructor(
     private val refreshMutex = Mutex()
 
     override fun observeEarthquakes(): Flow<List<Earthquake>> =
-        earthquakeDao.observeRecent(clock.millis()).map { entities ->
+        earthquakeDao.observeRecent(clock::millis).map { entities ->
             entities.map { entity -> entity.toDomain() }
+        }
+
+    override fun observeLastSuccessfulRefresh(): Flow<Instant?> =
+        earthquakeDao.observeSyncMetadata().map { metadata ->
+            metadata?.lastSuccessfulFetchAtEpochMillis?.let(Instant::ofEpochMilli)
         }
 
     override fun observeEarthquake(id: String): Flow<Earthquake?> =
@@ -47,14 +54,19 @@ class UsgsEarthquakeRepository @Inject constructor(
             val fetchedAt = clock.instant()
             val fetchedAtEpochMillis = fetchedAt.toEpochMilli()
 
-            earthquakeDao.applySnapshot(
+            val writeResult = earthquakeDao.applySnapshot(
                 earthquakes = feed.earthquakes.map(Earthquake::toEntity),
                 sourceGeneratedAtEpochMillis = feed.sourceGeneratedAt?.toEpochMilli(),
                 fetchedAtEpochMillis = fetchedAtEpochMillis,
                 nowEpochMillis = fetchedAtEpochMillis,
             )
 
-            RefreshResult.Success(acceptedEventCount = feed.earthquakes.size)
+            // A stale snapshot is a valid response that replaces nothing, so it accepts no events.
+            val acceptedEventCount = when (writeResult) {
+                is SnapshotWriteResult.Applied -> writeResult.storedEventCount
+                is SnapshotWriteResult.IgnoredStale -> 0
+            }
+            RefreshResult.Success(acceptedEventCount = acceptedEventCount)
         }
     } catch (cancellation: CancellationException) {
         throw cancellation

@@ -388,6 +388,24 @@ mandatory; permission to work or run tests does not authorize a commit.
   a public GitHub repository and `main` was pushed to https://github.com/mlhysrszn/earthquake.
   The interview-readiness item stays open for the user.
 
+## Phase 7: Post-review fixes
+
+### R01 - Fix issues found in the full code review
+
+- [x] Fix the list window that froze at subscription time (new events stayed
+  hidden until restart), persist the last update time, refresh on resume when
+  stale, save the threshold slider only on release, make the threshold
+  inclusive, re-evaluate events revised after a below-threshold decision, tie
+  setup completion to notification permission, report 0 accepted events for
+  stale snapshots, move demo scenarios to a demo-only database, share
+  formatters, and improve the list/detail UI (severity colors, relative ages,
+  magnitude filter, pull-to-refresh, coordinates, map and source links).
+- Done when: each fix has a test or a recorded manual check, all suites and lint
+  pass on both variants, and documents describe the new behavior.
+- Result: 62 JVM tests, 62 live and 64 demo device tests, lint 0 errors/23
+  warnings; the frozen-window bug was reproduced before and verified fixed after
+  on the API 29 emulator. See Work Log.
+
 ## Completion checklist
 
 - [x] Recent USGS events and details work with explicit loading/error/empty states.
@@ -428,8 +446,9 @@ mandatory; permission to work or run tests does not authorize a commit.
 | Q02 | Committed: e7b4d9b | Live/demo flavors and isolated demo scenario; 53 JVM tests, 55 live and 57 demo device tests, lint (0 errors) on both variants passed |
 | Q03 | Committed: 248be08 | Automated suites plus manual API 29 walkthrough; Android 13+ permission flow checked manually on API 34 afterwards |
 | H01 | Committed: f1371d4 | README and usage-report summary written; commands checked against build config; clean-checkout run deferred to H02 |
-| Case-brief review | Committed: 9a2cac1 | README gained target user, key decisions, metrics, time estimate, and model shares; stale statuses refreshed |
+| Case-brief review | Committed: 9a2cac1 (publication record: 2e2cd3b) | README gained target user, key decisions, metrics, time estimate, and model shares; stale statuses refreshed |
 | H02 | Published | Clean-clone build/tests and tracked-file review passed; pushed to https://github.com/mlhysrszn/earthquake (public); interview preparation is the user's |
+| R01 | Verified, awaiting commit approval | Frozen list window fixed with regression test; product rules, metrics, demo storage, and UI improvements; all suites and lint passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

@@ -108,8 +108,14 @@ class NotificationProcessor @Inject constructor(
                     val canonicalId = resolvedCanonicalIds.singleOrNull() ?: earthquake.id
                     val previousState = statesToWrite[canonicalId]
                         ?: eventStatesByCanonicalId[canonicalId]
+                    val isRevisionOfSuppressedEvent = !ambiguousAliases &&
+                        previousState != null &&
+                        previousState.outcome in REEVALUATED_OUTCOMES &&
+                        (earthquake.updatedAt?.toEpochMilli() ?: Long.MIN_VALUE) >
+                        previousState.lastDecisionAtEpochMillis
                     val identityStatus = when {
                         ambiguousAliases -> NotificationIdentityStatus.AMBIGUOUS_ALIAS
+                        isRevisionOfSuppressedEvent -> NotificationIdentityStatus.REVISED
                         previousState != null -> NotificationIdentityStatus.PROCESSED
                         else -> NotificationIdentityStatus.NEW
                     }
@@ -124,50 +130,27 @@ class NotificationProcessor @Inject constructor(
                         ),
                     )
                     val processingState = when {
-                        ambiguousAliases && previousState != null -> {
-                            val occurredAtEpochMillis = earthquake.occurredAt.toEpochMilli()
-                            val isNewerRecord =
-                                occurredAtEpochMillis > previousState.eventOccurredAtEpochMillis
-                            previousState.copy(
-                                latestEventId = if (isNewerRecord) {
-                                    earthquake.id
-                                } else {
-                                    previousState.latestEventId
-                                },
-                                eventOccurredAtEpochMillis = if (isNewerRecord) {
-                                    occurredAtEpochMillis
-                                } else {
-                                    previousState.eventOccurredAtEpochMillis
-                                },
+                        ambiguousAliases && previousState != null ->
+                            previousState.observed(earthquake, nowEpochMillis).copy(
                                 outcome = if (previousState.outcome in PENDING_OUTCOMES) {
                                     NotificationProcessingOutcome.AMBIGUOUS_IDENTITY.name
                                 } else {
                                     previousState.outcome
                                 },
                                 reason = NotificationEligibilityDecision.Reason.AMBIGUOUS_IDENTITY.name,
-                                lastSeenAtEpochMillis = nowEpochMillis,
                                 lastDecisionAtEpochMillis = nowEpochMillis,
                             )
-                        }
 
-                        previousState != null -> {
-                            val occurredAtEpochMillis = earthquake.occurredAt.toEpochMilli()
-                            val isNewerRecord =
-                                occurredAtEpochMillis > previousState.eventOccurredAtEpochMillis
-                            previousState.copy(
-                                latestEventId = if (isNewerRecord) {
-                                    earthquake.id
-                                } else {
-                                    previousState.latestEventId
-                                },
-                                eventOccurredAtEpochMillis = if (isNewerRecord) {
-                                    occurredAtEpochMillis
-                                } else {
-                                    previousState.eventOccurredAtEpochMillis
-                                },
-                                lastSeenAtEpochMillis = nowEpochMillis,
+                        // A source revision can lift a suppressed event over the threshold once.
+                        isRevisionOfSuppressedEvent ->
+                            checkNotNull(previousState).observed(earthquake, nowEpochMillis).copy(
+                                outcome = decision.toOutcome().name,
+                                reason = (decision as? NotificationEligibilityDecision.Suppressed)
+                                    ?.reason?.name,
+                                lastDecisionAtEpochMillis = nowEpochMillis,
                             )
-                        }
+
+                        previousState != null -> previousState.observed(earthquake, nowEpochMillis)
 
                         ambiguousAliases -> processingState(
                             canonicalEventId = earthquake.id,
@@ -297,6 +280,24 @@ class NotificationProcessor @Inject constructor(
         return NotificationProcessingBatch(snapshotStatus, pending)
     }
 
+    /** Records that the event was seen again, keeping the newest record as the latest ID. */
+    private fun NotificationProcessingEntity.observed(
+        earthquake: Earthquake,
+        nowEpochMillis: Long,
+    ): NotificationProcessingEntity {
+        val occurredAtEpochMillis = earthquake.occurredAt.toEpochMilli()
+        val isNewerRecord = occurredAtEpochMillis > eventOccurredAtEpochMillis
+        return copy(
+            latestEventId = if (isNewerRecord) earthquake.id else latestEventId,
+            eventOccurredAtEpochMillis = if (isNewerRecord) {
+                occurredAtEpochMillis
+            } else {
+                eventOccurredAtEpochMillis
+            },
+            lastSeenAtEpochMillis = nowEpochMillis,
+        )
+    }
+
     private fun processingState(
         canonicalEventId: String,
         earthquake: Earthquake,
@@ -343,8 +344,6 @@ class NotificationProcessor @Inject constructor(
             NotificationEligibilityDecision.Reason.BELOW_THRESHOLD ->
                 NotificationProcessingOutcome.SUPPRESSED_BELOW_THRESHOLD
 
-            NotificationEligibilityDecision.Reason.AT_THRESHOLD ->
-                NotificationProcessingOutcome.SUPPRESSED_AT_THRESHOLD
         }
     }
 
@@ -352,6 +351,12 @@ class NotificationProcessor @Inject constructor(
         const val MAX_STATE_RETRIES = 3
         val EVENT_WINDOW: Duration = Duration.ofHours(24)
         val PROCESSING_HISTORY_RETENTION: Duration = Duration.ofDays(30)
+        /** Outcomes that a later source revision may change; at-threshold rows predate the >= rule. */
+        val REEVALUATED_OUTCOMES = setOf(
+            NotificationProcessingOutcome.SUPPRESSED_BELOW_THRESHOLD.name,
+            NotificationProcessingOutcome.SUPPRESSED_AT_THRESHOLD.name,
+            NotificationProcessingOutcome.SUPPRESSED_MISSING_MAGNITUDE.name,
+        )
         val PENDING_OUTCOMES = setOf(
             NotificationProcessingOutcome.PENDING.name,
             NotificationProcessingOutcome.RETRYABLE.name,

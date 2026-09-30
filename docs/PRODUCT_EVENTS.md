@@ -18,7 +18,7 @@ Studio's Database Inspector can inspect the same table.
 | --- | --- | --- |
 | `SCREEN_VIEW` | List or detail route is composed | `screen=list/detail`; details also include `event_id` and `entry_source=list/notification/external` |
 | `NOTIFICATION_SETUP_STARTED` | User enables the notification preference | `attempt_id` |
-| `NOTIFICATION_SETUP_COMPLETED` | Enabling preference was saved successfully | Matching `attempt_id`; this means preference persistence, not OS permission approval |
+| `NOTIFICATION_SETUP_COMPLETED` | Enabling preference was saved **and** Android allows notifications (granted or not required), either at save time or on a later permission outcome | Matching `attempt_id`; recorded at most once per attempt |
 | `NOTIFICATION_PREFERENCE_SAVED` | Enabled state or magnitude threshold was saved | `preference`, `value` |
 | `PERMISSION_OUTCOME` | Runtime permission request returns, or system settings changes the observed status | `status`, `trigger=runtime_request/system_settings` |
 | `NOTIFICATION_POSTED` | Android accepted a successful post/update request | `event_id` |
@@ -26,7 +26,7 @@ Studio's Database Inspector can inspect the same table.
 | `NOTIFICATION_DELIVERY_SUPPRESSED` | OS permission or app notification setting prevents posting | `event_id`, `reason` |
 | `NOTIFICATION_DELIVERY_FAILED` | Adapter returned a retryable posting failure | `event_id` |
 | `REFRESH_STARTED` | Foreground or background refresh begins | `origin=foreground/background` |
-| `REFRESH_SUCCEEDED` | A valid source snapshot was accepted | `origin`, `accepted_count` |
+| `REFRESH_SUCCEEDED` | A valid source response was processed | `origin`, `accepted_count` (events stored from it; 0 when the snapshot was older than stored data and ignored) |
 | `REFRESH_FAILED` | Source refresh returned a failure | `origin`, `reason` |
 | `NOTIFICATION_PROCESSING_FAILED` | Refresh succeeded but pending notification processing threw | `origin` |
 
@@ -39,11 +39,11 @@ column is set explicitly and Q02 demo flows must use `DEMO` rather than `LIVE`.
 Compute counts/rates from retained local rows; report the time range and environment
 with every result.
 
-- **Preference setup completion:** distinct `attempt_id`s with
+- **Setup completion:** distinct `attempt_id`s with
   `NOTIFICATION_SETUP_COMPLETED` divided by distinct `attempt_id`s with
   `NOTIFICATION_SETUP_STARTED`. Completion means the enabled preference was
-  persisted. OS permission is a separate outcome and does not redefine this
-  numerator.
+  persisted and Android can show the notification. Attempts that stay blocked
+  by a denied permission or system-disabled notifications are the drop-off.
 - **Notification-to-detail opening:** distinct `event_id`s with
   `NOTIFICATION_OPENED` within seven days of at least one matching
   `NOTIFICATION_POSTED`, divided by distinct successfully posted `event_id`s in

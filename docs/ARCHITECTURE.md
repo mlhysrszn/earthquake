@@ -113,7 +113,11 @@ Local data stream -> ViewModel -> StateFlow<UiState> -> Compose
   responses and write them to storage before updating the UI.
 - Distinguish initial loading from refreshing existing content. A refresh failure
   preserves cached content and exposes an actionable error.
-- Show the last successful update time.
+- Show the last successful update time. It is read from Room sync metadata, so it
+  survives process death and is visible during an offline cold start.
+- Evaluate the rolling 24-hour window when Room emits, not when the list is
+  subscribed; otherwise events newer than the screen are hidden.
+- Refresh on resume when the last successful update is older than five minutes.
 - Navigate to details using an event ID. Support fetching a missing local event
   and displaying an unavailable state.
 
@@ -249,7 +253,9 @@ implementations in one variant.
   transaction. Use stable notification identities and persistent processing
   states for retries; do not claim exactly-once delivery.
 - Demo events pass through the same orchestration and eligibility rules, with
-  separate storage/work configuration and visible demo labels.
+  separate storage/work configuration and visible demo labels. Scenario rows live
+  in a demo-only `DemoScenarioDatabase` in the `demo` source set, so the live
+  schema (version 5) carries no demo table; migration 4 to 5 drops it.
 
 The notification baseline, candidate cutoff, magnitude revisions, late records,
 alias handling, preference/permission suppression, retry/crash behavior, and
@@ -264,7 +270,7 @@ history, delivery, and WorkManager scheduling share those persisted decisions.
 
 | Area | Behavior to verify |
 | --- | --- |
-| Domain JVM tests | Below/equal/above threshold, initial baseline, duplicates, time rules |
+| Domain JVM tests | Below/at/above threshold (inclusive), revisions, initial baseline, duplicates, time rules |
 | Data tests | DTO mapping, missing fields, cache updates, failed refreshes, persistent deduplication |
 | ViewModel tests | Loading, content, empty results, refresh errors, preference updates |
 | Android integration | Room transactions, Worker results, notification permission and routing |

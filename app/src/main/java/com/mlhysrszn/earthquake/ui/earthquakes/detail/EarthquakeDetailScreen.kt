@@ -14,7 +14,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -27,21 +33,21 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mlhysrszn.earthquake.R
 import com.mlhysrszn.earthquake.domain.model.Earthquake
 import com.mlhysrszn.earthquake.ui.analytics.ProductEventViewModel
 import com.mlhysrszn.earthquake.domain.repository.RefreshResult
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+import com.mlhysrszn.earthquake.ui.format.MagnitudeBadge
+import com.mlhysrszn.earthquake.ui.format.formatCoordinate
+import com.mlhysrszn.earthquake.ui.format.formatMagnitude
+import com.mlhysrszn.earthquake.ui.format.formatOccurrenceTime
 
 @Composable
 fun EarthquakeDetailRoute(
@@ -141,13 +147,18 @@ private fun EarthquakeDetailContent(earthquake: Earthquake) {
             modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text(
-                text = earthquake.magnitude?.let {
-                    stringResource(R.string.magnitude, formatMagnitude(it))
-                } ?: stringResource(R.string.magnitude_unknown),
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.headlineSmall,
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                MagnitudeBadge(magnitude = earthquake.magnitude)
+                Text(
+                    text = earthquake.magnitude?.let {
+                        stringResource(R.string.magnitude, formatMagnitude(it))
+                    } ?: stringResource(R.string.magnitude_unknown),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+            }
             Text(
                 text = earthquake.place?.takeIf(String::isNotBlank)
                     ?: stringResource(R.string.place_unknown),
@@ -183,13 +194,56 @@ private fun EarthquakeDetailContent(earthquake: Earthquake) {
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
-            earthquake.sourceUrl?.let { sourceUrl ->
+            val latitude = earthquake.latitude
+            val longitude = earthquake.longitude
+            if (latitude != null && longitude != null) {
                 Text(
-                    text = stringResource(R.string.source_url, sourceUrl),
-                    style = MaterialTheme.typography.bodySmall,
+                    text = stringResource(
+                        R.string.coordinates,
+                        formatCoordinate(latitude),
+                        formatCoordinate(longitude),
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
+            DetailActions(earthquake)
         }
+    }
+}
+
+@Composable
+private fun DetailActions(earthquake: Earthquake) {
+    val context = LocalContext.current
+    val latitude = earthquake.latitude
+    val longitude = earthquake.longitude
+    val sourceUrl = earthquake.sourceUrl
+    if ((latitude == null || longitude == null) && sourceUrl == null) return
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (latitude != null && longitude != null) {
+            Button(onClick = { context.openUri(mapUri(latitude, longitude, earthquake.place)) }) {
+                Text(text = stringResource(R.string.open_in_map))
+            }
+        }
+        if (sourceUrl != null) {
+            OutlinedButton(onClick = { context.openUri(sourceUrl.toUri()) }) {
+                Text(text = stringResource(R.string.open_source_page))
+            }
+        }
+    }
+}
+
+/** A geo URI with a labeled pin; map apps center on the coordinates. */
+internal fun mapUri(latitude: Double, longitude: Double, label: String?): Uri {
+    val point = "$latitude,$longitude"
+    val query = label?.takeIf(String::isNotBlank)?.let { "$point($it)" } ?: point
+    return "geo:$point?q=${Uri.encode(query)}".toUri()
+}
+
+private fun Context.openUri(uri: Uri) {
+    try {
+        startActivity(Intent(Intent.ACTION_VIEW, uri))
+    } catch (_: ActivityNotFoundException) {
+        Toast.makeText(this, R.string.no_app_to_open, Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -244,13 +298,3 @@ private fun RefreshResult.Reason.messageResource(): Int = when (this) {
     RefreshResult.Reason.STORAGE -> R.string.storage_error
     RefreshResult.Reason.UNKNOWN -> R.string.unknown_error
 }
-
-private fun formatMagnitude(magnitude: Double): String = DecimalFormat(
-    "0.0",
-    DecimalFormatSymbols.getInstance(Locale.forLanguageTag("tr-TR")),
-).format(magnitude)
-
-private fun formatOccurrenceTime(instant: Instant): String = DateTimeFormatter
-    .ofPattern("d MMM, HH:mm", Locale.forLanguageTag("tr-TR"))
-    .withZone(ZoneId.systemDefault())
-    .format(instant)

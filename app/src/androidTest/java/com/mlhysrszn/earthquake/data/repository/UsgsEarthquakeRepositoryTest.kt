@@ -106,10 +106,15 @@ class UsgsEarthquakeRepositoryTest {
         withRepository(service) { dao, repository ->
             seedCachedEvent(dao)
 
-            assertEquals(RefreshResult.Success(acceptedEventCount = 1), repository.refresh())
+            // A stale snapshot replaces nothing, so it accepts no events but still counts as a fetch.
+            assertEquals(RefreshResult.Success(acceptedEventCount = 0), repository.refresh())
             assertEquals(listOf("cached-event"), repository.observeEarthquakes().first().map { it.id })
             assertEquals(sourceGeneratedAtEpochMillis, dao.getSyncMetadata()?.sourceGeneratedAtEpochMillis)
             assertEquals(nowEpochMillis, dao.getSyncMetadata()?.lastSuccessfulFetchAtEpochMillis)
+            assertEquals(
+                java.time.Instant.ofEpochMilli(nowEpochMillis),
+                repository.observeLastSuccessfulRefresh().first(),
+            )
         }
     }
 

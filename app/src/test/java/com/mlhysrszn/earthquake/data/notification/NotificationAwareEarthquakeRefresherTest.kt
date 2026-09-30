@@ -106,6 +106,8 @@ class NotificationAwareEarthquakeRefresherTest {
         override fun observeEarthquakes(): Flow<List<com.mlhysrszn.earthquake.domain.model.Earthquake>> =
             emptyFlow()
 
+        override fun observeLastSuccessfulRefresh(): Flow<java.time.Instant?> = emptyFlow()
+
         override fun observeEarthquake(
             id: String,
         ): Flow<com.mlhysrszn.earthquake.domain.model.Earthquake?> = emptyFlow()

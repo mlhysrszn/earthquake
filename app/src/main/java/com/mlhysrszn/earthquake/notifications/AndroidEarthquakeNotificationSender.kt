@@ -13,17 +13,13 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import com.mlhysrszn.earthquake.domain.model.ProductEventName
 import com.mlhysrszn.earthquake.MainActivity
 import com.mlhysrszn.earthquake.R
+import com.mlhysrszn.earthquake.ui.format.formatMagnitude
+import com.mlhysrszn.earthquake.ui.format.formatOccurrenceTime
 import com.mlhysrszn.earthquake.domain.model.Earthquake
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeNotificationRequest
 import com.mlhysrszn.earthquake.domain.repository.EarthquakeNotificationSender
 import com.mlhysrszn.earthquake.domain.repository.NotificationDeliveryResult
 import com.mlhysrszn.earthquake.domain.repository.ProductEventRecorder
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -64,7 +60,7 @@ class AndroidEarthquakeNotificationSender @Inject constructor(
             val body = context.getString(
                 R.string.notification_body,
                 place,
-                formatTime(earthquake.occurredAt),
+                formatOccurrenceTime(earthquake.occurredAt),
             )
             val notification = NotificationCompat.Builder(
                 context,
@@ -145,14 +141,4 @@ class AndroidEarthquakeNotificationSender @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
     }
-
-    private fun formatMagnitude(magnitude: Double): String = DecimalFormat(
-        "0.0",
-        DecimalFormatSymbols.getInstance(Locale.forLanguageTag("tr-TR")),
-    ).format(magnitude)
-
-    private fun formatTime(instant: Instant): String = DateTimeFormatter
-        .ofPattern("d MMM, HH:mm", Locale.forLanguageTag("tr-TR"))
-        .withZone(ZoneId.systemDefault())
-        .format(instant)
 }

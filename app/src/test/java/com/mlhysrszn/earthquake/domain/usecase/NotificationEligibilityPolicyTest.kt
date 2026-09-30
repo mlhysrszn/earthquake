@@ -18,10 +18,23 @@ class NotificationEligibilityPolicyTest {
     )
 
     @Test
-    fun `magnitude must be strictly greater than the saved threshold`() {
+    fun `magnitude at or above the saved threshold is eligible`() {
         assertSuppressed(3.9, NotificationEligibilityDecision.Reason.BELOW_THRESHOLD)
-        assertSuppressed(4.0, NotificationEligibilityDecision.Reason.AT_THRESHOLD)
+        assertEquals(NotificationEligibilityDecision.Eligible, evaluate(event(magnitude = 4.0)))
         assertEquals(NotificationEligibilityDecision.Eligible, evaluate(event(magnitude = 4.1)))
+    }
+
+    @Test
+    fun `revised events are evaluated like new events`() {
+        assertEquals(
+            NotificationEligibilityDecision.Eligible,
+            evaluate(event(magnitude = 4.5), identity = NotificationIdentityStatus.REVISED),
+        )
+        assertSuppressed(
+            magnitude = 3.5,
+            reason = NotificationEligibilityDecision.Reason.BELOW_THRESHOLD,
+            identity = NotificationIdentityStatus.REVISED,
+        )
     }
 
     @Test

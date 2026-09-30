@@ -53,6 +53,7 @@ enum class NotificationProcessingOutcome {
     SUPPRESSED_PERMISSION,
     SUPPRESSED_MISSING_MAGNITUDE,
     SUPPRESSED_BELOW_THRESHOLD,
+    /** Legacy: written before the threshold became inclusive; kept for existing rows. */
     SUPPRESSED_AT_THRESHOLD,
     SUPPRESSED_OUTSIDE_WINDOW,
     SUPPRESSED_ALREADY_PROCESSED,

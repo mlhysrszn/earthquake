@@ -6,6 +6,7 @@ import com.mlhysrszn.earthquake.domain.model.isValidMagnitudeThreshold
 import com.mlhysrszn.earthquake.domain.model.ProductEventName
 import com.mlhysrszn.earthquake.domain.repository.NotificationPreferencesRepository
 import com.mlhysrszn.earthquake.domain.repository.ProductEventRecorder
+import com.mlhysrszn.earthquake.notifications.NotificationPermissionStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,9 +39,17 @@ class NotificationSettingsViewModel @Inject constructor(
         initialValue = NotificationSettingsUiState(),
     )
 
-    fun setNotificationsEnabled(enabled: Boolean) {
+    /** An enable attempt that is saved but still waits for Android to allow notifications. */
+    private var pendingSetupAttemptId: String? = null
+
+    /**
+     * Setup counts as completed only when the preference is saved and Android can show
+     * notifications; otherwise completion waits for a granted [recordPermissionOutcome].
+     */
+    fun setNotificationsEnabled(enabled: Boolean, permissionReady: Boolean) {
         viewModelScope.launch {
             val attemptId = if (enabled) UUID.randomUUID().toString() else null
+            pendingSetupAttemptId = null
             if (attemptId != null) {
                 productEventRecorder.record(
                     name = ProductEventName.NOTIFICATION_SETUP_STARTED,
@@ -57,10 +66,11 @@ class NotificationSettingsViewModel @Inject constructor(
                     ),
                 )
                 if (attemptId != null) {
-                    productEventRecorder.record(
-                        name = ProductEventName.NOTIFICATION_SETUP_COMPLETED,
-                        properties = mapOf("attempt_id" to attemptId),
-                    )
+                    if (permissionReady) {
+                        recordSetupCompleted(attemptId)
+                    } else {
+                        pendingSetupAttemptId = attemptId
+                    }
                 }
                 mutableSaveFailed.value = false
             } catch (cancellation: CancellationException) {
@@ -85,13 +95,27 @@ class NotificationSettingsViewModel @Inject constructor(
         )
     }
 
-    fun recordPermissionOutcome(status: String, trigger: String) {
+    fun recordPermissionOutcome(status: NotificationPermissionStatus, trigger: String) {
         viewModelScope.launch {
             productEventRecorder.record(
                 name = ProductEventName.PERMISSION_OUTCOME,
-                properties = mapOf("status" to status, "trigger" to trigger),
+                properties = mapOf("status" to status.name.lowercase(), "trigger" to trigger),
             )
+            val allowsPosting = status == NotificationPermissionStatus.GRANTED ||
+                status == NotificationPermissionStatus.NOT_REQUIRED
+            val attemptId = pendingSetupAttemptId
+            if (allowsPosting && attemptId != null) {
+                pendingSetupAttemptId = null
+                recordSetupCompleted(attemptId)
+            }
         }
+    }
+
+    private suspend fun recordSetupCompleted(attemptId: String) {
+        productEventRecorder.record(
+            name = ProductEventName.NOTIFICATION_SETUP_COMPLETED,
+            properties = mapOf("attempt_id" to attemptId),
+        )
     }
 
     private fun persist(

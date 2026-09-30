@@ -82,6 +82,58 @@ class NotificationProcessorTest {
     }
 
     @Test
+    fun upwardRevisionOfSuppressedEventNotifiesOnceAndUnrevisedRepeatsDoNot() = runBlocking {
+        withInMemoryDatabase { earthquakeDao, processingDao ->
+            val processor = processor(earthquakeDao, processingDao)
+            storeSnapshot(earthquakeDao, emptyList(), sourceCursorStart)
+            processor.processLatestSnapshot(notificationPermissionGranted = true)
+
+            val initial = event("revised-event", magnitude = 3.8)
+            storeSnapshot(earthquakeDao, listOf(initial), sourceCursorStart + 60_000)
+            assertTrue(
+                processor.processLatestSnapshot(notificationPermissionGranted = true)
+                    .pendingNotifications.isEmpty(),
+            )
+            assertEquals(
+                NotificationProcessingOutcome.SUPPRESSED_BELOW_THRESHOLD.name,
+                processingDao.getEventState(initial.id)?.outcome,
+            )
+
+            // The fixed clock makes the last decision time "now"; a revision is updated after it.
+            val revised = initial.copy(magnitude = 4.4, updatedAt = now.plusSeconds(1))
+            storeSnapshot(earthquakeDao, listOf(revised), sourceCursorStart + 120_000)
+            val afterRevision = processor.processLatestSnapshot(notificationPermissionGranted = true)
+            assertEquals(listOf(revised.id), afterRevision.pendingNotifications.map { it.eventId })
+            assertTrue(processor.markPosted(revised.id))
+
+            storeSnapshot(earthquakeDao, listOf(revised), sourceCursorStart + 180_000)
+            assertTrue(
+                processor.processLatestSnapshot(notificationPermissionGranted = true)
+                    .pendingNotifications.isEmpty(),
+            )
+            assertEquals(
+                NotificationProcessingOutcome.POSTED.name,
+                processingDao.getEventState(revised.id)?.outcome,
+            )
+        }
+    }
+
+    @Test
+    fun eventAtThresholdIsNotified() = runBlocking {
+        withInMemoryDatabase { earthquakeDao, processingDao ->
+            val processor = processor(earthquakeDao, processingDao)
+            storeSnapshot(earthquakeDao, emptyList(), sourceCursorStart)
+            processor.processLatestSnapshot(notificationPermissionGranted = true)
+
+            val atThreshold = event("at-threshold", magnitude = 4.0)
+            storeSnapshot(earthquakeDao, listOf(atThreshold), sourceCursorStart + 60_000)
+
+            val batch = processor.processLatestSnapshot(notificationPermissionGranted = true)
+            assertEquals(listOf(atThreshold.id), batch.pendingNotifications.map { it.eventId })
+        }
+    }
+
+    @Test
     fun pendingReservationCanBeReleasedAndSelectedAgainAfterInterruptedDelivery() = runBlocking {
         withInMemoryDatabase { earthquakeDao, processingDao ->
             val processor = processor(earthquakeDao, processingDao)
@@ -361,11 +413,7 @@ class NotificationProcessorTest {
         InstrumentationRegistry.getInstrumentation().targetContext,
         EarthquakeDatabase::class.java,
         name,
-    ).addMigrations(
-        EarthquakeDatabaseMigrations.MIGRATION_1_2,
-        EarthquakeDatabaseMigrations.MIGRATION_2_3,
-        EarthquakeDatabaseMigrations.MIGRATION_3_4,
-    ).build()
+    ).addMigrations(*EarthquakeDatabaseMigrations.ALL).build()
 
     private fun event(
         id: String,

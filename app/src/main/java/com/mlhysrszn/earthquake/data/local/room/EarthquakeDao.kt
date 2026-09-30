@@ -5,6 +5,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 data class PersistedEarthquakeSnapshot(
     val earthquakes: List<EarthquakeEntity>,
@@ -13,23 +14,21 @@ data class PersistedEarthquakeSnapshot(
 
 @Dao
 abstract class EarthquakeDao {
-    @Query(
-        """
-        SELECT * FROM earthquakes
-        WHERE occurredAtEpochMillis >= :windowStartEpochMillis
-          AND occurredAtEpochMillis <= :nowEpochMillis
-        ORDER BY occurredAtEpochMillis DESC
-        """,
-    )
-    abstract fun observeWindow(
-        windowStartEpochMillis: Long,
-        nowEpochMillis: Long,
-    ): Flow<List<EarthquakeEntity>>
+    @Query("SELECT * FROM earthquakes ORDER BY occurredAtEpochMillis DESC")
+    abstract fun observeAllEarthquakes(): Flow<List<EarthquakeEntity>>
 
-    fun observeRecent(nowEpochMillis: Long): Flow<List<EarthquakeEntity>> = observeWindow(
-        windowStartEpochMillis = nowEpochMillis - ROLLING_WINDOW_MILLIS,
-        nowEpochMillis = nowEpochMillis,
-    )
+    /**
+     * Emits the rolling 24-hour window, re-reading [currentTimeMillis] on every table change.
+     * A window fixed at subscription time would hide events that occur after the screen opened.
+     */
+    fun observeRecent(currentTimeMillis: () -> Long): Flow<List<EarthquakeEntity>> =
+        observeAllEarthquakes().map { entities ->
+            val nowEpochMillis = currentTimeMillis()
+            val windowStartEpochMillis = nowEpochMillis - ROLLING_WINDOW_MILLIS
+            entities.filter { entity ->
+                entity.occurredAtEpochMillis in windowStartEpochMillis..nowEpochMillis
+            }
+        }
 
     @Query("SELECT * FROM earthquakes WHERE id = :id")
     abstract suspend fun findEarthquake(id: String): EarthquakeEntity?
@@ -61,6 +60,9 @@ abstract class EarthquakeDao {
 
     @Query("SELECT * FROM sync_metadata WHERE id = ${SyncMetadataEntity.SINGLETON_ID}")
     abstract suspend fun getSyncMetadata(): SyncMetadataEntity?
+
+    @Query("SELECT * FROM sync_metadata WHERE id = ${SyncMetadataEntity.SINGLETON_ID}")
+    abstract fun observeSyncMetadata(): Flow<SyncMetadataEntity?>
 
     @Transaction
     open suspend fun loadPersistedSnapshot(): PersistedEarthquakeSnapshot =

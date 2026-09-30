@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +50,7 @@ import com.mlhysrszn.earthquake.domain.model.NotificationPreferences
 import com.mlhysrszn.earthquake.notifications.NotificationPermissionStatus
 import com.mlhysrszn.earthquake.notifications.notificationPermissionStatus
 import com.mlhysrszn.earthquake.notifications.shouldRequestNotificationPermission
+import com.mlhysrszn.earthquake.ui.format.formatMagnitude
 import kotlin.math.roundToInt
 
 @Composable
@@ -70,7 +72,7 @@ fun NotificationSettingsRoute(
         permissionStatus = result
         lastRecordedPermissionStatus = result
         permissionRequestInFlight = false
-        viewModel.recordPermissionOutcome(result.name.lowercase(), "runtime_request")
+        viewModel.recordPermissionOutcome(result, "runtime_request")
     }
 
     DisposableEffect(lifecycleOwner, context) {
@@ -83,10 +85,7 @@ fun NotificationSettingsRoute(
                     !permissionRequestInFlight &&
                     currentStatus != lastRecordedPermissionStatus
                 ) {
-                    viewModel.recordPermissionOutcome(
-                        currentStatus.name.lowercase(),
-                        "system_settings",
-                    )
+                    viewModel.recordPermissionOutcome(currentStatus, "system_settings")
                 }
                 if (!permissionRequestInFlight) lastRecordedPermissionStatus = currentStatus
                 returningFromSystemSettings = false
@@ -101,7 +100,10 @@ fun NotificationSettingsRoute(
         permissionStatus = permissionStatus,
         onBack = onBack,
         onEnabledChange = { enabled ->
-            viewModel.setNotificationsEnabled(enabled)
+            viewModel.setNotificationsEnabled(
+                enabled = enabled,
+                permissionReady = permissionStatus.allowsPosting(),
+            )
             if (shouldRequestNotificationPermission(Build.VERSION.SDK_INT, enabled, permissionStatus)) {
                 permissionRequestInFlight = true
                 permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -181,19 +183,26 @@ fun NotificationSettingsScreen(
             }
 
             Column {
+                // The draft follows the finger; only the released value is saved and recorded.
+                val savedThreshold = state.preferences.magnitudeThreshold
+                var draftThreshold by remember { mutableStateOf<Double?>(null) }
+                LaunchedEffect(savedThreshold) { draftThreshold = null }
+                val shownThreshold = draftThreshold ?: savedThreshold
                 Text(
                     text = stringResource(
                         R.string.magnitude_threshold,
-                        formatThreshold(state.preferences.magnitudeThreshold),
+                        formatMagnitude(shownThreshold),
                     ),
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Slider(
                     modifier = Modifier.testTag(MAGNITUDE_SLIDER_TEST_TAG),
-                    value = state.preferences.magnitudeThreshold.toFloat(),
+                    value = shownThreshold.toFloat(),
                     onValueChange = { value ->
-                        val steps = (value * 2).roundToInt()
-                        onThresholdChange(steps / 2.0)
+                        draftThreshold = (value * 2).roundToInt() / 2.0
+                    },
+                    onValueChangeFinished = {
+                        draftThreshold?.takeIf { it != savedThreshold }?.let(onThresholdChange)
                     },
                     valueRange = NotificationPreferences.MIN_MAGNITUDE_THRESHOLD.toFloat()..
                         NotificationPreferences.MAX_MAGNITUDE_THRESHOLD.toFloat(),
@@ -241,8 +250,8 @@ private fun NotificationPermissionStatus.messageResource(): Int = when (this) {
     NotificationPermissionStatus.NOT_REQUIRED -> R.string.notification_permission_not_required
 }
 
-private fun formatThreshold(value: Double): String =
-    String.format(java.util.Locale.forLanguageTag("tr-TR"), "%.1f", value)
+private fun NotificationPermissionStatus.allowsPosting(): Boolean =
+    this == NotificationPermissionStatus.GRANTED || this == NotificationPermissionStatus.NOT_REQUIRED
 
 internal const val NOTIFICATION_SWITCH_TEST_TAG = "notifications-enabled-switch"
 internal const val MAGNITUDE_SLIDER_TEST_TAG = "magnitude-threshold-slider"

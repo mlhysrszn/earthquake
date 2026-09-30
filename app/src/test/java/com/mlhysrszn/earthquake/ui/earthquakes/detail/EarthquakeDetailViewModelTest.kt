@@ -139,6 +139,8 @@ class EarthquakeDetailViewModelTest {
 
         override fun observeEarthquakes(): Flow<List<Earthquake>> = events
 
+        override fun observeLastSuccessfulRefresh(): Flow<Instant?> = MutableStateFlow(null)
+
         override fun observeEarthquake(id: String): Flow<Earthquake?> =
             events.map { list -> list.firstOrNull { it.id == id } }
 

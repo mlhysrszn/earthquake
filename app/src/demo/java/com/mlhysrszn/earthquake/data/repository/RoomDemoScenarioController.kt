@@ -1,7 +1,8 @@
 package com.mlhysrszn.earthquake.data.repository
 
-import com.mlhysrszn.earthquake.data.local.room.DemoScenarioDao
-import com.mlhysrszn.earthquake.data.local.room.DemoScenarioEntity
+import com.mlhysrszn.earthquake.data.local.demo.DemoScenarioDao
+import com.mlhysrszn.earthquake.data.local.demo.DemoScenarioDatabase
+import com.mlhysrszn.earthquake.data.local.demo.DemoScenarioEntity
 import com.mlhysrszn.earthquake.data.local.room.EarthquakeDatabase
 import com.mlhysrszn.earthquake.domain.model.DemoScenarioKind
 import com.mlhysrszn.earthquake.domain.model.DemoScenarioStatus
@@ -19,6 +20,7 @@ import kotlinx.coroutines.withContext
 @Singleton
 class RoomDemoScenarioController @Inject constructor(
     private val dao: DemoScenarioDao,
+    private val scenarioDatabase: DemoScenarioDatabase,
     private val database: EarthquakeDatabase,
     private val clock: Clock,
 ) : DemoScenarioController {
@@ -40,9 +42,12 @@ class RoomDemoScenarioController @Inject constructor(
     /** The next refresh re-delivers the same source ID; the notification policy must ignore it. */
     override suspend fun replayLatestAsDuplicate(): Boolean = dao.getLatest() != null
 
-    /** Clears events, cursors, and notification history of the isolated demo database. */
+    /** Clears scenarios plus events, cursors, and notification history of the demo databases. */
     override suspend fun reset() {
-        withContext(Dispatchers.IO) { database.clearAllTables() }
+        withContext(Dispatchers.IO) {
+            scenarioDatabase.clearAllTables()
+            database.clearAllTables()
+        }
     }
 
     private suspend fun add(kind: DemoScenarioKind): Boolean = dao.addScenario(

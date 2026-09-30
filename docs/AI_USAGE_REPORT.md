@@ -29,7 +29,7 @@ Status: initial record; update at each implementation checkpoint.
 | F02, F01, F03, F06 | OpenAI Codex (exact model identifier not captured) |
 | L01–L04, D01–D04, N01–N07, Q01 | OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`) |
 | Q02, Q03, H01, H02, post-H02 fixes | Claude Code, Claude Sonnet 5.5 (`claude-sonnet-5-5`) |
-| Case-brief review and README gaps | Claude Code, Claude Opus 5.5 (`claude-opus-5-5`) |
+| Case-brief review, README gaps, publication, R01 post-review fixes | Claude Code, Claude Opus 5.5 (`claude-opus-5-5`) |
 
 No task used delegated subagents. Token/request totals and the share of
 AI-written code were not measured. Development time is estimated from commit
@@ -42,8 +42,8 @@ after the user's explicit approval.
 | --- | --- | --- |
 | Exact tokens by model | Unavailable | No session token export captured |
 | Model usage percentages (by tokens) | Unavailable | No measured token/request denominator captured |
-| Model usage percentages (by commits) | Codex 3/27 (11%), GPT-6 Luna 16/27 (59%), Claude Sonnet 5.5 7/27 (26%), Claude Opus 5.5 1/27 (4%) | Commits per model divided by all commits, including the case-brief review commit; commit size is not weighted |
-| Development time (estimate) | About 10 hours, lower bound | Sum of first-to-last commit spans in five sessions (2h53m, 4h05m, 1h01m, 1h45m, 22m); excludes work before each session's first commit |
+| Model usage percentages (by commits) | Codex 3/29 (10%), GPT-6 Luna 16/29 (55%), Claude Sonnet 5.5 7/29 (24%), Claude Opus 5.5 3/29 (10%) | Commits per model divided by all commits, including the R01 commit; commit size is not weighted |
+| Development time (estimate) | About 10.5 hours, lower bound | Sum of first-to-last commit spans in six sessions (2h53m, 4h05m, 1h01m, 1h45m, 22m, ~30m); excludes work before each session's first commit |
 | Measured AI share of code | Not measured | No generated feature implementation in this checkpoint |
 | Observed verification interval | 8m 06s | Tool timestamps; includes permission waits, excludes unmeasured work |
 
@@ -382,3 +382,22 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
   against the data contract, the notification decision table, and Git history.
 - Human role: asked for the review and for the gaps to be fixed. The target-user
   statement is a proposal for the user to confirm.
+
+
+## R01: Post-review fixes
+
+- Assistant: Claude Code, Claude Opus 5.5 (`claude-opus-5-5`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: reviewed every layer, reproduced the frozen list window on the
+  emulator, and fixed it with a regression test. Also persisted the last update
+  time, refresh on resume, an inclusive threshold, re-evaluation of revised
+  events, slider saves on release, permission-aware setup completion, a correct
+  `accepted_count` for stale snapshots, a demo-only scenario database (migration
+  4 to 5), shared formatters, and list/detail UI improvements. Updated tests and
+  documents.
+- Verification: 62 JVM tests; 62 live and 64 demo device tests on API 29; lint
+  0 errors/23 warnings on both variants; manual emulator checks (see Work Log).
+- Human role: asked for the review, then asked for all findings to be fixed.
+  Product changes (inclusive threshold, revision rule) follow that request and
+  are open to the user's review.
+

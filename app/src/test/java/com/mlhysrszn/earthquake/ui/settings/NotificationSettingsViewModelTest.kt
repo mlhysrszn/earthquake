@@ -5,6 +5,7 @@ import com.mlhysrszn.earthquake.domain.model.NotificationPreferences
 import com.mlhysrszn.earthquake.domain.model.ProductEventName
 import com.mlhysrszn.earthquake.domain.repository.NotificationPreferencesRepository
 import com.mlhysrszn.earthquake.domain.repository.ProductEventRecorder
+import com.mlhysrszn.earthquake.notifications.NotificationPermissionStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -35,7 +36,7 @@ class NotificationSettingsViewModelTest {
     }
 
     @Test
-    fun enablingRecordsCorrelatedSetupAttemptAndCompletionAfterPreferenceSave() = runTest(dispatcher) {
+    fun enablingWithPermissionRecordsCorrelatedSetupAttemptAndCompletion() = runTest(dispatcher) {
         val repository = FakePreferencesRepository()
         val events = mutableListOf<Pair<ProductEventName, Map<String, String>>>()
         val viewModel = NotificationSettingsViewModel(repository) { name, properties ->
@@ -44,7 +45,7 @@ class NotificationSettingsViewModelTest {
         val store = ViewModelStore().apply { put("settings", viewModel) }
 
         try {
-            viewModel.setNotificationsEnabled(true)
+            viewModel.setNotificationsEnabled(enabled = true, permissionReady = true)
             advanceUntilIdle()
 
             assertEquals(true, repository.preferences.value.notificationsEnabled)
@@ -74,7 +75,7 @@ class NotificationSettingsViewModelTest {
         val store = ViewModelStore().apply { put("settings", viewModel) }
 
         try {
-            viewModel.recordPermissionOutcome("denied", "runtime_request")
+            viewModel.recordPermissionOutcome(NotificationPermissionStatus.DENIED, "runtime_request")
             advanceUntilIdle()
 
             assertFalse(repository.preferences.value.notificationsEnabled)
@@ -92,11 +93,44 @@ class NotificationSettingsViewModelTest {
         val store = ViewModelStore().apply { put("settings", viewModel) }
 
         try {
-            viewModel.setNotificationsEnabled(true)
+            viewModel.setNotificationsEnabled(enabled = true, permissionReady = true)
             advanceUntilIdle()
 
             assertEquals(listOf(ProductEventName.NOTIFICATION_SETUP_STARTED), events)
             assertFalse(repository.preferences.value.notificationsEnabled)
+        } finally {
+            store.clear()
+        }
+    }
+
+    @Test
+    fun setupCompletesOnlyAfterPermissionIsGranted() = runTest(dispatcher) {
+        val repository = FakePreferencesRepository()
+        val events = mutableListOf<Pair<ProductEventName, Map<String, String>>>()
+        val viewModel = NotificationSettingsViewModel(repository) { name, properties ->
+            events += name to properties
+        }
+        val store = ViewModelStore().apply { put("settings", viewModel) }
+
+        try {
+            viewModel.setNotificationsEnabled(enabled = true, permissionReady = false)
+            advanceUntilIdle()
+            assertFalse(events.any { it.first == ProductEventName.NOTIFICATION_SETUP_COMPLETED })
+
+            viewModel.recordPermissionOutcome(NotificationPermissionStatus.DENIED, "runtime_request")
+            advanceUntilIdle()
+            assertFalse(events.any { it.first == ProductEventName.NOTIFICATION_SETUP_COMPLETED })
+
+            viewModel.recordPermissionOutcome(NotificationPermissionStatus.GRANTED, "system_settings")
+            viewModel.recordPermissionOutcome(NotificationPermissionStatus.GRANTED, "system_settings")
+            advanceUntilIdle()
+
+            val completions = events.filter { it.first == ProductEventName.NOTIFICATION_SETUP_COMPLETED }
+            assertEquals(1, completions.size)
+            assertEquals(
+                events.first { it.first == ProductEventName.NOTIFICATION_SETUP_STARTED }.second["attempt_id"],
+                completions.single().second["attempt_id"],
+            )
         } finally {
             store.clear()
         }

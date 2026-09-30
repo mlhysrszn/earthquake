@@ -29,8 +29,11 @@ class SampleEarthquakeRepository @Inject constructor(
     private var nextFailure: RefreshResult.Reason? = null
 
     private val earthquakes = mutableEarthquakes.asStateFlow()
+    private val lastSuccessfulRefresh = MutableStateFlow<Instant?>(null)
 
     override fun observeEarthquakes(): Flow<List<Earthquake>> = earthquakes
+
+    override fun observeLastSuccessfulRefresh(): Flow<Instant?> = lastSuccessfulRefresh.asStateFlow()
 
     override fun observeEarthquake(id: String): Flow<Earthquake?> =
         earthquakes.map { events -> events.firstOrNull { it.id == id } }
@@ -49,7 +52,9 @@ class SampleEarthquakeRepository @Inject constructor(
         return mutex.withLock {
             val failure = nextFailure.also { nextFailure = null }
             failure?.let(RefreshResult::Failure)
-                ?: RefreshResult.Success(acceptedEventCount = mutableEarthquakes.value.size)
+                ?: RefreshResult.Success(acceptedEventCount = mutableEarthquakes.value.size).also {
+                    lastSuccessfulRefresh.value = clock.instant()
+                }
         }
     }
 
