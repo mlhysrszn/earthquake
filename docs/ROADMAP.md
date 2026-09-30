@@ -2,7 +2,7 @@
 
 Status: F02/F01 were committed in `f224494`; the single app module correction
 (F03) was committed in `c46ce1b`; Hilt setup (F06) was committed in `2b9789e`.
-L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, N04, N05, N06, N07, and Q01 are committed. Q02 is committed (`e7b4d9b`). Q03, H01, and H02 records are committed; H02 is partially complete (remote and interview preparation pending).
+L01, L02, L03, L04, D01, D02, D03, D04, N01, N02, N03, N04, N05, N06, N07, and Q01 are committed. Q02 is committed (`e7b4d9b`). Q03, H01, and H02 records are committed; H02 is published to https://github.com/mlhysrszn/earthquake; interview preparation stays with the user.
 
 ## Goal
 
@@ -384,9 +384,9 @@ mandatory; permission to work or run tests does not authorize a commit.
 - Result: a fresh local clone (plus the untracked `local.properties`) passed the JVM
   tests and built both flavors; the demo was repeated during Q03; tracked files
   contain no credentials, signing keys, `local.properties`, or build output. A
-  practice change is prepared in the Work Log but not applied. **Blocked:** no remote
-  exists, so publication and the repository URL are pending an authorized
-  destination; the interview-readiness item stays open for the user.
+  practice change is prepared in the Work Log but not applied. The user authorized
+  a public GitHub repository and `main` was pushed to https://github.com/mlhysrszn/earthquake.
+  The interview-readiness item stays open for the user.
 
 ## Completion checklist
 
@@ -396,7 +396,8 @@ mandatory; permission to work or run tests does not authorize a commit.
 - [x] Cached content, permission denial, and missing data behave predictably.
 - [x] Demo, local events, tests, README, and AI usage report are ready.
 - [ ] The repository is reproducible and ready for the interview. (Reproducibility
-  verified locally; blocked on an authorized remote for publication.)
+  verified locally and published to https://github.com/mlhysrszn/earthquake; interview readiness is
+  the user's to confirm.)
 
 ## Progress log
 
@@ -427,8 +428,8 @@ mandatory; permission to work or run tests does not authorize a commit.
 | Q02 | Committed: e7b4d9b | Live/demo flavors and isolated demo scenario; 53 JVM tests, 55 live and 57 demo device tests, lint (0 errors) on both variants passed |
 | Q03 | Committed: 248be08 | Automated suites plus manual API 29 walkthrough; Android 13+ permission flow checked manually on API 34 afterwards |
 | H01 | Committed: f1371d4 | README and usage-report summary written; commands checked against build config; clean-checkout run deferred to H02 |
-| Case-brief review | Verified, awaiting commit approval | README gained target user, key decisions, metrics, time estimate, and model shares; stale statuses refreshed |
-| H02 | Partially done | Clean-clone build/tests and tracked-file review passed; remote publication and interview preparation pending the user |
+| Case-brief review | Committed: 9a2cac1 | README gained target user, key decisions, metrics, time estimate, and model shares; stale statuses refreshed |
+| H02 | Published | Clean-clone build/tests and tracked-file review passed; pushed to https://github.com/mlhysrszn/earthquake (public); interview preparation is the user's |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

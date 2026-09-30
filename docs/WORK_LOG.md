@@ -1238,7 +1238,7 @@ not re-screenshotted on API 29 after the change.
 ## Case-brief review and README gaps
 
 Date: 2026-09-30 (Europe/Istanbul).
-Status: documentation-only; awaiting user approval to commit.
+Status: documentation-only; committed as `9a2cac1`.
 
 Compared the project with the case-study PDF. The app covers the brief (recent
 events, a personal threshold, notifications above it, local product events), but
@@ -1261,5 +1261,17 @@ the README was missing items the brief asks for:
 | Decision table and data contract vs. README claims | Consistent (baseline, aliases, revisions, summary feed) |
 | Commit counts and session spans | Taken from `git log` |
 
-Remaining: publication needs an authorized remote; the time estimate excludes
+Remaining: the time estimate excludes
 work before each session's first commit.
+
+
+## Publication
+
+Date: 2026-09-30 (Europe/Istanbul).
+Status: published; this record is committed and pushed with the user's approval.
+
+The user authorized the public repository https://github.com/mlhysrszn/earthquake under their own
+GitHub account (`mlhysrszn`). Before pushing, `git ls-files` was checked for
+`local.properties`, signing keys, `.env` files, and build output; none are tracked.
+`origin` was added and `main` pushed with upstream tracking; `gh repo view`
+reported the repository as public with default branch `main`.
