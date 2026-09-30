@@ -416,6 +416,17 @@ mandatory; permission to work or run tests does not authorize a commit.
 - Result: 66 JVM tests (4 new `IdentityIndexTest`); all 9 `NotificationProcessorTest`
   device tests passed unchanged on API 29.
 
+### R03 - Show notification decisions and product events in the app
+
+- [x] Add a read-only "Kayıtlar" screen reachable from notification settings in both
+  flavors: notification decisions in plain Turkish, the raw product-event log, and
+  the three success metrics computed on device. Keep the event log on demo reset.
+- Done when: the screen, its query, the metrics, and the navigation are tested, and
+  a manual demo run shows decisions and metrics changing as expected.
+- Result: 70 JVM tests, 66 live and 68 demo device tests, lint 0 errors/23 warnings;
+  manual demo run confirmed decisions, a surviving setup metric after reset, and the
+  opening metric after tapping the notification.
+
 ## Completion checklist
 
 - [x] Recent USGS events and details work with explicit loading/error/empty states.
@@ -460,6 +471,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | H02 | Published | Clean-clone build/tests and tracked-file review passed; pushed to https://github.com/mlhysrszn/earthquake (public); interview preparation is the user's |
 | R01 | Committed: 2cb065d | Frozen list window fixed with regression test; product rules, metrics, demo storage, and UI improvements; all suites and lint passed |
 | R02 | Verified, awaiting commit approval | Processor split into named steps and `IdentityIndex`; behavior unchanged; processor device tests and JVM tests passed |
+| R03 | Verified, awaiting commit approval | In-app activity log (decisions, events, metrics); demo reset keeps the event log; all suites and lint passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

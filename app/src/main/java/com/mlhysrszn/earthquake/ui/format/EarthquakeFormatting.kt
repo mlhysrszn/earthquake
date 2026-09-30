@@ -20,6 +20,10 @@ fun formatCoordinate(value: Double): String =
 fun formatOccurrenceTime(instant: Instant, zone: ZoneId = ZoneId.systemDefault()): String =
     DateTimeFormatter.ofPattern("d MMM, HH:mm", turkish).withZone(zone).format(instant)
 
+/** Log timestamps include seconds so events in one refresh can be told apart. */
+fun formatLogTime(instant: Instant, zone: ZoneId = ZoneId.systemDefault()): String =
+    DateTimeFormatter.ofPattern("d MMM, HH:mm:ss", turkish).withZone(zone).format(instant)
+
 /** How long ago an event happened, rounded down; future times count as "just now". */
 sealed interface RelativeAge {
     data object JustNow : RelativeAge

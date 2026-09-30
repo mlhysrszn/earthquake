@@ -1366,3 +1366,50 @@ The user asked for the processor to be easier to explain without changing behavi
 
 The full device suites were run after the next change (R03) on top of this one.
 
+
+## R03: In-app activity log
+
+Date: 2026-09-30 (Europe/Istanbul).
+Status: verified; awaiting user approval to commit.
+
+The user wanted to see notification decisions and product events inside the app,
+reachable from settings in both flavors.
+
+- Settings → "Kayıtları görüntüle" opens "Kayıtlar" with two tabs. "Bildirim
+  kararları" lists the newest 200 decisions with the magnitude badge, place (or
+  event ID once the event left the 24-hour cache), and a Turkish outcome label.
+  "Olay kaydı" shows the newest 500 product events and a metrics card.
+- `NotificationProcessingDao.observeRecentDecisions` left-joins decisions with the
+  cached events; `ProductMetrics` computes the three documented metrics.
+- The settings screen now scrolls, since the new button and the demo section can
+  exceed small screens.
+- Demo reset no longer uses `clearAllTables()` on the main database: it clears
+  events, sync metadata, and notification state but keeps `product_events`. The
+  log screen exposed this: after a reset the setup metric showed "veri yok"
+  because the setup events had been deleted.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `testLiveDebugUnitTest`, `testDemoDebugUnitTest` | 70 tests each, 0 failures (4 new `ProductMetricsTest`) |
+| `connectedLiveDebugAndroidTest` (API 29) | 66 tests, 0 failures |
+| `connectedDemoDebugAndroidTest` (API 29) | 68 tests, 0 failures |
+| `lintLiveDebug`, `lintDemoDebug` | 0 errors, 23 warnings each |
+| Demo: notifications on, reset, below and above events | Decisions: "Eşiğin altında" and "Bildirim gönderildi" |
+| Demo: metrics after reset | Setup completion 1/1 (%100) kept after reset |
+| Demo: tap the notification, reopen the log | Detail opened; notification-to-detail 1/1 (%100) |
+
+The first device run had one test failure in the new screen test: two log rows
+shared the property it looked for. The test data was made unique. A new
+`PluralsCandidate` lint warning was removed by rewording the metrics scope text.
+An early manual run tapped the switch label instead of the switch, so the log
+correctly showed "Bildirimler kapalıydı" for both events; the run was repeated.
+
+### Limitations
+
+- Metrics are computed from the newest 500 events, not all retained rows, and the
+  opening metric ignores the seven-day window in `PRODUCT_EVENTS.md`.
+- The screen is available to all users in the live build; it shows only local,
+  anonymous data.
+

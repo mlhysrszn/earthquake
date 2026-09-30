@@ -42,6 +42,8 @@ reports events after the seismic network has published them.
 - Event details with coordinates, an "open in map" action (any installed map
   app), and a link to the USGS event page.
 - Notification settings: enable switch and a 0.0–9.5 threshold in 0.5 steps.
+- An in-app log of notification decisions, product events, and the three
+  success metrics (see below).
 - Cached content stays usable offline; failed refreshes keep existing data and
   the last successful update time.
 - Place names come from USGS in English (for example "10 km SW of ..."); they
@@ -117,7 +119,7 @@ for duplicates, late records, revisions, and permission states.
   processing and delivery, WorkManager scheduling and workers, Compose screens,
   navigation, and the demo scenario.
 - Recorded results, warnings, and manual checks per task are in the
-  [work log](docs/WORK_LOG.md). Current results: 62 JVM tests, 62 live and 64 demo
+  [work log](docs/WORK_LOG.md). Current results: 70 JVM tests, 66 live and 68 demo
   device tests, lint with 0 errors, all on an API 29 emulator.
 
 The Android 13+ permission prompt, denial, and grant were checked manually on an
@@ -132,12 +134,18 @@ LIVE/DEMO labels. Nothing is uploaded. See [product events](docs/PRODUCT_EVENTS.
 
 How we would know the product works:
 
-- **Setup completion:** share of users who start enabling notifications and
-  successfully save the preference.
+- **Setup completion:** share of attempts to enable notifications that end with
+  the preference saved and Android allowing notifications.
 - **Notification-to-detail opening:** share of posted notifications whose event
   detail is opened, a sign that the alerts are relevant rather than noise.
 - **Refresh failure rate:** share of foreground/background refreshes that fail,
   a sign of whether the data stays fresh.
+
+**In the app:** Bildirimler → **Kayıtları görüntüle** opens a log with two tabs.
+"Bildirim kararları" lists the decision for each event (sent, below threshold,
+first sync, notifications off, permission missing, and so on). "Olay kaydı"
+shows these three metrics and the raw event log. Both read the same local Room
+tables; resetting the demo keeps the event log.
 
 ## Time spent
 
@@ -158,11 +166,11 @@ before approval.
 | Assistant / model | Work | Commits | Share |
 | --- | --- | --- | --- |
 | OpenAI Codex (exact model ID not captured) | Planning documents, project setup, Hilt | 3 | 9% |
-| OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`) | Domain, list, USGS/Room data, details, notifications, background work, product events | 16 | 50% |
-| Claude Code, Claude Sonnet 5.5 (`claude-sonnet-5-5`) | Demo flavor, acceptance walkthrough, README, permission check, inset fix | 7 | 22% |
-| Claude Code, Claude Opus 5.5 (`claude-opus-5-5`) | Case-brief review, README, publication, code review, post-review fixes, processor restructuring, record updates | 6 | 19% |
+| OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`) | Domain, list, USGS/Room data, details, notifications, background work, product events | 16 | 48% |
+| Claude Code, Claude Sonnet 5.5 (`claude-sonnet-5-5`) | Demo flavor, acceptance walkthrough, README, permission check, inset fix | 7 | 21% |
+| Claude Code, Claude Opus 5.5 (`claude-opus-5-5`) | Case-brief review, README, publication, code review, post-review fixes, processor restructuring, activity log, record updates | 7 | 21% |
 
-The share is the number of commits per model divided by all 32 commits, counting
+The share is the number of commits per model divided by all 33 commits, counting
 the commit that updates this table. The table is updated with every commit so it
 always matches Git history. Commits are not weighted by size; the post-review fix
 batch alone changed about 40 files. Tokens
@@ -172,5 +180,5 @@ the [AI usage report](docs/AI_USAGE_REPORT.md).
 ## Next improvement
 
 Add an optional region filter (for example "near Türkiye") on top of the magnitude
-threshold, show a user-facing view of the local event log, and automate the
-Android 13+ permission flow in an instrumentation test.
+threshold, and automate the Android 13+ permission flow in an instrumentation
+test.

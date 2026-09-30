@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 abstract class NotificationProcessingDao {
@@ -15,6 +16,18 @@ abstract class NotificationProcessingDao {
 
     @Query("SELECT * FROM notification_processing")
     abstract suspend fun getAllEventStates(): List<NotificationProcessingEntity>
+
+    @Query(
+        """
+        SELECT p.canonicalEventId, p.latestEventId AS eventId, p.eventOccurredAtEpochMillis, p.outcome,
+            p.lastDecisionAtEpochMillis, e.magnitude, e.place
+        FROM notification_processing p
+        LEFT JOIN earthquakes e ON e.id = p.latestEventId
+        ORDER BY p.lastDecisionAtEpochMillis DESC, p.eventOccurredAtEpochMillis DESC
+        LIMIT :limit
+        """,
+    )
+    abstract fun observeRecentDecisions(limit: Int): Flow<List<NotificationDecisionRow>>
 
     @Query("SELECT * FROM notification_event_aliases")
     abstract suspend fun getAllAliases(): List<NotificationEventAliasEntity>

@@ -9,8 +9,11 @@ location identifiers.
 
 The `product_events` Room table retains the latest 90 days, capped at 20,000
 rows. `ProductEventRepository.observeRecentEvents()` and `getRecentEvents()`
-expose the newest 200 records by default for tests and local inspection; Android
-Studio's Database Inspector can inspect the same table.
+expose the newest 200 records by default for tests and local inspection. In the
+app, Bildirimler → Kayıtları görüntüle shows the newest 500 events and computes the
+three metrics below from them (`ProductMetrics`), next to the stored notification
+decisions. A demo reset clears events, cursors, and decisions but keeps this log.
+Android Studio's Database Inspector can inspect the same table.
 
 ## Event catalog
 

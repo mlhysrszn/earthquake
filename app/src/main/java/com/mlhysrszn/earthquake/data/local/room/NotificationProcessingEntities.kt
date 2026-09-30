@@ -59,3 +59,14 @@ enum class NotificationProcessingOutcome {
     SUPPRESSED_ALREADY_PROCESSED,
     AMBIGUOUS_IDENTITY,
 }
+
+/** A processing row joined with the cached event, when it is still cached. */
+data class NotificationDecisionRow(
+    val canonicalEventId: String,
+    val eventId: String,
+    val eventOccurredAtEpochMillis: Long,
+    val outcome: String,
+    val lastDecisionAtEpochMillis: Long,
+    val magnitude: Double?,
+    val place: String?,
+)

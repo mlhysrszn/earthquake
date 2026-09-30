@@ -8,6 +8,8 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -21,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
@@ -56,6 +59,7 @@ import kotlin.math.roundToInt
 @Composable
 fun NotificationSettingsRoute(
     onBack: () -> Unit,
+    onOpenActivityLog: () -> Unit = {},
     viewModel: NotificationSettingsViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -118,6 +122,7 @@ fun NotificationSettingsRoute(
                 },
             )
         },
+        onOpenActivityLog = onOpenActivityLog,
         demoContent = { DemoScenarioSection() },
     )
 }
@@ -131,6 +136,7 @@ fun NotificationSettingsScreen(
     onThresholdChange: (Double) -> Unit,
     onOpenSystemSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenActivityLog: () -> Unit = {},
     demoContent: @Composable () -> Unit = {},
 ) {
     Scaffold(
@@ -162,6 +168,7 @@ fun NotificationSettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
+                .verticalScroll(rememberScrollState())
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -235,6 +242,10 @@ fun NotificationSettingsScreen(
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium,
                 )
+            }
+
+            OutlinedButton(onClick = onOpenActivityLog) {
+                Text(text = stringResource(R.string.open_activity_log))
             }
 
             demoContent()

@@ -3,6 +3,7 @@ package com.mlhysrszn.earthquake.data.repository
 import com.mlhysrszn.earthquake.data.local.demo.DemoScenarioDao
 import com.mlhysrszn.earthquake.data.local.demo.DemoScenarioDatabase
 import com.mlhysrszn.earthquake.data.local.demo.DemoScenarioEntity
+import androidx.room.withTransaction
 import com.mlhysrszn.earthquake.data.local.room.EarthquakeDatabase
 import com.mlhysrszn.earthquake.domain.model.DemoScenarioKind
 import com.mlhysrszn.earthquake.domain.model.DemoScenarioStatus
@@ -42,11 +43,17 @@ class RoomDemoScenarioController @Inject constructor(
     /** The next refresh re-delivers the same source ID; the notification policy must ignore it. */
     override suspend fun replayLatestAsDuplicate(): Boolean = dao.getLatest() != null
 
-    /** Clears scenarios plus events, cursors, and notification history of the demo databases. */
+    /**
+     * Clears scenarios, cached events, cursors, and notification history. The product-event
+     * log is kept, so setup and notification metrics survive a demo reset.
+     */
     override suspend fun reset() {
         withContext(Dispatchers.IO) {
             scenarioDatabase.clearAllTables()
-            database.clearAllTables()
+            database.withTransaction {
+                val db = database.openHelper.writableDatabase
+                RESET_TABLES.forEach { table -> db.execSQL("DELETE FROM $table") }
+            }
         }
     }
 
@@ -57,4 +64,14 @@ class RoomDemoScenarioController @Inject constructor(
             addedAtEpochMillis = clock.millis(),
         ),
     ) != -1L
+
+    private companion object {
+        val RESET_TABLES = listOf(
+            "earthquakes",
+            "sync_metadata",
+            "notification_processing",
+            "notification_event_aliases",
+            "notification_processing_metadata",
+        )
+    }
 }

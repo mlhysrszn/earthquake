@@ -240,6 +240,10 @@ implementations in one variant.
   (`IdentityIndex` resolves IDs and USGS aliases to one canonical event; the pure
   `NotificationEligibilityPolicy` decides), and commit all decisions with the new
   cursor in one transaction.
+- The activity log screen (`ui/activitylog`) is read-only: it observes the newest
+  notification decisions (`NotificationDecisionRepository`, a join of
+  `notification_processing` with cached events) and product events, and computes
+  the metrics with the pure `ProductMetrics`.
 - Product-event logging uses Room and is best-effort/local-only. Screen views,
   preference attempts/saves, permission outcomes, successful posts, notification
   detail entry, and refresh outcomes share UTC timestamps and an explicit LIVE/DEMO

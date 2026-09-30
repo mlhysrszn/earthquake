@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mlhysrszn.earthquake.MainActivity
 import com.mlhysrszn.earthquake.domain.model.ProductEventName
@@ -92,5 +93,20 @@ class EarthquakeNavigationTest {
 
         composeRule.onNodeWithText("Geri").performClick()
         composeRule.onNodeWithText("Depremler").assertIsDisplayed()
+    }
+
+    @Test
+    fun settingsOpensTheActivityLogWithDecisionsEventsAndMetrics() {
+        composeRule.onNodeWithText("Bildirimler").performClick()
+        composeRule.onNodeWithText("Kayıtları görüntüle").performScrollTo().performClick()
+
+        composeRule.onNodeWithText("Kayıtlar").assertIsDisplayed()
+        composeRule.onNodeWithText("Bildirim kararları").assertIsDisplayed()
+
+        composeRule.onNodeWithText("Olay kaydı").performClick()
+        composeRule.onNodeWithText("Ürün metrikleri").assertIsDisplayed()
+
+        composeRule.onNodeWithText("Geri").performClick()
+        composeRule.onNodeWithText("Bildirim ayarları").assertIsDisplayed()
     }
 }

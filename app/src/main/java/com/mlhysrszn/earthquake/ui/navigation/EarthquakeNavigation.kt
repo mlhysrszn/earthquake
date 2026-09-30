@@ -8,6 +8,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.mlhysrszn.earthquake.ui.activitylog.ActivityLogRoute
 import com.mlhysrszn.earthquake.ui.earthquakes.detail.EarthquakeDetailRoute
 import com.mlhysrszn.earthquake.ui.earthquakes.detail.EarthquakeDetailViewModel
 import com.mlhysrszn.earthquake.ui.earthquakes.list.EarthquakesRoute
@@ -72,7 +73,11 @@ fun EarthquakeNavigation(
             entry<NotificationSettingsKey> {
                 NotificationSettingsRoute(
                     onBack = { backStack.removeLastOrNull() },
+                    onOpenActivityLog = { backStack.add(ActivityLogKey) },
                 )
+            }
+            entry<ActivityLogKey> {
+                ActivityLogRoute(onBack = { backStack.removeLastOrNull() })
             }
         },
     )

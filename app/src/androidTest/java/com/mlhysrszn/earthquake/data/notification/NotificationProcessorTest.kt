@@ -12,7 +12,9 @@ import com.mlhysrszn.earthquake.data.local.room.NotificationProcessingEntity
 import com.mlhysrszn.earthquake.data.local.room.NotificationProcessingOutcome
 import com.mlhysrszn.earthquake.data.local.room.SnapshotWriteResult
 import com.mlhysrszn.earthquake.data.local.room.toEntity
+import com.mlhysrszn.earthquake.data.repository.RoomNotificationDecisionRepository
 import com.mlhysrszn.earthquake.domain.model.Earthquake
+import com.mlhysrszn.earthquake.domain.model.NotificationDecisionOutcome
 import com.mlhysrszn.earthquake.domain.model.NotificationPreferences
 import com.mlhysrszn.earthquake.domain.repository.NotificationPreferencesRepository
 import com.mlhysrszn.earthquake.domain.usecase.NotificationEligibilityPolicy
@@ -25,6 +27,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -114,6 +117,37 @@ class NotificationProcessorTest {
             assertEquals(
                 NotificationProcessingOutcome.POSTED.name,
                 processingDao.getEventState(revised.id)?.outcome,
+            )
+        }
+    }
+
+    @Test
+    fun recentDecisionsJoinCachedEventDataAndKeepDecisionsForEvictedEvents() = runBlocking {
+        withInMemoryDatabase { earthquakeDao, processingDao ->
+            val processor = processor(earthquakeDao, processingDao)
+            storeSnapshot(earthquakeDao, emptyList(), sourceCursorStart)
+            processor.processLatestSnapshot(notificationPermissionGranted = true)
+            val cached = event("cached-event", magnitude = 5.0)
+            val evicted = event("evicted-event", magnitude = 3.0, occurredAt = now.minusSeconds(120))
+            storeSnapshot(earthquakeDao, listOf(cached, evicted), sourceCursorStart + 60_000)
+            processor.processLatestSnapshot(notificationPermissionGranted = true)
+            storeSnapshot(earthquakeDao, listOf(cached), sourceCursorStart + 120_000)
+
+            val decisions = RoomNotificationDecisionRepository(processingDao)
+                .observeRecentDecisions(10)
+                .first()
+                .associateBy { it.eventId }
+
+            assertEquals(5.0, decisions.getValue("cached-event").magnitude!!, 0.0)
+            assertEquals("Near the coast", decisions.getValue("cached-event").place)
+            assertEquals(
+                NotificationDecisionOutcome.PENDING,
+                decisions.getValue("cached-event").outcome,
+            )
+            assertEquals(null, decisions.getValue("evicted-event").magnitude)
+            assertEquals(
+                NotificationDecisionOutcome.SUPPRESSED_BELOW_THRESHOLD,
+                decisions.getValue("evicted-event").outcome,
             )
         }
     }

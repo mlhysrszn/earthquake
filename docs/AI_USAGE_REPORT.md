@@ -42,7 +42,7 @@ after the user's explicit approval.
 | --- | --- | --- |
 | Exact tokens by model | Unavailable | No session token export captured |
 | Model usage percentages (by tokens) | Unavailable | No measured token/request denominator captured |
-| Model usage percentages (by commits) | Codex 3/32 (9%), GPT-6 Luna 16/32 (50%), Claude Sonnet 5.5 7/32 (22%), Claude Opus 5.5 6/32 (19%) | Commits per model divided by all commits, including the commit that updates these figures; updated with every commit; commit size is not weighted |
+| Model usage percentages (by commits) | Codex 3/33 (9%), GPT-6 Luna 16/33 (48%), Claude Sonnet 5.5 7/33 (21%), Claude Opus 5.5 7/33 (21%) | Commits per model divided by all commits, including the commit that updates these figures; updated with every commit; commit size is not weighted |
 | Development time (estimate) | About 10.5 hours, lower bound | Sum of first-to-last commit spans in six sessions (2h53m, 4h05m, 1h01m, 1h45m, 22m, ~30m); excludes work before each session's first commit |
 | Measured AI share of code | Not measured | No generated feature implementation in this checkpoint |
 | Observed verification interval | 8m 06s | Tool timestamps; includes permission waits, excludes unmeasured work |
@@ -410,4 +410,16 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
   tests, and merged duplicated helpers without changing behavior.
 - Verification: 66 JVM tests; the 9 unchanged processor device tests passed.
 - Human role: chose to both restructure the processor and add an in-app log.
+
+
+## R03: In-app activity log
+
+- Assistant: Claude Code, Claude Opus 5.5 (`claude-opus-5-5`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: added the decision query and repository, `ProductMetrics`, the
+  "Kayıtlar" screen and navigation, kept the event log on demo reset, and wrote
+  JVM, screen, query, and navigation tests.
+- Verification: 70 JVM tests; 66 live and 68 demo device tests; lint 0 errors;
+  manual demo run (see Work Log).
+- Human role: chose settings as the entry point in both flavors.
 

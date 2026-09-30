@@ -5,6 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.mlhysrszn.earthquake.data.local.demo.DemoScenarioDatabase
 import com.mlhysrszn.earthquake.data.local.room.EarthquakeDatabase
+import com.mlhysrszn.earthquake.data.local.room.ProductEventEntity
 import com.mlhysrszn.earthquake.data.notification.NotificationProcessor
 import com.mlhysrszn.earthquake.domain.model.NotificationPreferences
 import com.mlhysrszn.earthquake.domain.repository.NotificationPreferencesRepository
@@ -79,7 +80,13 @@ class DemoScenarioFlowTest {
         controller.addAboveThreshold()
         assertEquals(1, refreshAndProcess().size)
 
+        database.productEventDao().record(
+            ProductEventEntity("kept", "SCREEN_VIEW", 1_000, "DEMO", "{}"),
+            retainedSinceEpochMillis = 0,
+        )
+
         controller.reset()
+        assertEquals(listOf("kept"), database.productEventDao().getRecent(10).map { it.id })
         refreshAndProcess()
         assertEquals(0, controller.observeStatus().first().eventCount)
         assertTrue(repository.observeEarthquakes().first().isEmpty())
