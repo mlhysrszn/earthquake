@@ -1343,7 +1343,7 @@ were updated to the new behavior. The minor-magnitude badge color was changed fr
 ## R02: Notification processor restructuring
 
 Date: 2026-09-30 (Europe/Istanbul).
-Status: verified; awaiting user approval to commit.
+Status: verified; committed as `f2ce2b4` and pushed.
 
 The user asked for the processor to be easier to explain without changing behavior.
 
@@ -1370,7 +1370,7 @@ The full device suites were run after the next change (R03) on top of this one.
 ## R03: In-app activity log
 
 Date: 2026-09-30 (Europe/Istanbul).
-Status: verified; awaiting user approval to commit.
+Status: verified; committed as `ef3f0b2` and pushed.
 
 The user wanted to see notification decisions and product events inside the app,
 reachable from settings in both flavors.

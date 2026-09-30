@@ -470,8 +470,8 @@ mandatory; permission to work or run tests does not authorize a commit.
 | Case-brief review | Committed: 9a2cac1 (publication record: 2e2cd3b) | README gained target user, key decisions, metrics, time estimate, and model shares; stale statuses refreshed |
 | H02 | Published | Clean-clone build/tests and tracked-file review passed; pushed to https://github.com/mlhysrszn/earthquake (public); interview preparation is the user's |
 | R01 | Committed: 2cb065d | Frozen list window fixed with regression test; product rules, metrics, demo storage, and UI improvements; all suites and lint passed |
-| R02 | Verified, awaiting commit approval | Processor split into named steps and `IdentityIndex`; behavior unchanged; processor device tests and JVM tests passed |
-| R03 | Verified, awaiting commit approval | In-app activity log (decisions, events, metrics); demo reset keeps the event log; all suites and lint passed |
+| R02 | Committed: f2ce2b4 | Processor split into named steps and `IdentityIndex`; behavior unchanged; processor device tests and JVM tests passed |
+| R03 | Committed: ef3f0b2 | In-app activity log (decisions, events, metrics); demo reset keeps the event log; all suites and lint passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.
