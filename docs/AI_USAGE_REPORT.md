@@ -42,7 +42,7 @@ after the user's explicit approval.
 | --- | --- | --- |
 | Exact tokens by model | Unavailable | No session token export captured |
 | Model usage percentages (by tokens) | Unavailable | No measured token/request denominator captured |
-| Model usage percentages (by commits) | Codex 3/29 (10%), GPT-6 Luna 16/29 (55%), Claude Sonnet 5.5 7/29 (24%), Claude Opus 5.5 3/29 (10%) | Commits per model divided by all commits, including the R01 commit; commit size is not weighted |
+| Model usage percentages (by commits) | Codex 3/31 (10%), GPT-6 Luna 16/31 (52%), Claude Sonnet 5.5 7/31 (23%), Claude Opus 5.5 5/31 (16%) | Commits per model divided by all commits, including the commit that updates these figures; updated with every commit; commit size is not weighted |
 | Development time (estimate) | About 10.5 hours, lower bound | Sum of first-to-last commit spans in six sessions (2h53m, 4h05m, 1h01m, 1h45m, 22m, ~30m); excludes work before each session's first commit |
 | Measured AI share of code | Not measured | No generated feature implementation in this checkpoint |
 | Observed verification interval | 8m 06s | Tool timestamps; includes permission waits, excludes unmeasured work |
