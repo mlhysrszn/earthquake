@@ -235,6 +235,11 @@ implementations in one variant.
   run the persisted N05 processor and N06 delivery adapter.
 - Threshold, new-event, and previously-notified rules belong to domain behavior.
 - The data package owns persistent event, notification, and synchronization records.
+- `NotificationProcessor` runs in named steps: remove expired state, classify the
+  snapshot (initial baseline, stale, fresh), decide each event in the window
+  (`IdentityIndex` resolves IDs and USGS aliases to one canonical event; the pure
+  `NotificationEligibilityPolicy` decides), and commit all decisions with the new
+  cursor in one transaction.
 - Product-event logging uses Room and is best-effort/local-only. Screen views,
   preference attempts/saves, permission outcomes, successful posts, notification
   detail entry, and refresh outcomes share UTC timestamps and an explicit LIVE/DEMO

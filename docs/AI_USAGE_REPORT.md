@@ -42,7 +42,7 @@ after the user's explicit approval.
 | --- | --- | --- |
 | Exact tokens by model | Unavailable | No session token export captured |
 | Model usage percentages (by tokens) | Unavailable | No measured token/request denominator captured |
-| Model usage percentages (by commits) | Codex 3/31 (10%), GPT-6 Luna 16/31 (52%), Claude Sonnet 5.5 7/31 (23%), Claude Opus 5.5 5/31 (16%) | Commits per model divided by all commits, including the commit that updates these figures; updated with every commit; commit size is not weighted |
+| Model usage percentages (by commits) | Codex 3/32 (9%), GPT-6 Luna 16/32 (50%), Claude Sonnet 5.5 7/32 (22%), Claude Opus 5.5 6/32 (19%) | Commits per model divided by all commits, including the commit that updates these figures; updated with every commit; commit size is not weighted |
 | Development time (estimate) | About 10.5 hours, lower bound | Sum of first-to-last commit spans in six sessions (2h53m, 4h05m, 1h01m, 1h45m, 22m, ~30m); excludes work before each session's first commit |
 | Measured AI share of code | Not measured | No generated feature implementation in this checkpoint |
 | Observed verification interval | 8m 06s | Tool timestamps; includes permission waits, excludes unmeasured work |
@@ -400,4 +400,14 @@ See [Work Log](WORK_LOG.md) for actual checks, warnings, and current commit stat
 - Human role: asked for the review, then asked for all findings to be fixed.
   Product changes (inclusive threshold, revision rule) follow that request and
   are open to the user's review.
+
+
+## R02: Notification processor restructuring
+
+- Assistant: Claude Code, Claude Opus 5.5 (`claude-opus-5-5`). No delegated
+  subagents were used; exact token totals are unavailable.
+- AI work: split the processor into named steps, extracted `IdentityIndex` with JVM
+  tests, and merged duplicated helpers without changing behavior.
+- Verification: 66 JVM tests; the 9 unchanged processor device tests passed.
+- Human role: chose to both restructure the processor and add an in-app log.
 

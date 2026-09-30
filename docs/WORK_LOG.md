@@ -1338,3 +1338,31 @@ were updated to the new behavior. The minor-magnitude badge color was changed fr
 - The revision rule relies on USGS `updated` time versus the device decision
   time; large device clock errors could delay or trigger a re-evaluation.
 - Screens were checked on API 29 only; Android 13+ was not re-run for this batch.
+
+
+## R02: Notification processor restructuring
+
+Date: 2026-09-30 (Europe/Istanbul).
+Status: verified; awaiting user approval to commit.
+
+The user asked for the processor to be easier to explain without changing behavior.
+
+- `processLatestSnapshot` now reads as four steps: `removeExpiredState`,
+  `snapshotStatus`, `decideSnapshot`, and `commitSnapshotDecisions`.
+- Identity resolution (IDs, USGS aliases, ambiguity, alias ownership) moved to
+  `IdentityIndex` in its own file.
+- The next stored state is one `when` over the identity status (NEW, PROCESSED,
+  REVISED, AMBIGUOUS_ALIAS). The explicit initial-baseline branch was removed: the
+  policy already returns `INITIAL_BASELINE` first, which maps to `BASELINED`.
+- `markPosted`, `markRetryable`, `markPermissionDenied`, and `markExpired` share one
+  `resolvePending` helper.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `testLiveDebugUnitTest` | 66 tests, 0 failures (4 new `IdentityIndexTest`) |
+| `NotificationProcessorTest` on API 29 (live) | 9/9 passed, test code unchanged |
+
+The full device suites were run after the next change (R03) on top of this one.
+

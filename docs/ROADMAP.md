@@ -406,6 +406,16 @@ mandatory; permission to work or run tests does not authorize a commit.
   warnings; the frozen-window bug was reproduced before and verified fixed after
   on the API 29 emulator. See Work Log.
 
+### R02 - Restructure the notification processor
+
+- [x] Split `NotificationProcessor` into named steps (housekeeping, snapshot status,
+  per-event decision, commit), move alias resolution into `IdentityIndex`, and
+  merge the four `mark*` bodies into one helper, without changing behavior.
+- Done when: the existing processor device tests pass unchanged and the identity
+  rules have their own JVM tests.
+- Result: 66 JVM tests (4 new `IdentityIndexTest`); all 9 `NotificationProcessorTest`
+  device tests passed unchanged on API 29.
+
 ## Completion checklist
 
 - [x] Recent USGS events and details work with explicit loading/error/empty states.
@@ -449,6 +459,7 @@ mandatory; permission to work or run tests does not authorize a commit.
 | Case-brief review | Committed: 9a2cac1 (publication record: 2e2cd3b) | README gained target user, key decisions, metrics, time estimate, and model shares; stale statuses refreshed |
 | H02 | Published | Clean-clone build/tests and tracked-file review passed; pushed to https://github.com/mlhysrszn/earthquake (public); interview preparation is the user's |
 | R01 | Committed: 2cb065d | Frozen list window fixed with regression test; product rules, metrics, demo storage, and UI improvements; all suites and lint passed |
+| R02 | Verified, awaiting commit approval | Processor split into named steps and `IdentityIndex`; behavior unchanged; processor device tests and JVM tests passed |
 
 Add a row for each task as work starts. Record actual commands/results or manual
 checks, and keep task checkboxes consistent with this log.

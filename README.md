@@ -157,12 +157,12 @@ before approval.
 
 | Assistant / model | Work | Commits | Share |
 | --- | --- | --- | --- |
-| OpenAI Codex (exact model ID not captured) | Planning documents, project setup, Hilt | 3 | 10% |
-| OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`) | Domain, list, USGS/Room data, details, notifications, background work, product events | 16 | 52% |
-| Claude Code, Claude Sonnet 5.5 (`claude-sonnet-5-5`) | Demo flavor, acceptance walkthrough, README, permission check, inset fix | 7 | 23% |
-| Claude Code, Claude Opus 5.5 (`claude-opus-5-5`) | Review against the case brief, README update, publication, code review and post-review fixes, record updates | 5 | 16% |
+| OpenAI Codex (exact model ID not captured) | Planning documents, project setup, Hilt | 3 | 9% |
+| OpenCode, GPT-6 Luna (`opencode-go/gpt-6-luna`) | Domain, list, USGS/Room data, details, notifications, background work, product events | 16 | 50% |
+| Claude Code, Claude Sonnet 5.5 (`claude-sonnet-5-5`) | Demo flavor, acceptance walkthrough, README, permission check, inset fix | 7 | 22% |
+| Claude Code, Claude Opus 5.5 (`claude-opus-5-5`) | Case-brief review, README, publication, code review, post-review fixes, processor restructuring, record updates | 6 | 19% |
 
-The share is the number of commits per model divided by all 31 commits, counting
+The share is the number of commits per model divided by all 32 commits, counting
 the commit that updates this table. The table is updated with every commit so it
 always matches Git history. Commits are not weighted by size; the post-review fix
 batch alone changed about 40 files. Tokens
